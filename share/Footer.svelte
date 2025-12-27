@@ -9,6 +9,7 @@
 	import AislerLogo from './Logo/Aisler.svelte';
 	import IgusLogo from '$lib/components/share/Logo/Igus.svelte';
 	import KJLogo from '$lib/components/share/Logo/KJ.svelte';
+	import MouserLogo from '$lib/components/share/Logo/Mouser.svelte';
 
 	import Carousel from '$lib/components/others/Carousel.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
@@ -131,10 +132,11 @@
 		<div class="w-full h-36">
 			<Carousel>
 				<HDSLogo />
-				<RSLogo />
+				<MouserLogo />
 				<FaulhaberLogo />
 				<AislerLogo />
 				<AlstomLogo />
+				<RSLogo />
 				<IFTLogo />
 				<GotronicLogo />
 				<IgusLogo />
