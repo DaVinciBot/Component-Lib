@@ -854,12 +854,14 @@
 							<dd class="mb-4 ml-2 font-light text-gray-400">
 								<table class="w-full border-separate">
 									<thead class="font-bold">
-										<td>Nom</td>
-										<td>Quantité</td>
-										<td>Prix</td>
-										{#if values.body.find((el) => el.label == 'Status')?.type == 'pendingCDP'}
-											<td class="w-2.5"></td>
-										{/if}
+										<tr>
+											<td>Nom</td>
+											<td>Quantité</td>
+											<td>Prix</td>
+											{#if values.body.find((el) => el.label == 'Status')?.type == 'pendingCDP'}
+												<td class="w-2.5"></td>
+											{/if}
+										</tr>
 									</thead>
 									<tbody>
 										{#each item.value.list as item}
