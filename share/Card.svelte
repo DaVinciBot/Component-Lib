@@ -1,8 +1,11 @@
 <script>
-	export let title = '';
-	export let description = '';
-	export let image = '';
-	export let link = '';
+	/** @type {{title?: string, description?: string, image?: string, link?: string}} */
+	let {
+		title = '',
+		description = '',
+		image = '',
+		link = ''
+	} = $props();
 </script>
 
 <div

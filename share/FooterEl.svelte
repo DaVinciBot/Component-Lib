@@ -1,6 +1,6 @@
 <script>
-	export let items = [{ text: '', href: '' }];
-	export let title = '';
+	/** @type {{items?: any, title?: string}} */
+	let { items = [{ text: '', href: '' }], title = '' } = $props();
 </script>
 
 <div

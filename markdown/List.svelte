@@ -1,17 +1,21 @@
 <script>
-	export let ordered = false;
-	export let start = 1;
-	export let loose = false;
+	/** @type {{ordered?: boolean, start?: number, loose?: boolean, children?: import('svelte').Snippet}} */
+	let {
+		ordered = false,
+		start = 1,
+		loose = false,
+		children
+	} = $props();
 </script>
 
 <div class="py-2 pl-4">
 	{#if ordered}
 		<ol class="list-decimal list-inside">
-			<slot />
+			{@render children?.()}
 		</ol>
 	{:else}
 		<ul class="list-disc list-inside">
-			<slot />
+			{@render children?.()}
 		</ul>
 	{/if}
 </div>

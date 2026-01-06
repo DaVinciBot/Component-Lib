@@ -1,14 +1,17 @@
 <script>
 	import { navigating } from '$app/stores';
 
-	export let menu = [{ title: 'fill me', icon: 'timer', uri: '/admin' }];
-	export let open = false;
-	export let close = () => {};
-	export let noicon = false;
-	export let bgClass = 'bg-gray-800';
-	export let activeClass = 'hover:bg-gray-700';
+	/** @type {{menu?: any, open?: boolean, close?: any, noicon?: boolean, bgClass?: string, activeClass?: string}} */
+	let {
+		menu = $bindable([{ title: 'fill me', icon: 'timer', uri: '/admin' }]),
+		open = false,
+		close = () => {},
+		noicon = false,
+		bgClass = 'bg-gray-800',
+		activeClass = 'hover:bg-gray-700'
+	} = $props();
 
-	let buttons_state = {};
+	let buttons_state = $state({});
 
 	navigating.subscribe((value) => {
 		if (value) {
@@ -44,7 +47,7 @@
 							<button
 								type="button"
 								class="flex items-center w-full p-2 text-base font-medium text-white transition duration-75 rounded-lg group {activeClass}"
-								on:click={() => {
+								onclick={() => {
 									if (buttons_state[item.title] === undefined) {
 										buttons_state[item.title] = false;
 									}
@@ -76,7 +79,7 @@
 										<a
 											href={sub_item.uri}
 											class="flex items-center w-full p-2 text-base font-medium text-white transition duration-75 rounded-lg pl-11 group hover:bg-gray-700"
-											on:click={() => {
+											onclick={() => {
 												if (typeof close === 'function') close();
 											}}>{sub_item.title}</a
 										>
@@ -91,7 +94,7 @@
 								class="flex items-center p-2 text-base font-medium rounded-lg text-white hover:bg-gray-700 group {item.active
 									? 'bg-gray-700'
 									: ''}"
-								on:click={() => {
+								onclick={() => {
 									if (typeof close === 'function') close();
 								}}
 							>

@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
 
-	let cursor;
-	let cursorInner;
+	let cursor = $state();
+	let cursorInner = $state();
 	let mouseX = 0;
 	let mouseY = 0;
 	let cursorX = 0;

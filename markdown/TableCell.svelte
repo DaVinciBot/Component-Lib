@@ -1,7 +1,6 @@
 <script>
-	export let align = 'left';
-	export let header = false;
-	export let text = '';
+	/** @type {{align?: string, header?: boolean, text?: string}} */
+	let { align = 'left', header = false, text = '' } = $props();
 </script>
 
 {#if header}

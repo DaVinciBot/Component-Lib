@@ -1,7 +1,8 @@
 <script>
 	import Icon from '../share/Icon.svelte';
 
-	export let steps = [
+	/** @type {{steps?: any}} */
+	let { steps = [
 		{
 			done: true,
 			icon: 'link'
@@ -14,7 +15,7 @@
 			done: false,
 			icon: 'done'
 		}
-	];
+	] } = $props();
 </script>
 
 <ol class="flex justify-center w-full">

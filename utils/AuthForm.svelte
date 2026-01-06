@@ -1,5 +1,7 @@
 <script>
-	import { onMount } from 'svelte';
+	import { preventDefault } from 'svelte/legacy';
+
+	import { onMount, mount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
 
@@ -12,11 +14,9 @@
 		oauth: 'Login avec OAuth'
 	};
 
-	export let redirect_uri = '/';
-	/**
-	 * {'login' | 'register' | 'reset'}
-	 */
-	export let auth_type = AuthType.login;
+	
+	/** @type {{redirect_uri?: string, auth_type?: any}} */
+	let { redirect_uri = $bindable('/'), auth_type = $bindable(AuthType.login) } = $props();
 
 	if (
 		auth_type !== AuthType.login &&
@@ -27,10 +27,10 @@
 		auth_type = AuthType[auth_type.toLowerCase()] || AuthType.login;
 	}
 
-	let loading = false;
-	let email = '';
-	let password = '';
-	let password_confirm = '';
+	let loading = $state(false);
+	let email = $state('');
+	let password = $state('');
+	let password_confirm = $state('');
 
 	onMount(async () => {
 		redirect_uri = parseRedirectURI(redirect_uri);
@@ -150,16 +150,16 @@
 			if (error) throw error;
 			if (data) {
 				// show success message
-				new SucessModal({
-					target: document.body,
-					props: {
-						message:
-							'Vous avez bien été inscrit. Vous allez être redirigé vers la page de connexion.',
-						onClose: () => {
-							goto(`https://davincibot.fr/auth/login`);
-						}
-					}
-				});
+				mount(SucessModal, {
+                					target: document.body,
+                					props: {
+                						message:
+                							'Vous avez bien été inscrit. Vous allez être redirigé vers la page de connexion.',
+                						onClose: () => {
+                							goto(`https://davincibot.fr/auth/login`);
+                						}
+                					}
+                				});
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -259,7 +259,7 @@
 				<h1 class="text-xl font-bold leading-tight tracking-tight text-white md:text-2xl">
 					{auth_type}
 				</h1>
-				<form class="space-y-4 md:space-y-6" on:submit|preventDefault={handleAuth}>
+				<form class="space-y-4 md:space-y-6" onsubmit={preventDefault(handleAuth)}>
 					<div>
 						<label for="email" class="block mb-2 text-sm font-medium text-white">Votre email</label>
 						<input

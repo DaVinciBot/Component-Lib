@@ -2,12 +2,16 @@
 	import Topbar from '$lib/components/share/Topbar.svelte';
 	import Footer from '$lib/components/share/Footer.svelte';
 
-	export let title = '';
-	export let intro = '';
-	export let updatedAt = '';
-	export let badge = 'Légal';
-	export let sections = [];
-	export let redirectToLegalHome = false;
+	/** @type {{title?: string, intro?: string, updatedAt?: string, badge?: string, sections?: any, redirectToLegalHome?: boolean, children?: import('svelte').Snippet}} */
+	let {
+		title = '',
+		intro = '',
+		updatedAt = '',
+		badge = 'Légal',
+		sections = [],
+		redirectToLegalHome = false,
+		children
+	} = $props();
 
 	const formatDate = (value) => {
 		if (!value) return null;
@@ -23,8 +27,8 @@
 		}
 	};
 
-	$: formattedDate = formatDate(updatedAt);
-	$: isoDate = updatedAt ? new Date(updatedAt).toISOString() : null;
+	let formattedDate = $derived(formatDate(updatedAt));
+	let isoDate = $derived(updatedAt ? new Date(updatedAt).toISOString() : null);
 </script>
 
 <Topbar />
@@ -76,7 +80,7 @@
 		<div class="px-6 md:pl-96 md:pr-16">
 			<div class="flex flex-col items-start justify-between w-full mx-auto md:flex-row flex-nowrap">
 				<article class="flex-shrink-0 w-full max-w-3xl prose legal-article prose-invert md-article">
-					<slot />
+					{@render children?.()}
 				</article>
 				{#if (sections ?? []).length}
 					<aside

@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: `<td>` is invalid inside `<thead>` -->
 <script>
 	import { get_current_component } from 'svelte/internal';
 	import { hideOnClickOutside } from '$lib/utils';

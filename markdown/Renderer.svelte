@@ -1,7 +1,11 @@
 <script lang="ts">
 	// @ts-nocheck
 	import Node from './Node.svelte';
-	export let tree = null; // mdast Root
+	interface Props {
+		tree?: any;
+	}
+
+	let { tree = null }: Props = $props();
 </script>
 
 {#if tree && Array.isArray(tree.children)}

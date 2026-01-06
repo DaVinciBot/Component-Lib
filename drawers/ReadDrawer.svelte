@@ -12,18 +12,21 @@
 
 	const current_component = get_current_component();
 
-	export let values = {
+	/** @type {{values?: any, files?: any, actions?: any, fields?: any, id?: string, onSubmit?: any, onClose?: any}} */
+	let {
+		values = {
 		header: { title: 'Pas de détails', sub: '-', stepper: [] },
 		body: []
-	};
-	export let files = [];
-	export let actions = [];
-	export let fields = [];
-	export let id = 'readDrawer';
-	export let onSubmit = async () => {};
-	export let onClose = (e) => {};
+	},
+		files = [],
+		actions = [],
+		fields = $bindable([]),
+		id = 'readDrawer',
+		onSubmit = async () => {},
+		onClose = (e) => {}
+	} = $props();
 
-	let isEditing = false;
+	let isEditing = $state(false);
 	function handleSave(e) {
 		e.preventDefault();
 		onSubmit(e, forms, fields);
@@ -33,15 +36,15 @@
 		isEditing = false;
 	}
 
-	let current_file = '';
-	let current_file_index = 0;
-	let scroll_body = null;
-	let isMobile = false;
-	let files_array = [{ mime: 'application/pdf', url: null }];
-	let forms;
+	let current_file = $state('');
+	let current_file_index = $state(0);
+	let scroll_body = $state(null);
+	let isMobile = $state(false);
+	let files_array = $state([{ mime: 'application/pdf', url: null }]);
+	let forms = $state();
 
 	// Resizing state for the right-anchored drawer (drag from left edge)
-	let width = 384; // default equals Tailwind w-96
+	let width = $state(384); // default equals Tailwind w-96
 	const minWidth = 320;
 	const maxWidth = 960;
 	let isResizing = false;
@@ -85,10 +88,10 @@
 		window.removeEventListener('touchend', endResize);
 	}
 
-	$: cropTitle =
-		values.header.title.length > width / 10
+	let cropTitle =
+		$derived(values.header.title.length > width / 10
 			? values.header.title.slice(0, width / 10 - 3) + '...'
-			: values.header.title;
+			: values.header.title);
 
 	onDestroy(() => {
 		// ensure listeners are cleared if component is destroyed mid-drag
@@ -168,8 +171,8 @@
 	class="fixed inset-0 z-40 bg-black bg-opacity-40 backdrop-blur-sm"
 	role="button"
 	tabindex="0"
-	on:click={__onClose}
-	on:keydown={(e) => {
+	onclick={__onClose}
+	onkeydown={(e) => {
 		if (e.key === 'Enter' || e.key === ' ') __onClose(e);
 		if (e.key === 'Escape') __onClose(e);
 	}}
@@ -187,9 +190,9 @@
 		type="button"
 		aria-label="Resize drawer"
 		class="absolute top-0 left-0 w-2 h-full bg-transparent cursor-col-resize group focus:outline-none"
-		on:mousedown={(e) => beginResize(e.clientX)}
-		on:touchstart={(e) => beginResize(e.touches[0].clientX)}
-		on:keydown={(e) => {
+		onmousedown={(e) => beginResize(e.clientX)}
+		ontouchstart={(e) => beginResize(e.touches[0].clientX)}
+		onkeydown={(e) => {
 			// keyboard resizing: arrow left increases width (drawer anchored right)
 			const step = e.shiftKey ? 40 : 10;
 			if (e.key === 'ArrowLeft') width = Math.min(maxWidth, width + step);
@@ -210,7 +213,7 @@
 		<button
 			type="button"
 			class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 hover:bg-gray-600 hover:text-white"
-			on:click={__onClose}
+			onclick={__onClose}
 		>
 			<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
 				<path
@@ -231,7 +234,7 @@
 	<!-- Content -->
 	<div class="flex-1 p-4 space-y-4 overflow-y-auto">
 		{#if isEditing}
-			<form on:submit={handleSave} bind:this={forms}>
+			<form onsubmit={handleSave} bind:this={forms}>
 				<div class="grid gap-4 mb-4 sm:grid-cols-2">
 					{#each fields as field}
 						<div class={field.wide ? 'col-span-2' : ''}>
@@ -251,7 +254,7 @@
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
 									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
-									on:change={field.onChange || null}
+									onchange={field.onChange || null}
 									readonly={field.readonly || false}
 								>
 									{#if (field.readonly || false) == false}<option
@@ -304,7 +307,7 @@
 									id={field.id || field.name.toLowerCase()}
 									accept="image/png, image/jpeg"
 									class="hidden"
-									on:change={field.onChange ||
+									onchange={field.onChange ||
 										((e) => {
 											console.log(e.target.files[0]);
 											const file = e.target.files[0];
@@ -364,7 +367,7 @@
 												<button
 													type="button"
 													class="text-gray-400 bg-transparent hover: rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
-													on:click={async (e) => {
+													onclick={async (e) => {
 														field.value = field.value.filter((el) => el.name != doc.name);
 														if (field.onRemove) await field.onRemove(e, doc.name);
 													}}
@@ -395,7 +398,7 @@
 									multiple={field.multiple || false}
 									accept="image/png, image/jpeg, application/pdf, application/octet-stream"
 									class="hidden"
-									on:change={field.onChange ||
+									onchange={field.onChange ||
 										((e) => {
 											if (field.multiple) {
 												const temp_arr = [...e.target.files].map((file) => {
@@ -455,7 +458,7 @@
 								<button
 									type="button"
 									class="flex items-center justify-center w-full h-8 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
-									on:click={() => {
+									onclick={() => {
 										const clean_filter = fields.filter((el) => el.type != 'duplicate');
 										let lasts = []; // get the last full row, 1 if wide, 2 if not
 										for (let i = clean_filter.length - 1; i >= 0; i--) {
@@ -510,7 +513,7 @@
 										value={field.value || ''}
 										readonly={field.readonly || false}
 										name={field.id || field.name.toLowerCase()}
-										on:input={async (e) => {
+										oninput={async (e) => {
 											field.completion = await field.onChange(e);
 										}}
 									/>
@@ -523,7 +526,7 @@
 											<button
 												class=" w-full rounded-lg
 												flex items-center border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
-												on:click={async (e) => {
+												onclick={async (e) => {
 													field.value = c.text;
 													field.data = c.value;
 													field.completion = [];
@@ -564,7 +567,7 @@
 												<button
 													type="button"
 													class="ml-2 text-white hover:text-gray-300"
-													on:click={async () => {
+													onclick={async () => {
 														field.value = field.value.filter((v) => v.value !== item.value);
 														field.data = field.value.map((v) => v.value);
 														if (field.onRemove) {
@@ -596,7 +599,7 @@
 										value={field.searchTerm || ''}
 										readonly={field.readonly || false}
 										name={field.id || field.name.toLowerCase()}
-										on:input={async (e) => {
+										oninput={async (e) => {
 											field.searchTerm = e.target.value;
 											if (field.searchTerm.length > 0) {
 												field.completion = await field.onChange(e);
@@ -617,7 +620,7 @@
 														class="w-full rounded-lg flex items-center border-b border-gray-700 {c.image
 															? 'p-1'
 															: ''} cursor-pointer hover:bg-gray-600"
-														on:click={async (e) => {
+														onclick={async (e) => {
 															// Initialize field.value as array if not exists
 															if (!field.value) field.value = [];
 
@@ -694,7 +697,7 @@
 					<button
 						type="button"
 						class="px-4 py-2 text-gray-400 bg-gray-700 rounded-lg hover:bg-gray-600"
-						on:click={handleCancel}>Cancel</button
+						onclick={handleCancel}>Cancel</button
 					>
 				</div>
 			</form>
@@ -705,7 +708,7 @@
 					<div class="flex items-center mb-2">
 						<button
 							class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 hover:bg-gray-600 hover:text-white"
-							on:click={() => {
+							onclick={() => {
 								if (current_file_index > 0) {
 									current_file_index--;
 									current_file = files_array[current_file_index].name;
@@ -727,7 +730,7 @@
 						</p>
 						<button
 							class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 hover:bg-gray-600 hover:text-white"
-							on:click={() => {
+							onclick={() => {
 								if (current_file_index < files.length - 1) {
 									current_file_index++;
 									current_file = files_array[current_file_index].name;
@@ -905,7 +908,7 @@
 														<button
 															type="button"
 															class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-															on:click={async () => {
+															onclick={async () => {
 																const { data, error } = await supabase
 																	.from('items')
 																	.delete()
@@ -955,7 +958,7 @@
 			<button
 				type="button"
 				class="text-white inline-flex items-center bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-				on:click={() => {
+				onclick={() => {
 					isEditing = true;
 					parseValuesToFields();
 				}}
@@ -980,7 +983,7 @@
 			{#if type == 'selector'}
 				<select
 					class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
-					on:change={handler}
+					onchange={handler}
 				>
 					<option value="" disabled selected>Choisir une option</option>
 					{#each title as { name, value }}
@@ -992,7 +995,7 @@
 				<button
 					type="button"
 					class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-					on:click={handler}
+					onclick={handler}
 				>
 					<svg
 						aria-hidden="true"
@@ -1013,7 +1016,7 @@
 				<button
 					type="button"
 					class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-					on:click={handler}
+					onclick={handler}
 				>
 					<svg
 						aria-hidden="true"

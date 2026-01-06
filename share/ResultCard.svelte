@@ -1,10 +1,15 @@
 <script>
-	export let title = '';
-	export let rank_and_points = '';
-	export let image = '';
-	export let logo;
-	export let marginLeft = '';
-	export let marginBottom = '';
+	/** @type {{title?: string, rank_and_points?: string, image?: string, logo: any, marginLeft?: string, marginBottom?: string}} */
+	let {
+		title = '',
+		rank_and_points = '',
+		image = '',
+		logo,
+		marginLeft = '',
+		marginBottom = ''
+	} = $props();
+
+	const SvelteComponent = $derived(logo);
 </script>
 
 <div
@@ -17,7 +22,7 @@
 	<div id="" class="flex flex-row h-28 items-center">
 		<img src={image} alt={title} class="h-28 aspect-auto" />
 		<div class="flex items-center" style="transform: translate({marginLeft}px, {-marginBottom}px)">
-			<svelte:component this={logo} class="h-28" sizeW="163px" sizeH="185px" />
+			<SvelteComponent class="h-28" sizeW="163px" sizeH="185px" />
 		</div>
 	</div>
 </div>

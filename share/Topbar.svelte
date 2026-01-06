@@ -8,15 +8,15 @@
 	import SideBar from '$lib/components/admin/SideBar.svelte';
 	import CTAButton from '../utils/CTAButton.svelte';
 
-	let user;
+	let user = $state();
 	let skip = false;
-	let sidebarOpen = false;
-	let onMobile = false;
+	let sidebarOpen = $state(false);
+	let onMobile = $state(false);
 
-	let dropdown = {
+	let dropdown = $state({
 		projects: false,
 		infos: false
-	};
+	});
 
 	userdata.subscribe((value) => {
 		if (value) {
@@ -135,7 +135,7 @@
 			<div class="flex items-center justify-start">
 				<button
 					class="p-2 mr-2 text-gray-400 rounded-lg cursor-pointer md:hidden focus:bg-gray-700 focus:ring-2 focus:ring-gray-700 hover:bg-gray-700 hover:text-white"
-					on:click={() => (sidebarOpen = !sidebarOpen)}
+					onclick={() => (sidebarOpen = !sidebarOpen)}
 					aria-controls="drawer-navigation"
 					aria-expanded={sidebarOpen}
 				>
@@ -179,7 +179,7 @@
 					<li>
 						<button
 							id="ProjectsButton"
-							on:click={(e) => {
+							onclick={(e) => {
 								e.stopPropagation();
 								queueMicrotask;
 								dropdown.projects = !dropdown.projects;
@@ -238,7 +238,7 @@
 					<li>
 						<button
 							id="AssosButton"
-							on:click={(e) => {
+							onclick={(e) => {
 								e.stopPropagation();
 								dropdown.infos = !dropdown.infos;
 								dropdown.projects = false;
@@ -308,7 +308,7 @@
 	{#if onMobile}
 		<div
 			class="fixed inset-0 z-10 bg-black bg-opacity-40 {!sidebarOpen ? 'hidden' : ''}"
-			on:click={closeSidebar}
+			onclick={closeSidebar}
 		></div>
 
 		<SideBar

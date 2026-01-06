@@ -1,6 +1,6 @@
 <script>
-	export let href = '';
-	export let title = undefined;
+	/** @type {{href?: string, title?: any, children?: import('svelte').Snippet}} */
+	let { href = '', title = undefined, children } = $props();
 </script>
 
 <a
@@ -10,8 +10,8 @@
 	rel="noopener noreferrer"
 	class="text-blue-400 hover:text-blue-300 underline"
 >
-	<slot />
-	{#if !$$slots.default}
+	{@render children?.()}
+	{#if !children}
 		{title}
 	{/if}
 </a>

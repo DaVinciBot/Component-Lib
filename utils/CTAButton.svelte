@@ -1,7 +1,11 @@
 <script>
-	export let secondary = false;
-	export let href = '';
-	export let size = 'md';
+	/** @type {{secondary?: boolean, href?: string, size?: string, children?: import('svelte').Snippet}} */
+	let {
+		secondary = false,
+		href = '',
+		size = 'md',
+		children
+	} = $props();
 
 	let classes = secondary
 		? 'bg-transparent text-dark-light-blue'
@@ -20,7 +24,7 @@
 			class="w-full {sizeClasses} font-bold rounded-xl {classes} border-[3.25px] border-dark-light-blue"
 			type="button"
 		>
-			<slot></slot>
+			{@render children?.()}
 		</button>
 	</a>
 {:else}
@@ -28,6 +32,6 @@
 		class="w-full {sizeClasses} font-bold rounded-xl {classes} border-[3.25px] border-dark-light-blue"
 		type="button"
 	>
-		<slot></slot>
+		{@render children?.()}
 	</button>
 {/if}

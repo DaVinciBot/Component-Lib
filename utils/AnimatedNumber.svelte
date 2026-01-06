@@ -1,18 +1,23 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
-	export let target = 0; // final value to count to
-	export let duration = 2000; // ms
-	export let prefix = '';
-	export let suffix = '';
-	export let locale = 'fr-FR';
-	export let decimals = 0;
-	// If true, animation will run only the first time it becomes visible
-	export let once = true;
+	import { run } from 'svelte/legacy';
 
-	let display = '';
+	import { onMount, onDestroy } from 'svelte';
+	// If true, animation will run only the first time it becomes visible
+	/** @type {{target?: number, duration?: number, prefix?: string, suffix?: string, locale?: string, decimals?: number, once?: boolean}} */
+	let {
+		target = 0,
+		duration = 2000,
+		prefix = '',
+		suffix = '',
+		locale = 'fr-FR',
+		decimals = 0,
+		once = true
+	} = $props();
+
+	let display = $state('');
 	let raf;
-	let el;
-	let visible = false;
+	let el = $state();
+	let visible = $state(false);
 	let observer;
 
 	const fmt = (v) => {
@@ -86,14 +91,16 @@
 	});
 
 	// restart when target or duration changes, but only if visible
-	$: if (typeof target === 'number') {
-		if (visible) {
-			animate(target, duration);
-		} else {
-			// ensure it shows the initial state until visible
-			display = fmt(0);
+	run(() => {
+		if (typeof target === 'number') {
+			if (visible) {
+				animate(target, duration);
+			} else {
+				// ensure it shows the initial state until visible
+				display = fmt(0);
+			}
 		}
-	}
+	});
 </script>
 
 <div bind:this={el} class="animated-number" aria-live="polite">

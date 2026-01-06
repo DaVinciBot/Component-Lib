@@ -1,6 +1,7 @@
 <script>
 	// Duration in seconds for a full loop
-	export let time = 50;
+	/** @type {{time?: number, children?: import('svelte').Snippet}} */
+	let { time = 50, children } = $props();
 </script>
 
 <div class="w-full h-full">
@@ -11,10 +12,10 @@
 		-->
 		<div class="flex carousel-inner" style={`--duration: ${time}s`}>
 			<div class="flex items-center h-full gap-8">
-				<slot></slot>
+				{@render children?.()}
 			</div>
 			<div class="flex items-center h-full gap-8 pl-8" aria-hidden="true">
-				<slot></slot>
+				{@render children?.()}
 			</div>
 		</div>
 	</div>

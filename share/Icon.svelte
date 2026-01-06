@@ -1,7 +1,6 @@
 <script>
-	export let name = '';
-	export let fill = '';
-	export let size = '';
+	/** @type {{name?: string, fill?: string, size?: string}} */
+	let { name = '', fill = '', size = '' } = $props();
 </script>
 
 <i class="w-{size} aspect-square fill-{fill} text-{fill}">

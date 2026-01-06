@@ -1,37 +1,44 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	// @ts-nocheck
 
 	import { readonly } from 'svelte/store';
 	import { get_current_component } from 'svelte/internal';
 	const current_component = get_current_component();
 
-	export let type = 'Utilisateur';
-	export let type_accord = 'un';
-	export let action = 'Ajouter';
-	export let fields = [];
-	export let id = 'CrudModal';
 
-	export let title = `${action} ${type_accord} ${type}`;
 
-	export let onSubmit = async () => {
+
+	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, onSubmit?: any, onClose?: any}} */
+	let {
+		type = 'Utilisateur',
+		type_accord = 'un',
+		action = 'Ajouter',
+		fields = $bindable([]),
+		id = 'CrudModal',
+		title = `${action} ${type_accord} ${type}`,
+		onSubmit = async () => {
 		console.log('Submit');
-	};
-
-	export let onClose = (e) => {
+	},
+		onClose = (e) => {
 		current_component.$destroy();
-	};
-
-	$: for (let field of fields) {
-		if (field.type === 'select' && field.value) {
-			field.options = field.options.map((option) => {
-				if (option.value === field.value) field.autoselect = true;
-				return {
-					...option,
-					selected: option.value === field.value
-				};
-			});
-		}
 	}
+	} = $props();
+
+	run(() => {
+		for (let field of fields) {
+			if (field.type === 'select' && field.value) {
+				field.options = field.options.map((option) => {
+					if (option.value === field.value) field.autoselect = true;
+					return {
+						...option,
+						selected: option.value === field.value
+					};
+				});
+			}
+		}
+	});
 </script>
 
 <div
@@ -50,7 +57,7 @@
 				<button
 					type="button"
 					class="text-gray-500 bg-transparent rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
-					on:click={onClose}
+					onclick={onClose}
 				>
 					<svg
 						aria-hidden="true"
@@ -88,7 +95,7 @@
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
 									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
-									on:change={field.onChange || null}
+									onchange={field.onChange || null}
 									readonly={field.readonly || false}
 								>
 									{#if (field.readonly || false) == false}<option
@@ -141,7 +148,7 @@
 									id={field.id || field.name.toLowerCase()}
 									accept="image/png, image/jpeg"
 									class="hidden"
-									on:change={field.onChange ||
+									onchange={field.onChange ||
 										((e) => {
 											console.log(e.target.files[0]);
 											const file = e.target.files[0];
@@ -201,7 +208,7 @@
 												<button
 													type="button"
 													class="text-gray-400 bg-transparent hover: rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
-													on:click={async (e) => {
+													onclick={async (e) => {
 														field.value = field.value.filter((el) => el.name != doc.name);
 														if (field.onRemove) await field.onRemove(e, doc.name);
 													}}
@@ -232,7 +239,7 @@
 									multiple={field.multiple || false}
 									accept="image/png, image/jpeg, application/pdf, application/octet-stream"
 									class="hidden"
-									on:change={field.onChange ||
+									onchange={field.onChange ||
 										((e) => {
 											if (field.multiple) {
 												const temp_arr = [...e.target.files].map((file) => {
@@ -292,7 +299,7 @@
 								<button
 									type="button"
 									class="flex items-center justify-center w-full h-8 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
-									on:click={() => {
+									onclick={() => {
 										const clean_filter = fields.filter((el) => el.type != 'duplicate');
 										let lasts = []; // get the last full row, 1 if wide, 2 if not
 										for (let i = clean_filter.length - 1; i >= 0; i--) {
@@ -347,7 +354,7 @@
 										value={field.value || ''}
 										readonly={field.readonly || false}
 										name={field.id || field.name.toLowerCase()}
-										on:input={async (e) => {
+										oninput={async (e) => {
 											field.completion = await field.onChange(e);
 										}}
 									/>
@@ -360,7 +367,7 @@
 											<button
 												class=" w-full rounded-lg
 												flex items-center border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
-												on:click={async (e) => {
+												onclick={async (e) => {
 													field.value = c.text;
 													field.data = c.value;
 													field.completion = [];
@@ -416,7 +423,7 @@
 				<button
 					type="submit"
 					class="text-white inline-flex items-center focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-					on:click={onSubmit}
+					onclick={onSubmit}
 				>
 					<svg
 						class="w-6 h-6 mr-1 -ml-1"

@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	// @ts-nocheck
 	import { onMount, onDestroy } from 'svelte';
 	import { writable } from 'svelte/store';
@@ -7,45 +9,48 @@
 	import { tableRefresh } from '$lib/store';
 
 	// Props
-	export let actions = [];
-	export let headers = ['Nom', 'Email', 'Rôle', 'Actions'];
-	export let filters = [];
-	export let dbInfo = {}; // { table: 'users', key: 'id, email, role', ordering: 'id:desc' }
-	export let searchable = 'username';
 
-	export let type = 'élément';
-	export let type_accord = 'un';
-	export let parseItems = null; // (rows) => [{...}][][] formatted rows
-	export let size = 15;
 
-	export let can_load = true;
-	export let clickable = false;
-	export let addNew = null;
 	// Optional topic name; when an app-wide event with this topic fires, the table reloads
-	export let refreshTopic = undefined;
+	/** @type {{actions?: any, headers?: any, filters?: any, dbInfo?: any, searchable?: string, type?: string, type_accord?: string, parseItems?: any, size?: number, can_load?: boolean, clickable?: boolean, addNew?: any, refreshTopic?: any}} */
+	let {
+		actions = [],
+		headers = ['Nom', 'Email', 'Rôle', 'Actions'],
+		filters = $bindable([]),
+		dbInfo = {},
+		searchable = 'username',
+		type = 'élément',
+		type_accord = 'un',
+		parseItems = null,
+		size = 15,
+		can_load = true,
+		clickable = false,
+		addNew = null,
+		refreshTopic = undefined
+	} = $props();
 
 	// State
-	let search = '';
-	let items = [];
-	let current_page = 0;
-	let total_items = 0;
+	let search = $state('');
+	let items = $state([]);
+	let current_page = $state(0);
+	let total_items = $state(0);
 
 	// derived pagination helpers
-	$: totalPages = Math.max(1, Math.ceil((total_items || 0) / size));
-	$: pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-	$: showingFrom = items.length ? current_page * size + 1 : 0;
-	$: showingTo = current_page * size + items.length;
+	let totalPages = $derived(Math.max(1, Math.ceil((total_items || 0) / size)));
+	let pages = $derived(Array.from({ length: totalPages }, (_, i) => i + 1));
+	let showingFrom = $derived(items.length ? current_page * size + 1 : 0);
+	let showingTo = $derived(current_page * size + items.length);
 
 	// persistable filter state
 	const hash = Math.abs(hashCode(JSON.stringify(filters) + JSON.stringify(dbInfo) + searchable));
-	let can_update_settings = false;
+	let can_update_settings = $state(false);
 	const filtersStore = writable(filters);
-	$: hasWideFilter = filters?.some((f) => f?.wide);
+	let hasWideFilter = $derived(filters?.some((f) => f?.wide));
 
-	$: {
+	run(() => {
 		filtersStore.set(filters);
 		if (can_update_settings) saveSettings(hash, filters);
-	}
+	});
 
 	function getFiltersString(filters) {
 		let out = '';
@@ -97,10 +102,12 @@
 		await reload({ resetPage: true });
 	});
 
-	$: if (search.length > 0) {
-		current_page = 0;
-		filtersStore.set(filters);
-	}
+	run(() => {
+		if (search.length > 0) {
+			current_page = 0;
+			filtersStore.set(filters);
+		}
+	});
 
 	let unsub = null;
 
@@ -224,7 +231,7 @@
 							type="button"
 							id="addNewButton"
 							class="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-800"
-							on:click={addNew}
+							onclick={addNew}
 						>
 							<svg
 								class="h-3.5 w-3.5 mr-2"
@@ -249,7 +256,7 @@
 						id="filterDropdownButton"
 						type="button"
 						class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-400 bg-gray-800 border border-gray-600 rounded-lg md:w-auto focus:outline-none focus:z-10 focus:ring-4 focus:ring-gray-700 hover:text-white hover:bg-gray-700"
-						on:click={(e) => {
+						onclick={(e) => {
 							const el = document.getElementById('filterDropdown-' + hash);
 							el?.classList.toggle('hidden');
 							e.stopPropagation();
@@ -310,7 +317,7 @@
 														value={option.value}
 														checked={option.active}
 														class="w-4 h-4 bg-gray-600 border-gray-500 rounded focus:ring-primary-600 ring-offset-gray-700 focus:ring-2"
-														on:change={(e) => {
+														onchange={(e) => {
 															e.preventDefault();
 															can_update_settings = true;
 															option.active = e.target.checked;
@@ -332,7 +339,7 @@
 					<button
 						type="button"
 						class="flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-gray-700"
-						on:click={() => reload()}
+						onclick={() => reload()}
 						aria-label="Rafraîchir"
 					>
 						<svg
@@ -378,7 +385,7 @@
 						{#each items as row, i}
 							<tr
 								class="border-b border-gray-700 {clickable ? 'cursor-pointer' : ''} max-w-52"
-								on:click={clickable
+								onclick={clickable
 									? (e) => {
 											e.preventDefault();
 											actions.find((a) => a.type === 'view')?.handler(e);
@@ -422,7 +429,7 @@
 										<button
 											type="button"
 											class="inline-flex items-center p-0.5 text-sm font-medium text-center rounded-lg focus:outline-none text-gray-400 hover:text-gray-100"
-											on:click={(e) => actions.find((a) => a.type === 'view')?.handler(e)}
+											onclick={(e) => actions.find((a) => a.type === 'view')?.handler(e)}
 										>
 											<svg
 												class="w-5 h-5"
@@ -463,7 +470,7 @@
 							class="flex items-center justify-center h-full py-1.5 px-3 ml-0 rounded-l-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white"
 							aria-disabled={current_page === 0}
 							class:opacity-50={current_page === 0}
-							on:click={async (e) => {
+							onclick={async (e) => {
 								e.preventDefault();
 								if (current_page === 0) return;
 								current_page = Math.max(0, current_page - 1);
@@ -501,7 +508,7 @@
 									<button
 										type="button"
 										class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-400 bg-gray-800 border border-gray-700 hover:bg-gray-700 hover:text-white"
-										on:click={async (e) => {
+										onclick={async (e) => {
 											e.preventDefault();
 											current_page = p - 1;
 											await reload();
@@ -516,7 +523,7 @@
 								<button
 									type="button"
 									class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-400 bg-gray-800 border border-gray-700 hover:bg-gray-700 hover:text-white"
-									on:click={async (e) => {
+									onclick={async (e) => {
 										e.preventDefault();
 										current_page = 0;
 										await reload();
@@ -537,7 +544,7 @@
 								<button
 									type="button"
 									class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-400 bg-gray-800 border border-gray-700 hover:bg-gray-700 hover:text-white"
-									on:click={async (e) => {
+									onclick={async (e) => {
 										e.preventDefault();
 										current_page = pages.length - 1;
 										await reload();
@@ -552,7 +559,7 @@
 							class="flex items-center justify-center h-full py-1.5 px-3 leading-tight rounded-r-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white"
 							aria-disabled={current_page >= pages.length - 1}
 							class:opacity-50={current_page >= pages.length - 1}
-							on:click={async (e) => {
+							onclick={async (e) => {
 								e.preventDefault();
 								if (current_page >= pages.length - 1) return;
 								current_page = Math.min(pages.length - 1, current_page + 1);

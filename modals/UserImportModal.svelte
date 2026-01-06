@@ -2,13 +2,16 @@
 	// @ts-nocheck
 	import { get_current_component } from 'svelte/internal';
 
-	export let title = 'Ajouter des utilisateurs';
-	export let roleOptions = [];
-	export let projectOptions = [];
-	export let initialRole = '';
-	export let initialProject = '';
-	export let onSubmit = async (_) => {};
-	export let onClose = null;
+	/** @type {{title?: string, roleOptions?: any, projectOptions?: any, initialRole?: string, initialProject?: string, onSubmit?: any, onClose?: any}} */
+	let {
+		title = 'Ajouter des utilisateurs',
+		roleOptions = [],
+		projectOptions = [],
+		initialRole = '',
+		initialProject = '',
+		onSubmit = async (_) => {},
+		onClose = null
+	} = $props();
 
 	const current = get_current_component();
 
@@ -18,16 +21,16 @@
 		{ id: 'csv', label: 'CSV' }
 	];
 
-	let activeTab = 'simple';
-	let selectedRole = initialRole || 'membre';
-	let selectedProject = initialProject;
-	let simpleUser = { name: '', email: '', project: initialProject || '' };
-	let bulkUsers = [{ name: '', email: '', project: initialProject || '' }];
-	let csvUsers = [];
-	let csvInput;
-	let errorMessage = '';
-	let isSubmitting = false;
-	let recentCsvName = '';
+	let activeTab = $state('simple');
+	let selectedRole = $state(initialRole || 'membre');
+	let selectedProject = $state(initialProject);
+	let simpleUser = $state({ name: '', email: '', project: initialProject || '' });
+	let bulkUsers = $state([{ name: '', email: '', project: initialProject || '' }]);
+	let csvUsers = $state([]);
+	let csvInput = $state();
+	let errorMessage = $state('');
+	let isSubmitting = $state(false);
+	let recentCsvName = $state('');
 
 	function close() {
 		if (typeof onClose === 'function') onClose();
@@ -280,7 +283,7 @@
 				<button
 					type="button"
 					class="text-gray-400 transition-colors rounded-lg hover:text-white"
-					on:click={close}
+					onclick={close}
 					aria-label="Fermer"
 				>
 					<svg
@@ -298,7 +301,7 @@
 				</button>
 			</div>
 
-			<form class="space-y-6" on:submit={submit}>
+			<form class="space-y-6" onsubmit={submit}>
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div class="col-span-2 sm:col-span-1">
 						<label class="block mb-2 text-sm font-medium text-white" for="bulk-role">Rôle</label>
@@ -341,7 +344,7 @@
 										? 'text-white bg-gray-700 border border-gray-600 border-b-transparent'
 										: 'text-gray-400 hover:text-white'
 								}`}
-								on:click={() => {
+								onclick={() => {
 									activeTab = tab.id;
 									errorMessage = '';
 								}}
@@ -402,7 +405,7 @@
 							<button
 								type="button"
 								class="px-3 py-1 text-sm font-medium text-white transition-colors rounded-md bg-primary-600 hover:bg-primary-700"
-								on:click={addBulkUser}
+								onclick={addBulkUser}
 							>
 								Ajouter une ligne
 							</button>
@@ -464,7 +467,7 @@
 										<button
 											type="button"
 											class="px-3 py-2 text-xs font-semibold tracking-wide text-white transition-colors border border-gray-600 rounded-md hover:bg-gray-700"
-											on:click={() => duplicateBulkUser(index)}
+											onclick={() => duplicateBulkUser(index)}
 										>
 											Dupliquer
 										</button>
@@ -472,7 +475,7 @@
 											<button
 												type="button"
 												class="px-3 py-2 text-xs font-semibold text-red-300 transition-colors border rounded-md border-red-400/40 hover:bg-red-500/20"
-												on:click={() => removeBulkUser(index)}
+												onclick={() => removeBulkUser(index)}
 											>
 												Supprimer
 											</button>
@@ -495,14 +498,14 @@
 								<button
 									type="button"
 									class="px-3 py-1 text-sm font-medium text-white transition-colors border rounded-md border-primary-500/40 bg-primary-500/10 hover:bg-primary-600/40"
-									on:click={triggerCsvDialog}
+									onclick={triggerCsvDialog}
 								>
 									Choisir un fichier
 								</button>
 								<button
 									type="button"
 									class="px-3 py-1 text-sm font-medium text-gray-300 transition-colors border border-gray-600 rounded-md hover:bg-gray-700"
-									on:click={clearCsvUsers}
+									onclick={clearCsvUsers}
 									disabled={csvUsers.length === 0}
 								>
 									Vider la liste
@@ -514,7 +517,7 @@
 							type="file"
 							class="hidden"
 							accept=".csv,text/csv"
-							on:change={handleCsvChange}
+							onchange={handleCsvChange}
 						/>
 						{#if csvUsers.length === 0}
 							<p class="text-sm text-gray-400">Aucun utilisateur importé pour le moment.</p>
@@ -576,7 +579,7 @@
 											<button
 												type="button"
 												class="px-3 py-2 text-xs font-semibold text-red-300 transition-colors border rounded-md border-red-400/40 hover:bg-red-500/20"
-												on:click={() => removeCsvUser(index)}
+												onclick={() => removeCsvUser(index)}
 											>
 												Supprimer
 											</button>
@@ -596,7 +599,7 @@
 					<button
 						type="button"
 						class="px-4 py-2 text-sm font-medium text-gray-300 transition-colors border border-gray-600 rounded-lg hover:bg-gray-700"
-						on:click={close}
+						onclick={close}
 					>
 						Annuler
 					</button>

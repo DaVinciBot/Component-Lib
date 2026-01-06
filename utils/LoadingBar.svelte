@@ -1,7 +1,6 @@
 <script>
-	export let percentage = 0;
-	export let message = '';
-	export let color = 'bg-primary-500';
+	/** @type {{percentage?: number, message?: string, color?: string}} */
+	let { percentage = 0, message = '', color = 'bg-primary-500' } = $props();
 </script>
 
 <div>

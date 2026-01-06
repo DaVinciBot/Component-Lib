@@ -1,5 +1,6 @@
 <script>
-	export let size = 'h-20 md:h-28';
+	/** @type {{size?: string}} */
+	let { size = 'h-20 md:h-28' } = $props();
 </script>
 
 <svg

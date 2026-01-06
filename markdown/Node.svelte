@@ -9,7 +9,8 @@
 	import { toString } from 'mdast-util-to-string';
 	import NodeComponent from './Node.svelte';
 
-	export let child; // mdast node
+	/** @type {{child: any}} */
+	let { child } = $props();
 
 	const isNode = (n) => n && typeof n === 'object' && 'type' in n;
 </script>

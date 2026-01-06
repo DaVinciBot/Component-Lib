@@ -1,18 +1,15 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { get_current_component } from 'svelte/internal';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
 
 	const current_component = get_current_component();
 
-	export let message = 'La commande a été passée avec succès.';
-	export let type = 'success';
 
 	let id = `${type}Popup-${Math.random().toString(36).substring(7)}`;
 
-	export let onClose = (e) => {
-		window.location.reload();
-	};
 
 	let __onClose = (e) => {
 		// remove componant from tree
@@ -20,15 +17,23 @@
 		onClose(e);
 	};
 
-	export let action = [
+	/** @type {{message?: string, type?: string, onClose?: any, action?: any}} */
+	let {
+		message = 'La commande a été passée avec succès.',
+		type = 'success',
+		onClose = (e) => {
+		window.location.reload();
+	},
+		action = $bindable([
 		{
 			text: 'Suivant',
 			callback: __onClose,
 			is_main: true
 		}
-	];
+	])
+	} = $props();
 
-	$: {
+	run(() => {
 		// add close to all callback
 		action = action.map((el) => {
 			return {
@@ -39,7 +44,7 @@
 				}
 			};
 		});
-	}
+	});
 
 	onMount(() => {
 		const popup = document.querySelector(`#MultiPopup`);
@@ -61,7 +66,7 @@
 			<button
 				type="button"
 				class="text-gray-400 absolute top-2.5 right-2.5 bg-transparent rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
-				on:click={__onClose}
+				onclick={__onClose}
 			>
 				<svg
 					aria-hidden="true"
@@ -159,7 +164,7 @@
 						class="px-3 py-2 text-sm font-medium text-center text-white rounded-lg {el.is_main
 							? 'bg-primary-600 hover:bg-primary-700'
 							: 'border-white border'} focus:ring-4 focus:outline-none focus:ring-primary-900"
-						on:click={el.callback}
+						onclick={el.callback}
 					>
 						{el.text}
 					</button>

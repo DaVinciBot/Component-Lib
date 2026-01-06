@@ -4,13 +4,13 @@
 	import { loadUserdata, hideOnClickOutside } from '$lib/utils';
 	import { userdata } from '$lib/store';
 
-	export let user = {
+
+	/** @type {{user?: any, fixed?: boolean}} */
+	let { user = $bindable({
 		name: 'Urbain',
 		email: 'davincibot@devinci.fr',
 		avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
-	};
-
-	export let fixed = true;
+	}), fixed = true } = $props();
 
 	let skip = false;
 
@@ -54,7 +54,7 @@
 	class="flex mx-3 text-sm bg-gray-800 rounded-full focus:ring-3 focus:ring-gray-700 md:mr-0"
 	id="user-menu-button"
 	aria-expanded="false"
-	on:click={(e) => {
+	onclick={(e) => {
 		const dropdown = document.querySelector('#dropdown');
 		dropdown.classList.toggle('hidden');
 		e.stopPropagation();
@@ -99,7 +99,7 @@
 			<a
 				href="#"
 				class="block px-4 py-2 text-sm hover:bg-red-700 hover:text-white bg-opacity-80 hover:bg-opacity-50"
-				on:click={LogOut}>Déconnexion</a
+				onclick={LogOut}>Déconnexion</a
 			>
 		</li>
 	</ul>
