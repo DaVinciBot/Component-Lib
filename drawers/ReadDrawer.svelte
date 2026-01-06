@@ -1,7 +1,6 @@
 <script>
 	// @ts-nocheck
 
-	import { get_current_component } from 'svelte/internal';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount, onDestroy } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
@@ -9,8 +8,6 @@
 	import { updateText } from '$lib/utils';
 
 	import Icon from '../share/Icon.svelte';
-
-	const current_component = get_current_component();
 
 	/** @type {{values?: any, files?: any, actions?: any, fields?: any, id?: string, onSubmit?: any, onClose?: any}} */
 	let {
@@ -99,7 +96,6 @@
 	});
 
 	let __onClose = (e) => {
-		current_component.$destroy();
 		onClose(e);
 	};
 

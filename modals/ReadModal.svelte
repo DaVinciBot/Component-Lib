@@ -1,9 +1,7 @@
 <!-- @migration-task Error while migrating Svelte code: `<td>` is invalid inside `<thead>` -->
 <script>
-	import { get_current_component } from 'svelte/internal';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
-	const current_component = get_current_component();
 
 	import { supabase } from '$lib/supabaseClient';
 
@@ -60,7 +58,6 @@
 
 	let __onClose = (e) => {
 		// remove componant from tree
-		current_component.$destroy();
 		onClose(e);
 	};
 
@@ -250,12 +247,14 @@
 							<dd class="mb-4 ml-2 font-light text-gray-400 sm:mb-5">
 								<table class="w-full border-separate">
 									<thead class="font-bold">
-										<td>Nom</td>
-										<td>Quantité</td>
-										<td>Prix</td>
-										{#if values.body.find((el) => el.label == 'Status').type == 'pendingCDP'}
-											<td class="w-2.5"></td>
-										{/if}
+										<tr>
+											<td>Nom</td>
+											<td>Quantité</td>
+											<td>Prix</td>
+											{#if values.body.find((el) => el.label == 'Status').type == 'pendingCDP'}
+												<td class="w-2.5"></td>
+											{/if}
+										</tr>
 									</thead>
 									<tbody>
 										{#each value as item}

@@ -4,8 +4,6 @@
 	// @ts-nocheck
 
 	import { readonly } from 'svelte/store';
-	import { get_current_component } from 'svelte/internal';
-	const current_component = get_current_component();
 
 
 
@@ -22,7 +20,6 @@
 		console.log('Submit');
 	},
 		onClose = (e) => {
-		current_component.$destroy();
 	}
 	} = $props();
 

@@ -1,11 +1,8 @@
 <script>
 	import { run } from 'svelte/legacy';
 
-	import { get_current_component } from 'svelte/internal';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
-
-	const current_component = get_current_component();
 
 
 	let id = `${type}Popup-${Math.random().toString(36).substring(7)}`;
@@ -13,7 +10,6 @@
 
 	let __onClose = (e) => {
 		// remove componant from tree
-		current_component.$destroy();
 		onClose(e);
 	};
 
@@ -40,7 +36,6 @@
 				...el,
 				callback: () => {
 					el.callback();
-					current_component.$destroy();
 				}
 			};
 		});
