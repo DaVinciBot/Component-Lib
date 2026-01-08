@@ -1,19 +1,10 @@
 <script>
-	import HDSLogo from './Logo/HDS.svelte';
-	import RSLogo from './Logo/RS.svelte';
-	import FaulhaberLogo from './Logo/Faulhaber.svelte';
-	import AlstomLogo from './Logo/Alstom.svelte';
-	import IFTLogo from './Logo/IFT.svelte';
-	import GotronicLogo from './Logo/Gotronic.svelte';
 	import DVBLogo from './Logo/DVBLogo.svelte';
-	import AislerLogo from './Logo/Aisler.svelte';
-	import IgusLogo from '$lib/components/share/Logo/Igus.svelte';
-	import KJLogo from '$lib/components/share/Logo/KJ.svelte';
-	import MouserLogo from '$lib/components/share/Logo/Mouser.svelte';
 
 	import Carousel from '$lib/components/others/Carousel.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import FooterEl from './FooterEl.svelte';
+	import SponsorsCarousel from '../others/SponsorsCarousel.svelte';
 	let items = [
 		[
 			{ text: "L'association", href: '/a-propos' },
@@ -130,18 +121,7 @@
 	<div class="flex flex-col order-4 col-span-2 md:col-span-3 md:-ml-32">
 		<h1 class="font-bold text-left uppercase">Nos Partenaires</h1>
 		<div class="w-full h-36">
-			<Carousel>
-				<HDSLogo />
-				<MouserLogo />
-				<FaulhaberLogo />
-				<AislerLogo />
-				<AlstomLogo />
-				<RSLogo />
-				<IFTLogo />
-				<GotronicLogo />
-				<IgusLogo />
-				<KJLogo />
-			</Carousel>
+			<SponsorsCarousel small={true} pauseOnHover={false} />
 		</div>
 	</div>
 </footer>

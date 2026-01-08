@@ -1,4 +1,5 @@
 <script>
+	export let small = false;
 </script>
 
 <a href="https://www.faulhaber.com/fr/">

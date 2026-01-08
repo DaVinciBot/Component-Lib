@@ -34,6 +34,7 @@
 	function attachDropdowns() {
 		// Move dropdowns to body once, remove stale duplicates, position, and bind outside-click once
 		const dropdownNodes = Array.from(document.querySelectorAll('.dropdown'));
+		console.log('Attaching dropdowns:', dropdownNodes);
 		dropdownNodes.forEach((el) => {
 			const activatorId = el.dataset.activator;
 			if (!activatorId) return;
@@ -44,12 +45,16 @@
 				.forEach((stale) => {
 					if (stale !== el && stale.parentNode) {
 						stale.parentNode.removeChild(stale);
+						console.log('Removed stale dropdown for activator:', activatorId);
 					}
 				});
 
 			// Only append to body if not already there
 			if (el.parentNode !== document.body) {
+				console.log('Moving dropdown to body for activator:', activatorId);
 				document.body.appendChild(el);
+			} else {
+				console.log('Dropdown already in body for activator:', activatorId);
 			}
 
 			// Position under its activator
@@ -72,6 +77,7 @@
 					el.dataset.clickOutsideBound = 'true';
 				} catch (e) {
 					// ignore binding failures
+					console.error('Failed to bind outside click for dropdown:', e);
 				}
 			}
 		});
@@ -306,10 +312,17 @@
 		</div>
 	</nav>
 	{#if onMobile}
-		<div
-			class="fixed inset-0 z-10 bg-black bg-opacity-40 {!sidebarOpen ? 'hidden' : ''}"
+		<button
+			type="button"
+			class="fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black bg-opacity-40 {!sidebarOpen
+				? 'hidden'
+				: ''}"
+			aria-label="Close sidebar"
 			on:click={closeSidebar}
-		></div>
+			on:keydown={(e) => {
+				if (e.key === 'Escape') closeSidebar();
+			}}
+		></button>
 
 		<SideBar
 			open={sidebarOpen}
@@ -322,9 +335,9 @@
 					title: 'Nos Projets',
 					icon: 'briefcase',
 					sub: [
-						{ title: 'La CDR', uri: '/projets/coupe-de-france-de-robotique' },
-						{ title: 'Exodus', uri: '#' },
-						{ title: 'CoHoMa', uri: '#' }
+						{ title: 'La CDR', uri: '/project/coupe-de-robotique' },
+						{ title: 'Exodus', uri: '/project/exodus' },
+						{ title: 'CoHoMa', uri: '/project/cohoma' }
 					]
 				},
 				{

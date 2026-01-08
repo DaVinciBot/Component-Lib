@@ -1,10 +1,11 @@
 <script>
+	export let small = false;
 </script>
 
 <a href="https://kerjuliette.fr/">
 	<svg
-		class="w-full h-full"
-		height="100"
+		class={small ? 'w-full' : 'w-full h-full'}
+		height={small ? 50 : 100}
 		viewBox="0 0 458 358"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"

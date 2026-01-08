@@ -1,10 +1,11 @@
 <script>
+	export let small = false;
 </script>
 
 <a href="https://fr.rs-online.com/" class="h-full aspect-square">
 	<svg
-		class="h-full aspect-square"
-		height="100"
+		class={small ? 'aspect-square' : 'h-full aspect-square'}
+		height={small ? 50 : 100}
 		viewBox="0 0 410 410"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"

@@ -1,9 +1,10 @@
 <script>
+	export let small = false;
 </script>
 
 <a href="https://www.gotronic.fr/" class="h-full">
 	<svg
-		class="w-full h-full"
+		class={small ? 'w-full' : 'w-full h-full'}
 		height="50"
 		viewBox="0 0 310 76"
 		fill="none"

@@ -1,4 +1,5 @@
 <script>
+	export let small = false;
 </script>
 
 <a href="https://www.alstom.com/fr">
@@ -9,8 +10,8 @@
 		xmlns:xlink="http://www.w3.org/1999/xlink"
 		x="0px"
 		y="0px"
-		width="329.832px"
-		height="90.954px"
+		width={small ? undefined : '329.832px'}
+		height={small ? 50 : 90.954}
 		viewBox="0 0 329.832 90.954"
 		enable-background="new 0 0 329.832 90.954"
 		xml:space="preserve"
