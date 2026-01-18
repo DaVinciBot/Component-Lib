@@ -1,12 +1,12 @@
 <script>
-	import { userdata } from '$lib/store';
-	import { loadUserdata, hideOnClickOutside } from '$lib/utils';
-	import { onMount, onDestroy } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { userdata } from '$lib/store';
+	import { hideOnClickOutside, loadUserdata } from '$lib/utils';
+	import { onDestroy, onMount } from 'svelte';
 
-	import DvbLogo from './Logo/DVBLogo.svelte';
 	import SideBar from '$lib/components/admin/SideBar.svelte';
 	import CTAButton from '../utils/CTAButton.svelte';
+	import DvbLogo from './Logo/DVBLogo.svelte';
 
 	let user = $state();
 	let skip = false;
@@ -129,19 +129,19 @@
 
 <section>
 	<nav
-		class="border-b px-2 md:px-6 py-2.5 border-gray-700 fixed left-0 right-0 top-0 z-20 backdrop-blur-lg w-screen"
+		class="fixed top-0 right-0 left-0 z-20 w-screen border-b border-gray-700 px-2 py-2.5 backdrop-blur-lg md:px-6"
 	>
 		<div class="flex flex-wrap items-center justify-between">
 			<div class="flex items-center justify-start">
 				<button
-					class="p-2 mr-2 text-gray-400 rounded-lg cursor-pointer md:hidden focus:bg-gray-700 focus:ring-2 focus:ring-gray-700 hover:bg-gray-700 hover:text-white"
+					class="mr-2 cursor-pointer rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:ring-2 focus:ring-gray-700 md:hidden"
 					onclick={() => (sidebarOpen = !sidebarOpen)}
 					aria-controls="drawer-navigation"
 					aria-expanded={sidebarOpen}
 				>
 					<svg
 						aria-hidden="true"
-						class="w-6 h-6"
+						class="h-6 w-6"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
@@ -154,7 +154,7 @@
 					</svg>
 					<svg
 						aria-hidden="true"
-						class="hidden w-6 h-6"
+						class="hidden h-6 w-6"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
@@ -167,11 +167,11 @@
 					</svg>
 					<span class="sr-only">Toggle sidebar</span>
 				</button>
-				<a href="/" class="flex items-center justify-between mr-4">
+				<a href="/" class="mr-4 flex items-center justify-between">
 					<DvbLogo size="h-12" />
 				</a>
 			</div>
-			<div class="items-center hidden md:flex">
+			<div class="hidden items-center md:flex">
 				<ul class="flex gap-10">
 					<li>
 						<a href="/blog" class="text-gray-400 hover:text-white">Actus</a>
@@ -185,9 +185,9 @@
 								dropdown.projects = !dropdown.projects;
 								dropdown.infos = false;
 							}}
-							class="flex items-center justify-between w-full px-3 py-2 text-gray-400 rounded-sm hover:text-white md:border-0 md:p-0 md:w-auto"
+							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white md:w-auto md:border-0 md:p-0"
 							>Nos Projets <svg
-								class="w-2.5 h-2.5 ms-2.5"
+								class="ms-2.5 h-2.5 w-2.5"
 								aria-hidden="true"
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
@@ -206,7 +206,7 @@
 							data-activator="ProjectsButton"
 							class="{dropdown.projects
 								? ''
-								: 'hidden'} dropdown z-30 font-normal bg-opacity-0 border border-gray-700 divide-y divide-gray-600 rounded-lg backdrop-blur-lg w-44 fixed"
+								: 'hidden'} dropdown bg-opacity-0 fixed z-30 w-44 divide-y divide-gray-600 rounded-lg border border-gray-700 font-normal backdrop-blur-lg"
 						>
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
@@ -243,9 +243,9 @@
 								dropdown.infos = !dropdown.infos;
 								dropdown.projects = false;
 							}}
-							class="flex items-center justify-between w-full px-3 py-2 text-gray-400 rounded-sm hover:text-white md:border-0 md:p-0 md:w-auto"
+							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white md:w-auto md:border-0 md:p-0"
 							>À Propos<svg
-								class="w-2.5 h-2.5 ms-2.5"
+								class="ms-2.5 h-2.5 w-2.5"
 								aria-hidden="true"
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
@@ -264,7 +264,7 @@
 							data-activator="AssosButton"
 							class="{dropdown.infos
 								? ''
-								: 'hidden'} dropdown z-30 font-normal bg-opacity-0 border border-gray-700 divide-y divide-gray-600 rounded-lg backdrop-blur-lg w-44 fixed"
+								: 'hidden'} dropdown bg-opacity-0 fixed z-30 w-44 divide-y divide-gray-600 rounded-lg border border-gray-700 font-normal backdrop-blur-lg"
 						>
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
@@ -296,9 +296,9 @@
 			</div>
 			<div class="gap-5">
 				{#if user}
-					<CTAButton href="/admin" secondary={true} size="sm">Espace membre</CTAButton>
+					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
-					<CTAButton href="/auth/login?redirect=/admin" secondary={true} size="sm"
+					<CTAButton href="/auth/login?redirect=/admin" variant="secondary" size="sm"
 						>Se connecter</CTAButton
 					>
 				{/if}
@@ -307,7 +307,7 @@
 	</nav>
 	{#if onMobile}
 		<div
-			class="fixed inset-0 z-10 bg-black bg-opacity-40 {!sidebarOpen ? 'hidden' : ''}"
+			class="bg-opacity-40 fixed inset-0 z-10 bg-black {!sidebarOpen ? 'hidden' : ''}"
 			onclick={closeSidebar}
 		></div>
 
