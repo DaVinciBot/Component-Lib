@@ -1,11 +1,23 @@
 <script lang="ts">
-	/** @type {{
-		variant?: 'primary' | 'secondary' | 'disabled' | 'peps' | 'peps-outline' | 'deep',
-		href?: string,
-		size?: 'sm' | 'md' | 'lg',
-		children?: import('svelte').Snippet
-	}} */
-	let { variant = 'primary', href = '', size = 'md', children } = $props();
+	import type { HTMLButtonAttributes } from 'svelte/elements';
+
+	type CtaButtonProps = Omit<HTMLButtonAttributes, 'size'> & {
+		variant?: 'primary' | 'secondary' | 'disabled' | 'peps' | 'peps-outline' | 'deep';
+		href?: string;
+		size?: 'sm' | 'md' | 'lg';
+		children?: import('svelte').Snippet;
+	};
+
+	let {
+		variant = 'primary',
+		href = '',
+		size = 'md',
+		type = 'button',
+		disabled: disabledProp = false,
+		class: className = '',
+		children,
+		...rest
+	}: CtaButtonProps = $props();
 
 	let sizeClasses = $derived(
 		{
@@ -21,30 +33,31 @@
 			secondary: 'bg-transparent text-dark-light-blue border-dark-light-blue',
 			disabled: 'bg-blue-gray text-light-blue border-blue-gray cursor-not-allowed opacity-70',
 			peps: 'bg-light-blue text-blue-peps border-light-blue',
-			'peps-outline': 'bg-transparent text-blue-peps border-dark-light-blue',
+			'peps-outline': 'bg-transparent text-blue-peps border-light-blue',
 			deep: 'bg-dark-light-blue-faded text-dark-blue border-dark-light-blue-faded opacity-95'
 		}[variant]
 	);
 
-	const disabled = $derived(variant === 'disabled');
+	const computedDisabled = $derived(variant === 'disabled' || disabledProp);
+	const buttonClass = $derived(
+		`w-full ${sizeClasses} rounded-xl ${classes} border-[3.25px] font-bold tracking-wider ${className}`.trim()
+	);
 </script>
 
 {#if href}
 	<a {href} class="inline-block w-full no-underline">
-		<button
-			class="w-full {sizeClasses} rounded-xl {classes} border-[3.25px] font-bold tracking-wider"
-			type="button"
-			{disabled}
-		>
+		<button class={buttonClass} {type} disabled={computedDisabled} {...rest}>
 			{@render children?.()}
 		</button>
 	</a>
 {:else}
-	<button
-		class="w-full {sizeClasses} rounded-xl {classes} border-[3.25px] font-bold tracking-wider"
-		type="button"
-		{disabled}
-	>
+	<button class={buttonClass} {type} disabled={computedDisabled} {...rest}>
 		{@render children?.()}
 	</button>
 {/if}
+
+<style>
+	button:disabled {
+		cursor: not-allowed;
+	}
+</style>
