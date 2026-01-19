@@ -251,4 +251,13 @@
 			{/each}
 		</div>
 	</div>
+	<div class="flex gap-4 pt-1.5 text-sm tracking-wide">
+		<div class="text-light-blue">Légende :</div>
+		<div class="text-light-blue">Libre</div>
+		<div class="text-registered">Inscrit·e</div>
+		<div class="text-waiting">En attente</div>
+		<div class="text-blue-peps">Ma formation</div>
+		<div class="text-complete">Complète</div>
+		<div class="text-dark-blue-gray opacity-55">Annulée</div>
+	</div>
 </section>

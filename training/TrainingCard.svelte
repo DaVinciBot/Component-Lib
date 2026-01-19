@@ -75,7 +75,7 @@
 
 <style>
 	.training-card--complete {
-		--card-color: #ff2a2a;
+		--card-color: var(--color-complete);
 	}
 
 	.training-card--free {
@@ -88,11 +88,11 @@
 	}
 
 	.training-card--registered {
-		--card-color: #7dff9b;
+		--card-color: var(--color-registered);
 	}
 
 	.training-card--waiting {
-		--card-color: #f3b16d;
+		--card-color: var(--color-waiting);
 	}
 
 	.training-card--my {
