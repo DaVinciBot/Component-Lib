@@ -1,8 +1,9 @@
 <script lang="ts">
+	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import TrainingCard, {
 		type TrainingCardStatus
 	} from '$lib/components/training/TrainingCard.svelte';
-	import Checkbox from '../share/Checkbox.svelte';
+	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 
 	export type CalendarSlot = {
 		id: number | string;
@@ -154,10 +155,14 @@
 				Avec de la place
 			</label>
 		</div>
-		<div class="flex items-center gap-3 text-xs tracking-[0.3em] text-dark-light-blue uppercase">
-			<button
+		<div
+			class="grid grid-cols-[min-content_auto_min-content_min-content] items-center gap-3 text-xs tracking-[0.3em] text-dark-light-blue uppercase"
+		>
+			<CtaButton
 				type="button"
-				class="flex size-7 items-center justify-center rounded-md bg-dark-light-blue text-sm leading-none text-main-blue"
+				variant="peps"
+				size="sm"
+				class="flex size-7 items-center justify-center pr-1 pl-1"
 				onclick={goPrev}
 				aria-label="Semaine précédente"
 			>
@@ -173,11 +178,13 @@
 				>
 					<path d="M7.5 2.5 4 6l3.5 3.5" />
 				</svg>
-			</button>
+			</CtaButton>
 			<span class="text-light-blue uppercase">{weekLabel()}</span>
-			<button
+			<CtaButton
 				type="button"
-				class="flex size-7 items-center justify-center rounded-md bg-dark-light-blue text-sm leading-none text-main-blue"
+				variant="peps"
+				size="sm"
+				class="flex size-7 items-center justify-center pr-1 pl-1"
 				onclick={goNext}
 				aria-label="Semaine suivante"
 			>
@@ -193,7 +200,7 @@
 				>
 					<path d="M4.5 2.5 8 6l-3.5 3.5" />
 				</svg>
-			</button>
+			</CtaButton>
 			<button
 				type="button"
 				class="rounded-full border border-blue-peps/60 px-3 py-1 text-[10px] tracking-[0.35em] text-blue-peps uppercase"
@@ -227,7 +234,7 @@
 				<div class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}>
 					<div class="flex h-full flex-col gap-3 p-4">
 						{#each slotsByDay().get(day.key) ?? [] as slot}
-							<div role="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+							<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
 								<TrainingCard
 									title={slot.title}
 									time={formatTimeRange(slot.start, slot.duration_hours)}
@@ -237,7 +244,7 @@
 									showRegistrations={slot.registrations !== null &&
 										slot.registrations !== undefined}
 								/>
-							</div>
+							</button>
 						{/each}
 					</div>
 				</div>
