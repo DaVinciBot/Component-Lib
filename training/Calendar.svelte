@@ -4,6 +4,7 @@
 		type TrainingCardStatus
 	} from '$lib/components/training/TrainingCard.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
+	import { format } from 'date-fns';
 
 	export type CalendarSlot = {
 		id: number | string;
@@ -201,18 +202,20 @@
 					<path d="M4.5 2.5 8 6l-3.5 3.5" />
 				</svg>
 			</CtaButton>
-			<button
+			<CtaButton
 				type="button"
-				class="rounded-full border border-blue-peps/60 px-3 py-1 text-[10px] tracking-[0.35em] text-blue-peps uppercase"
+				variant="peps"
+				class="flex size-7 items-center pr-2 pl-2 uppercase"
+				size="sm"
 				onclick={goToday}
 			>
 				Aujourd'hui
-			</button>
+			</CtaButton>
 		</div>
 	</header>
 
 	<div
-		class="mt-4 grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-xs tracking-[0.2em] text-dark-light-blue uppercase"
+		class="mt-4 grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-dark-light-blue uppercase"
 	>
 		{#each calendarDays() as day, index}
 			<button
@@ -228,7 +231,9 @@
 		{/each}
 	</div>
 
-	<div class="flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20">
+	<div
+		class="no-scrollbar flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20"
+	>
 		<div class="grid min-h-full grid-cols-7">
 			{#each calendarDays() as day, index}
 				<div class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}>
@@ -261,3 +266,14 @@
 		<div class="text-dark-blue-gray opacity-55">Annulée</div>
 	</div>
 </section>
+
+<style>
+	.no-scrollbar {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+</style>
