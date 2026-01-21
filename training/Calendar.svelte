@@ -215,18 +215,18 @@
 	</header>
 
 	<div
-		class="mt-4 grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-dark-light-blue uppercase"
+		class="mt-4 grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase"
 	>
 		{#each calendarDays() as day, index}
 			<button
 				type="button"
 				class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
 					index !== 6 ? 'border-r' : ''
-				} ${day.isToday ? 'text-blue-peps' : ''}`}
+				} ${day.isToday ? 'font-bold' : ''}`}
 				onclick={() => handleDaySelect(day.date)}
 			>
 				<span>{weekdays[index]}</span>
-				<span class="text-light-blue">{day.date.getDate()}</span>
+				<span>{format(day.date, 'dd/MM')}</span>
 			</button>
 		{/each}
 	</div>
@@ -256,7 +256,7 @@
 			{/each}
 		</div>
 	</div>
-	<div class="flex gap-4 pt-1.5 text-sm tracking-wide">
+	<div class="flex gap-5 pt-4 pl-0.5 text-sm tracking-wide">
 		<div class="text-light-blue">Légende :</div>
 		<div class="text-light-blue">Libre</div>
 		<div class="text-registered">Inscrit·e</div>
