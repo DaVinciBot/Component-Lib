@@ -1,6 +1,25 @@
 <script lang="ts">
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
-	import type { TrainingSlotListItem } from '$lib/services/training';
+	import {
+		getMyRegistrationForSlot,
+		type RegistrationSummary,
+		type TrainingSlotListItem
+	} from '$lib/services/training';
+	import {
+		Armchair,
+		Calendar,
+		Check,
+		Clock,
+		House,
+		LaptopMinimal,
+		MapPin,
+		MessageSquare,
+		MoveUpRight,
+		TextAlignStart,
+		UserRound,
+		Video,
+		X
+	} from '@lucide/svelte';
 	import { format } from 'date-fns';
 
 	type TrainingSlotView = Omit<TrainingSlotListItem, 'start'> & {
@@ -27,8 +46,18 @@
 	};
 
 	let { slot = null, open = false, onClose = () => {} }: TrainingSlotModalProps = $props();
+	let registration = $state<RegistrationSummary | null>(null);
+	let registrationRequestId = 0;
 
 	const isOpen = $derived(() => open && slot !== null);
+	const hasDescription = $derived(() => hasContent(slot?.description));
+	const hasPrerequisites = $derived(() => hasContent(slot?.prerequisites));
+	const hasVideoLink = $derived(() => hasContent(slot?.video_conference_link));
+	const registrationModeLabel = $derived(() =>
+		registration?.remote ? 'distanciel' : 'présentiel'
+	);
+	const isRegistered = $derived(() => registration?.status === 'registered');
+	const isWaitlisted = $derived(() => registration?.status === 'waitlisted');
 
 	function formatDate(value: Date | string) {
 		const date = new Date(value);
@@ -58,6 +87,11 @@
 		return Math.max(remaining, 0);
 	}
 
+	function hasContent(value?: string | null) {
+		if (!value) return false;
+		return value.trim().length > 0;
+	}
+
 	const availability = $derived((): AvailabilityMode[] => {
 		if (!slot) return [];
 		const modes: AvailabilityMode[] = [];
@@ -85,15 +119,44 @@
 		return modes;
 	});
 
-	const actionButtons = $derived((): ActionButton[] =>
-		availability().map((mode) => ({
+	const actionButtons = $derived((): ActionButton[] => {
+		if (registration) {
+			return [
+				{
+					key: registration.remote ? 'remote' : 'on-site',
+					label:
+						registration.status === 'waitlisted'
+							? "Se désinscrire de la liste d'attente"
+							: 'Se désinscrire',
+					variant: 'peps-outline'
+				}
+			];
+		}
+		return availability().map((mode) => ({
 			key: mode.key,
 			label: mode.isFull
 				? `Liste d'attente ${mode.label.toLowerCase()}`
 				: `S'inscrire ${mode.label.toLowerCase()}`,
 			variant: mode.isFull ? 'peps-outline' : 'peps'
-		}))
-	);
+		}));
+	});
+
+	$effect(() => {
+		if (!open || !slot) {
+			registration = null;
+			return;
+		}
+		const currentRequest = ++registrationRequestId;
+		getMyRegistrationForSlot(slot.slot_id)
+			.then((data) => {
+				if (currentRequest !== registrationRequestId) return;
+				registration = data;
+			})
+			.catch(() => {
+				if (currentRequest !== registrationRequestId) return;
+				registration = null;
+			});
+	});
 </script>
 
 {#if isOpen()}
@@ -126,17 +189,7 @@
 					onclick={onClose}
 					aria-label="Fermer"
 				>
-					<svg
-						class="size-4"
-						viewBox="0 0 20 20"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.6"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<path d="M5 5l10 10M15 5L5 15" />
-					</svg>
+					<X class="size-5.5" />
 				</button>
 			</header>
 			<div class="mt-5 grid gap-3">
@@ -146,18 +199,7 @@
 							<div
 								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
 							>
-								<svg
-									class="size-5"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.6"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<rect x="3" y="4" width="18" height="18" rx="3" />
-									<path d="M8 2v4M16 2v4M3 10h18" />
-								</svg>
+								<Calendar class="size-5.5" />
 							</div>
 							<div>
 								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
@@ -172,18 +214,7 @@
 							<div
 								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
 							>
-								<svg
-									class="size-5"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.6"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<circle cx="12" cy="12" r="9" />
-									<path d="M12 7v5l3 2" />
-								</svg>
+								<Clock class="size-5.5" />
 							</div>
 							<div>
 								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
@@ -198,18 +229,7 @@
 							<div
 								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
 							>
-								<svg
-									class="size-5"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.6"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z" />
-									<circle cx="12" cy="10" r="2.5" />
-								</svg>
+								<MapPin class="size-5.5" />
 							</div>
 							<div>
 								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
@@ -224,22 +244,11 @@
 							<div
 								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
 							>
-								<svg
-									class="size-5"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.6"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<path d="M20 21c0-3.5-3.6-6.3-8-6.3S4 17.5 4 21" />
-									<circle cx="12" cy="9" r="3.2" />
-								</svg>
+								<UserRound class="size-5.5" />
 							</div>
 							<div>
 								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
-									Formateur
+									Formateur·ice
 								</p>
 								<p class="m-0 text-sm font-semibold text-light-blue">
 									{slot?.trainer_username ?? '-'}
@@ -254,19 +263,25 @@
 						<div
 							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
 						>
-							<svg
-								class="size-4"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="1.6"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M8 7h8M6 11h12M7 15h10" />
-							</svg>
+							<Armchair class="size-4" />
 							<span>Places</span>
 						</div>
+						{#if registration}
+							<div
+								class={`mt-3 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${
+									isWaitlisted()
+										? 'border-waiting/40 bg-waiting/10 text-waiting'
+										: 'border-registered/30 bg-registered/10 text-registered'
+								}`}
+							>
+								<Check class="size-3.5" />
+								<span>
+									{isWaitlisted()
+										? `Sur liste d'attente (${registrationModeLabel()})`
+										: `Inscrit·e en ${registrationModeLabel()}`}
+								</span>
+							</div>
+						{/if}
 						<div class="mt-4 grid gap-3 md:grid-cols-2">
 							{#each availability() as mode}
 								<div
@@ -276,31 +291,9 @@
 										class="flex size-10 items-center justify-center rounded-lg border border-light-blue/30 bg-dark-blue/80"
 									>
 										{#if mode.key === 'on-site'}
-											<svg
-												class="size-5"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="1.6"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-											>
-												<path d="M4 10l8-6 8 6v9H4z" />
-												<path d="M9 21v-6h6v6" />
-											</svg>
+											<House />
 										{:else}
-											<svg
-												class="size-5"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="1.6"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-											>
-												<path d="M4 6h16v10H4z" />
-												<path d="M8 18h8" />
-											</svg>
+											<LaptopMinimal />
 										{/if}
 									</div>
 									<div>
@@ -320,27 +313,53 @@
 					</div>
 				{/if}
 
-				<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
-					<div
-						class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
-					>
-						<svg
-							class="size-4"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.6"
-							stroke-linecap="round"
-							stroke-linejoin="round"
+				{#if hasDescription()}
+					<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div
+							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
 						>
-							<path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-						</svg>
-						<span>Note</span>
+							<MessageSquare class="size-4" />
+							<span>Description</span>
+						</div>
+						<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
+							{@html slot?.description ?? ''}
+						</p>
 					</div>
-					<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
-						{slot?.description ?? 'Aucune note pour cette session.'}
-					</p>
-				</div>
+				{/if}
+
+				{#if hasPrerequisites()}
+					<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div
+							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+						>
+							<TextAlignStart class="size-4" />
+							<span>Prérequis</span>
+						</div>
+						<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
+							{@html slot?.prerequisites ?? ''}
+						</p>
+					</div>
+				{/if}
+
+				{#if hasVideoLink()}
+					<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div
+							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+						>
+							<Video class="size-4" />
+							<span>Lien distanciel</span>
+						</div>
+						<a
+							href={slot?.video_conference_link ?? '#'}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-light-blue transition hover:text-blue-peps"
+						>
+							<span>Rejoindre la session en ligne</span>
+							<MoveUpRight class="size-4" />
+						</a>
+					</div>
+				{/if}
 			</div>
 			{#if actionButtons().length > 0}
 				<div class="mt-6 grid gap-3 md:grid-cols-2">
