@@ -3,17 +3,14 @@
 	import TrainingCard, {
 		type TrainingCardStatus
 	} from '$lib/components/training/TrainingCard.svelte';
+	import TrainingSlotModal from '$lib/components/training/TrainingSlotModal.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
+	import type { TrainingSlotListItem } from '$lib/services/training';
 	import { format } from 'date-fns';
 
-	export type CalendarSlot = {
-		id: number | string;
-		title: string;
+	export type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
 		start: Date | string;
-		duration_hours: number;
-		status?: TrainingCardStatus;
-		location?: string;
-		registrations?: number | null;
+		cardStatus?: TrainingCardStatus;
 	};
 
 	type CalendarProps = {
@@ -30,6 +27,8 @@
 	let isInPerson = $state(false);
 	let isOnline = $state(false);
 	let hasSeats = $state(false);
+	let selectedSlot = $state<CalendarSlot | null>(null);
+	let isModalOpen = $state(false);
 
 	let viewDate = $state(new Date());
 
@@ -76,22 +75,6 @@
 		return `${year}-${month}-${day}`;
 	}
 
-	function formatTime(value: Date | string) {
-		const date = new Date(value);
-		if (Number.isNaN(date.getTime())) return '--h--';
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
-		return `${hours}h${minutes}`;
-	}
-
-	function formatTimeRange(startValue: Date | string, durationHours: number) {
-		const start = new Date(startValue);
-		if (Number.isNaN(start.getTime())) return '--h-- - --h--';
-		const safeDuration = Number.isFinite(durationHours) ? Math.max(0.25, durationHours) : 1;
-		const end = new Date(start.getTime() + safeDuration * 60 * 60 * 1000);
-		return `${formatTime(start)} - ${formatTime(end)}`;
-	}
-
 	function getWeekStart(date: Date) {
 		const dayIndex = (date.getDay() + 6) % 7;
 		return new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayIndex);
@@ -119,7 +102,13 @@
 	}
 
 	function handleSlotSelect(slot: CalendarSlot) {
+		selectedSlot = slot;
+		isModalOpen = true;
 		onSelectSlot?.(slot);
+	}
+
+	function handleModalClose() {
+		isModalOpen = false;
 	}
 
 	function handleDaySelect(date: Date) {
@@ -240,15 +229,7 @@
 					<div class="flex h-full flex-col gap-3 p-4">
 						{#each slotsByDay().get(day.key) ?? [] as slot}
 							<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
-								<TrainingCard
-									title={slot.title}
-									time={formatTimeRange(slot.start, slot.duration_hours)}
-									location={slot.location ?? '-'}
-									registrations={slot.registrations ?? null}
-									status={slot.status}
-									showRegistrations={slot.registrations !== null &&
-										slot.registrations !== undefined}
-								/>
+								<TrainingCard {slot} status={slot.cardStatus} />
 							</button>
 						{/each}
 					</div>
@@ -266,6 +247,8 @@
 		<div class="text-dark-blue-gray opacity-55">Annulée</div>
 	</div>
 </section>
+
+<TrainingSlotModal slot={selectedSlot} open={isModalOpen} onClose={handleModalClose} />
 
 <style>
 	.no-scrollbar {
