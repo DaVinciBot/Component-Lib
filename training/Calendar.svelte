@@ -18,11 +18,18 @@
 		initialDate?: Date;
 		onSelectSlot?: (slot: CalendarSlot) => void;
 		onSelectDay?: (date: Date) => void;
+		onWeekChange?: (weekStart: Date) => void;
 	};
 
 	const weekdays = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
 
-	let { slots = [], initialDate = new Date(), onSelectSlot, onSelectDay }: CalendarProps = $props();
+	let {
+		slots = [],
+		initialDate = new Date(),
+		onSelectSlot,
+		onSelectDay,
+		onWeekChange
+	}: CalendarProps = $props();
 
 	let isInPerson = $state(false);
 	let isOnline = $state(false);
@@ -89,16 +96,21 @@
 		return 1 + Math.round(diff / (7 * 24 * 60 * 60 * 1000));
 	}
 
+	function setViewDate(date: Date) {
+		viewDate = date;
+		onWeekChange?.(getWeekStart(date));
+	}
+
 	function goPrev() {
-		viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() - 7);
+		setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() - 7));
 	}
 
 	function goNext() {
-		viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + 7);
+		setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + 7));
 	}
 
 	function goToday() {
-		viewDate = new Date();
+		setViewDate(new Date());
 	}
 
 	function handleSlotSelect(slot: CalendarSlot) {
