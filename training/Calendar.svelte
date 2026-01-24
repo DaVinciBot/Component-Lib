@@ -64,7 +64,7 @@
 
 	const slotsByDay = $derived(() => {
 		const map = new Map<string, CalendarSlot[]>();
-		for (const slot of slots) {
+		for (const slot of filteredSlots()) {
 			const date = new Date(slot.start);
 			if (Number.isNaN(date.getTime())) continue;
 			const key = toDateKey(date);
@@ -73,6 +73,36 @@
 			map.set(key, existing);
 		}
 		return map;
+	});
+
+	function hasAvailableSeats(slot: CalendarSlot) {
+		const hasCapacityInfo = slot.on_site_remaining !== null || slot.remote_remaining !== null;
+		if (!hasCapacityInfo) return true;
+		return (slot.on_site_remaining ?? 0) > 0 || (slot.remote_remaining ?? 0) > 0;
+	}
+
+	function isInPersonSlot(slot: CalendarSlot) {
+		return (
+			Boolean(slot.location) || (slot.on_site_seats ?? 0) > 0 || (slot.on_site_remaining ?? 0) > 0
+		);
+	}
+
+	function isOnlineSlot(slot: CalendarSlot) {
+		return (
+			Boolean(slot.video_conference_link) ||
+			(slot.remote_seats ?? 0) > 0 ||
+			(slot.remote_remaining ?? 0) > 0
+		);
+	}
+
+	const filteredSlots = $derived(() => {
+		const filterByFormat = isInPerson || isOnline;
+		return slots.filter((slot) => {
+			const matchesFormat =
+				!filterByFormat || (isInPerson && isInPersonSlot(slot)) || (isOnline && isOnlineSlot(slot));
+			const matchesSeats = !hasSeats || hasAvailableSeats(slot);
+			return matchesFormat && matchesSeats;
+		});
 	});
 
 	function toDateKey(date: Date) {
