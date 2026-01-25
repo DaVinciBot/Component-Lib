@@ -1,17 +1,16 @@
 <script lang="ts">
+	import type { CalendarSlot } from '$lib/components/training/Calendar.svelte';
 	import TrainingRegistrationPopup from '$lib/components/training/TrainingRegistrationPopup.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import {
 		cancelRegistration,
 		getMyRegistrationForSlot,
 		registerToSlot,
-		type RegistrationSummary,
-		type TrainingSlotListItem
+		type RegistrationSummary
 	} from '$lib/services/training';
 	import {
 		Armchair,
 		Calendar,
-		Check,
 		Clock,
 		House,
 		LaptopMinimal,
@@ -25,10 +24,6 @@
 	} from '@lucide/svelte';
 	import { format } from 'date-fns';
 
-	type TrainingSlotView = Omit<TrainingSlotListItem, 'start'> & {
-		start: Date | string;
-	};
-
 	type AvailabilityMode = {
 		key: 'on-site' | 'remote';
 		label: string;
@@ -39,12 +34,12 @@
 	type ActionButton = {
 		key: AvailabilityMode['key'];
 		label: string;
-		variant: 'peps' | 'peps-outline';
+		variant: 'primary' | 'secondary';
 		isCancel?: boolean;
 	};
 
 	type TrainingSlotModalProps = {
-		slot: TrainingSlotView | null;
+		slot: CalendarSlot | null;
 		open?: boolean;
 		onClose?: () => void;
 	};
@@ -62,15 +57,15 @@
 	const hasVideoLink = $derived(
 		() =>
 			hasContent(slot?.video_conference_link) &&
-			registration?.status === 'registered' &&
-			registration.remote
+			((registration?.status === 'registered' && registration.remote) || slot?.cardStatus === 'my')
 	);
-	const registrationModeLabel = $derived(() =>
-		registration?.remote ? 'distanciel' : 'présentiel'
-	);
-	const isRegistered = $derived(() => registration?.status === 'registered');
 	const isWaitlisted = $derived(() => registration?.status === 'waitlisted');
 	const confirmLabel = $derived(() => (confirmLoading ? 'Inscription...' : "S'inscrire"));
+
+	function isRegistrationMode(modeKey: AvailabilityMode['key']) {
+		if (!registration) return false;
+		return registration.remote ? modeKey === 'remote' : modeKey === 'on-site';
+	}
 
 	function formatDate(value: Date | string) {
 		const date = new Date(value);
@@ -133,15 +128,16 @@
 	});
 
 	const actionButtons = $derived((): ActionButton[] => {
+		if (slot?.cardStatus === 'canceled' || slot?.cardStatus === 'my') return [];
 		if (registration) {
 			return [
 				{
 					key: registration.remote ? 'remote' : 'on-site',
 					label:
 						registration.status === 'waitlisted'
-							? "Se désinscrire de la liste d'attente"
+							? "Se retirer de la liste d'attente"
 							: 'Se désinscrire',
-					variant: 'peps-outline',
+					variant: 'secondary',
 					isCancel: true
 				}
 			];
@@ -149,9 +145,9 @@
 		return availability().map((mode) => ({
 			key: mode.key,
 			label: mode.isFull
-				? `Liste d'attente ${mode.label.toLowerCase()}`
-				: `S'inscrire ${mode.label.toLowerCase()}`,
-			variant: mode.isFull ? 'peps-outline' : 'peps'
+				? `Sur liste d'attente (${mode.label.toLowerCase()})`
+				: `S'inscrire (${mode.label.toLowerCase()})`,
+			variant: mode.isFull ? 'secondary' : 'primary'
 		}));
 	});
 
@@ -328,29 +324,19 @@
 							<Armchair class="size-4" />
 							<span>Places</span>
 						</div>
-						{#if registration}
-							<div
-								class={`mt-3 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${
-									isWaitlisted()
-										? 'border-waiting/40 bg-waiting/10 text-waiting'
-										: 'border-registered/30 bg-registered/10 text-registered'
-								}`}
-							>
-								<Check class="size-3.5" />
-								<span>
-									{isWaitlisted()
-										? `Sur liste d'attente (${registrationModeLabel()})`
-										: `Inscrit·e en ${registrationModeLabel()}`}
-								</span>
-							</div>
-						{/if}
 						<div class="mt-4 grid gap-3 md:grid-cols-2">
 							{#each availability() as mode}
 								<div
-									class="flex items-center gap-3 rounded-xl border border-light-blue/20 bg-dark-blue/60 p-3"
+									class={`flex items-center gap-3 rounded-xl border p-3 ${
+										registration && isRegistrationMode(mode.key)
+											? isWaitlisted()
+												? 'border-waiting/40 bg-waiting/10 text-waiting'
+												: 'border-registered/30 bg-registered/10 text-registered'
+											: 'border-light-blue/20 bg-dark-blue/60 text-dark-light-blue'
+									}`}
 								>
 									<div
-										class="flex size-10 items-center justify-center rounded-lg border border-light-blue/30 bg-dark-blue/80"
+										class="flex size-10 items-center justify-center rounded-lg border border-light-blue/30 bg-dark-blue/80 text-dark-light-blue"
 									>
 										{#if mode.key === 'on-site'}
 											<House />
@@ -359,14 +345,19 @@
 										{/if}
 									</div>
 									<div>
-										<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+										<p class="m-0 text-[0.6rem] tracking-[0.32em] uppercase">
 											{mode.label}
 										</p>
-										<p class="m-0 text-base font-semibold text-light-blue">
-											{mode.isFull ? 'Complet' : `${mode.remaining} places`}
-										</p>
-										{#if mode.isFull}
-											<p class="m-0 text-[0.7rem] text-waiting">Liste d'attente ouverte</p>
+										{#if registration && isRegistrationMode(mode.key)}
+											<p class="m-0 font-semibold">
+												{isWaitlisted() ? "Sur liste d'attente" : 'Inscrit·e'}
+											</p>
+										{:else if mode.isFull}
+											<p class="m-0 text-[0.9rem] text-waiting">Liste d'attente ouverte</p>
+										{:else}
+											<p class="m-0 font-semibold">
+												{`${mode.remaining} ${mode.remaining > 1 ? 'places restantes' : 'place restante'}`}
+											</p>
 										{/if}
 									</div>
 								</div>
@@ -423,18 +414,17 @@
 					</div>
 				{/if}
 			</div>
+
 			{#if actionButtons().length > 0}
-				<div class="mt-6 grid gap-3 md:grid-cols-2">
+				<div class="mt-4 grid gap-3 md:grid-cols-2">
 					{#each actionButtons() as action}
 						<CtaButton
 							type="button"
 							size="sm"
 							variant={action.variant}
-							class="tracking-normal"
 							onclick={() => handleActionClick(action)}
 							disabled={confirmLoading}
-						>
-							<span class="text-sm font-semibold">{action.label}</span>
+							>{action.label}
 						</CtaButton>
 					{/each}
 				</div>
