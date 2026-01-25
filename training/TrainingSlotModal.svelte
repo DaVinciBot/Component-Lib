@@ -42,9 +42,15 @@
 		slot: CalendarSlot | null;
 		open?: boolean;
 		onClose?: () => void;
+		onRegistrationChange?: () => void;
 	};
 
-	let { slot = null, open = false, onClose = () => {} }: TrainingSlotModalProps = $props();
+	let {
+		slot = null,
+		open = false,
+		onClose = () => {},
+		onRegistrationChange
+	}: TrainingSlotModalProps = $props();
 	let registration = $state<RegistrationSummary | null>(null);
 	let registrationRequestId = 0;
 	let confirmOpen = $state(false);
@@ -180,6 +186,7 @@
 		try {
 			await registerToSlot(slot.slot_id, confirmMode === 'remote', toExcuse);
 			await refreshRegistration();
+			onRegistrationChange?.();
 		} catch (err) {
 			console.error(err);
 		} finally {
@@ -193,6 +200,7 @@
 		try {
 			await cancelRegistration(slot.slot_id);
 			await refreshRegistration();
+			onRegistrationChange?.();
 		} catch (err) {
 			console.error(err);
 		}

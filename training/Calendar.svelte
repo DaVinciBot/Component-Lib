@@ -20,6 +20,7 @@
 		onSelectSlot?: (slot: CalendarSlot) => void;
 		onSelectDay?: (date: Date) => void;
 		onWeekChange?: (weekStart: Date) => void;
+		onRegistrationChange?: () => void;
 	};
 
 	const weekdays = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
@@ -30,7 +31,8 @@
 		initialDate = new Date(),
 		onSelectSlot,
 		onSelectDay,
-		onWeekChange
+		onWeekChange,
+		onRegistrationChange
 	}: CalendarProps = $props();
 
 	let isInPerson = $state(false);
@@ -329,7 +331,12 @@
 	</div>
 </section>
 
-<TrainingSlotModal slot={selectedSlot} open={isModalOpen} onClose={handleModalClose} />
+<TrainingSlotModal
+	slot={selectedSlot}
+	open={isModalOpen}
+	onClose={handleModalClose}
+	{onRegistrationChange}
+/>
 
 <style>
 	.no-scrollbar {
