@@ -6,6 +6,7 @@
 		cancelRegistration,
 		getMyRegistrationForSlot,
 		registerToSlot,
+		updateMyRegistrationExcuse,
 		type RegistrationSummary
 	} from '$lib/services/training';
 	import {
@@ -56,6 +57,7 @@
 	let confirmOpen = $state(false);
 	let confirmMode = $state<AvailabilityMode['key'] | null>(null);
 	let confirmLoading = $state(false);
+	let excuseUpdating = $state(false);
 
 	const isOpen = $derived(() => open && slot !== null);
 	const hasDescription = $derived(() => hasContent(slot?.description));
@@ -67,6 +69,10 @@
 	);
 	const isWaitlisted = $derived(() => registration?.status === 'waitlisted');
 	const confirmLabel = $derived(() => (confirmLoading ? 'Inscription...' : "S'inscrire"));
+	const showExcuseToggle = $derived(() => slot?.excusable && registration?.status === 'registered');
+	const excuseToggleLabel = $derived(() =>
+		registration?.to_excuse ? "Je n'ai plus besoin d'excuse" : "J'ai besoin d'une excuse"
+	);
 
 	function isRegistrationMode(modeKey: AvailabilityMode['key']) {
 		if (!registration) return false;
@@ -143,7 +149,7 @@
 						registration.status === 'waitlisted'
 							? "Se retirer de la liste d'attente"
 							: 'Se désinscrire',
-					variant: 'secondary',
+					variant: 'primary',
 					isCancel: true
 				}
 			];
@@ -156,6 +162,8 @@
 			variant: mode.isFull ? 'secondary' : 'primary'
 		}));
 	});
+
+	const actionCount = $derived(() => actionButtons().length + (showExcuseToggle() ? 1 : 0));
 
 	async function refreshRegistration() {
 		if (!slot) return;
@@ -203,6 +211,21 @@
 			onRegistrationChange?.();
 		} catch (err) {
 			console.error(err);
+		}
+	}
+
+	async function handleExcuseToggle() {
+		if (!slot || !registration) return;
+		excuseUpdating = true;
+		try {
+			const nextValue = !registration.to_excuse;
+			await updateMyRegistrationExcuse(slot.slot_id, nextValue);
+			await refreshRegistration();
+			onRegistrationChange?.();
+		} catch (err) {
+			console.error(err);
+		} finally {
+			excuseUpdating = false;
 		}
 	}
 
@@ -423,15 +446,27 @@
 				{/if}
 			</div>
 
-			{#if actionButtons().length > 0}
+			{#if actionCount() > 0}
 				<div class="mt-4 grid gap-3 md:grid-cols-2">
+					{#if showExcuseToggle()}
+						<CtaButton
+							type="button"
+							size="sm"
+							variant="secondary"
+							onclick={handleExcuseToggle}
+							disabled={confirmLoading || excuseUpdating}
+						>
+							{excuseUpdating ? 'Mise à jour...' : excuseToggleLabel()}
+						</CtaButton>
+					{/if}
 					{#each actionButtons() as action}
 						<CtaButton
 							type="button"
 							size="sm"
 							variant={action.variant}
 							onclick={() => handleActionClick(action)}
-							disabled={confirmLoading}
+							disabled={confirmLoading || excuseUpdating}
+							class={actionCount() === 1 ? 'w-auto justify-self-end md:col-start-2' : ''}
 							>{action.label}
 						</CtaButton>
 					{/each}
