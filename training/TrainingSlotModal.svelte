@@ -140,7 +140,7 @@
 	});
 
 	const actionButtons = $derived((): ActionButton[] => {
-		if (slot?.cardStatus === 'canceled' || slot?.cardStatus === 'my') return [];
+		if (slot?.cardStatus === 'hidden' || slot?.cardStatus === 'my') return [];
 		if (registration) {
 			return [
 				{

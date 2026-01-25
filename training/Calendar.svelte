@@ -312,7 +312,7 @@
 					<div class="flex h-full flex-col gap-3 p-4">
 						{#each slotsByDay().get(day.key) ?? [] as slot}
 							<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
-								<TrainingCard {slot} status={slot.cardStatus} />
+								<TrainingCard {slot} status={slot.cardStatus ?? 'free'} />
 							</button>
 						{/each}
 					</div>
@@ -324,10 +324,10 @@
 		<div class="text-light-blue">Légende :</div>
 		<div class="text-light-blue">Libre</div>
 		<div class="text-registered">Inscrit·e</div>
-		<div class="text-waiting">En attente</div>
+		<div class="text-waiting">Sur liste d'attente</div>
 		<div class="text-blue-peps">Ma formation</div>
 		<div class="text-complete">Complète</div>
-		<div class="text-dark-blue-gray opacity-55">Annulée</div>
+		<div class="text-dark-blue-gray opacity-55">Masquée</div>
 	</div>
 </section>
 

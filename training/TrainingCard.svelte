@@ -1,13 +1,7 @@
 <script lang="ts">
-	import type { SlotStatus, TrainingSlotListItem } from '$lib/services/training';
+	import type { TrainingSlotListItem } from '$lib/services/training';
 
-	export type TrainingCardStatus =
-		| 'complete'
-		| 'free'
-		| 'canceled'
-		| 'registered'
-		| 'waiting'
-		| 'my';
+	export type TrainingCardStatus = 'complete' | 'free' | 'hidden' | 'registered' | 'waiting' | 'my';
 
 	type TrainingSlotView = Omit<TrainingSlotListItem, 'start'> & {
 		start: Date | string;
@@ -15,27 +9,20 @@
 
 	type TrainingCardProps = {
 		slot: TrainingSlotView;
-		status?: TrainingCardStatus;
+		status: TrainingCardStatus;
 		className?: string;
 	};
 
 	const allowedStatuses = new Set<TrainingCardStatus>([
 		'complete',
 		'free',
-		'canceled',
+		'hidden',
 		'registered',
 		'waiting',
 		'my'
 	]);
 
 	let { slot, status, className = '' }: TrainingCardProps = $props();
-
-	function mapSlotStatus(slotStatus?: SlotStatus): TrainingCardStatus {
-		if (!slotStatus) return 'free';
-		if (slotStatus === 'done') return 'complete';
-		if (slotStatus === 'canceled') return 'canceled';
-		return 'free';
-	}
 
 	function formatTime(value: Date | string) {
 		const date = new Date(value);
@@ -52,15 +39,10 @@
 		const end = new Date(start.getTime() + safeDuration * 60 * 60 * 1000);
 		return `${formatTime(start)} - ${formatTime(end)}`;
 	}
-
-	const safeStatus = $derived(() => {
-		const resolved = status ?? mapSlotStatus(slot.status);
-		return allowedStatuses.has(resolved) ? resolved : 'free';
-	});
 </script>
 
 <article
-	class={`training-card--${safeStatus()} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full rounded-[12px] border-2 border-[var(--card-color)] bg-gradient-to-b from-[rgba(1,1,50,0.96)] to-[rgba(1,1,30,0.92)] px-[18px] pt-[14px] pb-[16px] ${className}`.trim()}
+	class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full rounded-[12px] border-2 border-[var(--card-color)] bg-gradient-to-b from-[rgba(1,1,50,0.96)] to-[rgba(1,1,30,0.92)] px-[18px] pt-[14px] pb-[16px] ${className}`.trim()}
 >
 	<h3 class={`m-0 mb-2 text-[1.05rem] font-bold text-(--card-color)`.trim()}>
 		{slot.name}
@@ -90,7 +72,7 @@
 		--card-color: var(--color-light-blue);
 	}
 
-	.training-card--canceled {
+	.training-card--hidden {
 		--card-color: var(--color-dark-blue-gray);
 		opacity: 0.55;
 	}
