@@ -59,7 +59,12 @@
 	const isOpen = $derived(() => open && slot !== null);
 	const hasDescription = $derived(() => hasContent(slot?.description));
 	const hasPrerequisites = $derived(() => hasContent(slot?.prerequisites));
-	const hasVideoLink = $derived(() => hasContent(slot?.video_conference_link));
+	const hasVideoLink = $derived(
+		() =>
+			hasContent(slot?.video_conference_link) &&
+			registration?.status === 'registered' &&
+			registration.remote
+	);
 	const registrationModeLabel = $derived(() =>
 		registration?.remote ? 'distanciel' : 'présentiel'
 	);
