@@ -59,7 +59,7 @@
 			<div class="mt-5 flex flex-wrap justify-end gap-3">
 				<button
 					type="button"
-					class="w-28 rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_30px_rgba(200,20,20,0.35)] transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-red-600/60 disabled:shadow-none"
+					class="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_30px_rgba(200,20,20,0.35)] transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-red-600/60 disabled:shadow-none"
 					onclick={onCancel}
 					disabled={confirmDisabled}
 				>
@@ -67,7 +67,7 @@
 				</button>
 				<button
 					type="button"
-					class="w-28 rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_30px_rgba(20,180,90,0.35)] transition hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-green-600/60 disabled:shadow-none"
+					class="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_30px_rgba(20,180,90,0.35)] transition hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-green-600/60 disabled:shadow-none"
 					onclick={handleConfirm}
 					disabled={confirmDisabled}
 				>
