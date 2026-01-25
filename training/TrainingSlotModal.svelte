@@ -1,7 +1,10 @@
 <script lang="ts">
+	import TrainingRegistrationPopup from '$lib/components/training/TrainingRegistrationPopup.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import {
+		cancelRegistration,
 		getMyRegistrationForSlot,
+		registerToSlot,
 		type RegistrationSummary,
 		type TrainingSlotListItem
 	} from '$lib/services/training';
@@ -37,6 +40,7 @@
 		key: AvailabilityMode['key'];
 		label: string;
 		variant: 'peps' | 'peps-outline';
+		isCancel?: boolean;
 	};
 
 	type TrainingSlotModalProps = {
@@ -48,6 +52,9 @@
 	let { slot = null, open = false, onClose = () => {} }: TrainingSlotModalProps = $props();
 	let registration = $state<RegistrationSummary | null>(null);
 	let registrationRequestId = 0;
+	let confirmOpen = $state(false);
+	let confirmMode = $state<AvailabilityMode['key'] | null>(null);
+	let confirmLoading = $state(false);
 
 	const isOpen = $derived(() => open && slot !== null);
 	const hasDescription = $derived(() => hasContent(slot?.description));
@@ -58,6 +65,7 @@
 	);
 	const isRegistered = $derived(() => registration?.status === 'registered');
 	const isWaitlisted = $derived(() => registration?.status === 'waitlisted');
+	const confirmLabel = $derived(() => (confirmLoading ? 'Inscription...' : "S'inscrire"));
 
 	function formatDate(value: Date | string) {
 		const date = new Date(value);
@@ -128,7 +136,8 @@
 						registration.status === 'waitlisted'
 							? "Se désinscrire de la liste d'attente"
 							: 'Se désinscrire',
-					variant: 'peps-outline'
+					variant: 'peps-outline',
+					isCancel: true
 				}
 			];
 		}
@@ -141,21 +150,69 @@
 		}));
 	});
 
+	async function refreshRegistration() {
+		if (!slot) return;
+		const currentRequest = ++registrationRequestId;
+		try {
+			const data = await getMyRegistrationForSlot(slot.slot_id);
+			if (currentRequest !== registrationRequestId) return;
+			registration = data;
+		} catch (err) {
+			if (currentRequest !== registrationRequestId) return;
+			registration = null;
+		}
+	}
+
+	function openConfirmation(mode: AvailabilityMode['key']) {
+		confirmMode = mode;
+		confirmOpen = true;
+	}
+
+	function closeConfirmation() {
+		confirmOpen = false;
+		confirmMode = null;
+	}
+
+	async function handleConfirmRegistration(toExcuse: boolean) {
+		if (!slot || !confirmMode) return;
+		confirmLoading = true;
+		try {
+			await registerToSlot(slot.slot_id, confirmMode === 'remote', toExcuse);
+			await refreshRegistration();
+		} catch (err) {
+			console.error(err);
+		} finally {
+			confirmLoading = false;
+			closeConfirmation();
+		}
+	}
+
+	async function handleCancelRegistration() {
+		if (!slot) return;
+		try {
+			await cancelRegistration(slot.slot_id);
+			await refreshRegistration();
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	function handleActionClick(action: ActionButton) {
+		if (confirmLoading) return;
+		if (action.isCancel) {
+			handleCancelRegistration();
+			return;
+		}
+		openConfirmation(action.key);
+	}
+
 	$effect(() => {
 		if (!open || !slot) {
 			registration = null;
+			closeConfirmation();
 			return;
 		}
-		const currentRequest = ++registrationRequestId;
-		getMyRegistrationForSlot(slot.slot_id)
-			.then((data) => {
-				if (currentRequest !== registrationRequestId) return;
-				registration = data;
-			})
-			.catch(() => {
-				if (currentRequest !== registrationRequestId) return;
-				registration = null;
-			});
+		refreshRegistration();
 	});
 </script>
 
@@ -364,7 +421,14 @@
 			{#if actionButtons().length > 0}
 				<div class="mt-6 grid gap-3 md:grid-cols-2">
 					{#each actionButtons() as action}
-						<CtaButton type="button" size="sm" variant={action.variant} class="tracking-normal">
+						<CtaButton
+							type="button"
+							size="sm"
+							variant={action.variant}
+							class="tracking-normal"
+							onclick={() => handleActionClick(action)}
+							disabled={confirmLoading}
+						>
 							<span class="text-sm font-semibold">{action.label}</span>
 						</CtaButton>
 					{/each}
@@ -373,3 +437,13 @@
 		</section>
 	</div>
 {/if}
+
+<TrainingRegistrationPopup
+	open={confirmOpen}
+	trainingName={slot?.name ?? 'Titre'}
+	showExcuse={slot?.excusable ?? true}
+	confirmLabel={confirmLabel()}
+	confirmDisabled={confirmLoading}
+	onConfirm={handleConfirmRegistration}
+	onCancel={closeConfirmation}
+/>

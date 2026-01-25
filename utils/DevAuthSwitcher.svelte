@@ -12,7 +12,7 @@
 	}
 
 	let open = $state(false);
-	let accounts: Account[] = $state([]);
+	let accounts = $state<Account[]>([]);
 	let email = $state('');
 	let password = $state('');
 	let busy = $state(false);
