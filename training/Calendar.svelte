@@ -7,6 +7,7 @@
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import type { TrainingSlotListItem } from '$lib/services/training';
 	import { format } from 'date-fns';
+	import { onMount } from 'svelte';
 
 	export type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
 		start: Date | string;
@@ -22,6 +23,7 @@
 	};
 
 	const weekdays = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
+	const FILTERS_KEY = 'training_calendar_filters';
 
 	let {
 		slots = [],
@@ -36,11 +38,48 @@
 	let hasSeats = $state(false);
 	let selectedSlot = $state<CalendarSlot | null>(null);
 	let isModalOpen = $state(false);
+	let filtersReady = $state(false);
 
 	let viewDate = $state(new Date());
 
 	$effect(() => {
 		viewDate = new Date(initialDate.getFullYear(), initialDate.getMonth(), initialDate.getDate());
+	});
+
+	function loadFilters() {
+		try {
+			if (typeof localStorage === 'undefined') return null;
+			const raw = localStorage.getItem(FILTERS_KEY);
+			return raw
+				? (JSON.parse(raw) as { inPerson?: boolean; online?: boolean; hasSeats?: boolean })
+				: null;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	$effect(() => {
+		if (!filtersReady || typeof localStorage === 'undefined') return;
+		const payload = {
+			inPerson: isInPerson,
+			online: isOnline,
+			hasSeats
+		};
+		try {
+			localStorage.setItem(FILTERS_KEY, JSON.stringify(payload));
+		} catch (err) {
+			// ignore
+		}
+	});
+
+	onMount(() => {
+		const saved = loadFilters();
+		if (saved) {
+			isInPerson = Boolean(saved.inPerson);
+			isOnline = Boolean(saved.online);
+			hasSeats = Boolean(saved.hasSeats);
+		}
+		filtersReady = true;
 	});
 
 	const weekStart = $derived(() => getWeekStart(viewDate));
