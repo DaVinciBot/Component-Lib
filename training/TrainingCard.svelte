@@ -39,6 +39,10 @@
 		const end = new Date(start.getTime() + safeDuration * 60 * 60 * 1000);
 		return `${formatTime(start)} - ${formatTime(end)}`;
 	}
+
+	function getConfirmedRegistrations(slot: TrainingSlotView) {
+		return (slot.on_site_registered ?? 0) + (slot.remote_registered ?? 0);
+	}
 </script>
 
 <article
@@ -54,12 +58,23 @@
 				{formatTimeRange(slot.start, slot.duration_hours)}
 			</span>
 		</p>
-		<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
-			<span class="text-dark-light-blue">Lieu</span>
-			<span class="text-[0.8rem] font-bold text-light-blue">
-				{slot.location ?? '-'}
-			</span>
-		</p>
+		{#if status === 'my'}
+			<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
+				<span class="text-dark-light-blue">Inscriptions</span>
+				<span class="text-[0.8rem] font-bold text-light-blue">
+					{getConfirmedRegistrations(slot)} inscrit·e{getConfirmedRegistrations(slot) > 1
+						? '·s'
+						: ''}
+				</span>
+			</p>
+		{:else}
+			<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
+				<span class="text-dark-light-blue">Lieu</span>
+				<span class="text-[0.8rem] font-bold text-light-blue">
+					{slot.location ?? '-'}
+				</span>
+			</p>
+		{/if}
 	</div>
 </article>
 
