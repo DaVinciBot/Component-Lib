@@ -40,7 +40,7 @@
 
 	const computedDisabled = $derived(variant === 'disabled' || disabledProp);
 	const buttonClass = $derived(
-		`w-full ${sizeClasses} rounded-xl ${classes} border-[3.25px] font-bold tracking-wider ${className}`.trim()
+		`w-full ${sizeClasses} rounded-xl ${classes} border-[3.25px] font-bold tracking-wider cursor-pointer ${className}`.trim()
 	);
 </script>
 

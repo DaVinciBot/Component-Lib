@@ -210,19 +210,19 @@
 	>
 		<div class="flex flex-wrap items-center gap-6">
 			<label
-				class="flex items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
+				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
 			>
 				<Checkbox bind:checked={isInPerson} name="filter_in_person" value="in-person" required />
 				Présentiel
 			</label>
 			<label
-				class="flex items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
+				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
 			>
 				<Checkbox bind:checked={isOnline} name="filter_online" value="online" />
 				En ligne
 			</label>
 			<label
-				class="flex items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
+				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
 			>
 				<Checkbox bind:checked={hasSeats} name="filter_has_seats" value="has-seats" />
 				Avec de la place
@@ -294,7 +294,7 @@
 				type="button"
 				class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
 					index !== 6 ? 'border-r' : ''
-				} ${day.isToday ? 'text-primary-400 font-bold' : ''}`}
+				} ${day.isToday ? 'text-primary-400' : ''}`}
 				onclick={() => handleDaySelect(day.date)}
 			>
 				<span>{weekdays[index]}</span>

@@ -46,7 +46,7 @@
 </script>
 
 <article
-	class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full rounded-[12px] border-2 border-[var(--card-color)] bg-gradient-to-b from-[rgba(1,1,50,0.96)] to-[rgba(1,1,30,0.92)] px-[18px] pt-[14px] pb-[16px] ${className}`.trim()}
+	class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[12px] border-2 border-[var(--card-color)] bg-gradient-to-b from-[rgba(1,1,50,0.96)] to-[rgba(1,1,30,0.92)] px-[18px] pt-[14px] pb-[16px] ${className}`.trim()}
 >
 	<h3 class={`m-0 mb-2 text-[1.05rem] font-bold text-(--card-color)`.trim()}>
 		{slot.name}
