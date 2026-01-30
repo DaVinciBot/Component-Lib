@@ -294,7 +294,7 @@
 				type="button"
 				class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
 					index !== 6 ? 'border-r' : ''
-				} ${day.isToday ? 'font-bold' : ''}`}
+				} ${day.isToday ? 'text-primary-400 font-bold' : ''}`}
 				onclick={() => handleDaySelect(day.date)}
 			>
 				<span>{weekdays[index]}</span>
