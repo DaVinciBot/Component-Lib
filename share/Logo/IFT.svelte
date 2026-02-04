@@ -2,7 +2,12 @@
 	export let small = false;
 </script>
 
-<a href="https://ift.devinci.fr/" class="h-full aspect-square">
+<a
+	href="https://ift.devinci.fr/"
+	class="h-full aspect-square"
+	target="_blank"
+	rel="noopener noreferrer"
+>
 	<svg
 		class={small ? '' : 'h-full'}
 		height={small ? 50 : 100}

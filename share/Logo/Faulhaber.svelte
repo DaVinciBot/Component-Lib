@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://www.faulhaber.com/fr/">
+<a href="https://www.faulhaber.com/fr/" target="_blank" rel="noopener noreferrer">
 	<svg width="375" height="30" viewBox="0 0 375 30" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<path d="M0.436279 28.9825L40.8788 0L43.004 1.52849L4.68681 28.9825H0.436279Z" fill="#B3C2FF" />
 		<path d="M81.5124 2.47037L78.137 0.0600586H81.5124V2.47037Z" fill="#B3C2FF" />

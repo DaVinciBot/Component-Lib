@@ -11,6 +11,7 @@
 	import MouserLogo from '$lib/components/share/Logo/Mouser.svelte';
 
 	import Carousel from './Carousel.svelte';
+	import Kurokesu from '../share/Logo/Kurokesu.svelte';
 
 	export let time = 60;
 	export let pauseOnHover = true;
@@ -33,6 +34,7 @@
 	<FaulhaberLogo {small} />
 	<AlstomLogo {small} />
 	<IFTLogo {small} />
+	<Kurokesu {small} />
 	<GotronicLogo {small} />
 	<AislerLogo {small} />
 	<IgusLogo {small} />

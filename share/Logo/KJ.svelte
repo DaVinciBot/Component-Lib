@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://kerjuliette.fr/">
+<a href="https://kerjuliette.fr/" target="_blank" rel="noopener noreferrer">
 	<svg
 		class={small ? 'w-full' : 'w-full h-full'}
 		height={small ? 50 : 100}

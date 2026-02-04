@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://www.gotronic.fr/" class="h-full">
+<a href="https://www.gotronic.fr/" class="h-full" target="_blank" rel="noopener noreferrer">
 	<svg
 		class={small ? 'w-full' : 'w-full h-full'}
 		height="50"

@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://www.hauts-de-seine.fr/">
+<a href="https://www.hauts-de-seine.fr/" target="_blank" rel="noopener noreferrer">
 	<svg
 		class={small ? 'w-full' : 'w-full h-full'}
 		height="50"

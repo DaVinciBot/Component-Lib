@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://www.aisler.net/">
+<a href="https://www.aisler.net/" target="_blank" rel="noopener noreferrer">
 	<svg
 		width={small ? undefined : 120}
 		height={small ? 50 : 80}

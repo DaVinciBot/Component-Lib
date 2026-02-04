@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://www.alstom.com/fr">
+<a href="https://www.alstom.com/fr" target="_blank" rel="noopener noreferrer">
 	<svg
 		version="1.1"
 		id="Calque_1"

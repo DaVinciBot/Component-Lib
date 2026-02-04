@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://www.igus.fr/">
+<a href="https://www.igus.fr/" target="_blank" rel="noopener noreferrer">
 	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 307.68 159.53" height={small ? 50 : 80}>
 		<path
 			fill="#B3C2FF"

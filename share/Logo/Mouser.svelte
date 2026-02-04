@@ -2,7 +2,7 @@
 	export let small = false;
 </script>
 
-<a href="https://mouser.fr/">
+<a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer">
 	<svg
 		height={small ? 50 : 80}
 		viewBox="0 0 859 332"

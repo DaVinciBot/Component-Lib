@@ -2,7 +2,12 @@
 	export let small = false;
 </script>
 
-<a href="https://fr.rs-online.com/" class="h-full aspect-square">
+<a
+	href="https://fr.rs-online.com/"
+	class="h-full aspect-square"
+	target="_blank"
+	rel="noopener noreferrer"
+>
 	<svg
 		class={small ? 'aspect-square' : 'h-full aspect-square'}
 		height={small ? 50 : 100}
