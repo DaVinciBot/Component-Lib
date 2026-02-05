@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import TrainingCard, {
 		type TrainingCardStatus
@@ -21,6 +22,7 @@
 		onSelectDay?: (date: Date) => void;
 		onWeekChange?: (weekStart: Date) => void;
 		onRegistrationChange?: () => void;
+		canManageTraining?: boolean;
 	};
 
 	const weekdays = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
@@ -32,7 +34,8 @@
 		onSelectSlot,
 		onSelectDay,
 		onWeekChange,
-		onRegistrationChange
+		onRegistrationChange,
+		canManageTraining = false
 	}: CalendarProps = $props();
 
 	let isInPerson = $state(false);
@@ -229,7 +232,9 @@
 			</label>
 		</div>
 		<div
-			class="grid grid-cols-[min-content_auto_min-content_min-content] items-center gap-3 text-xs tracking-[0.3em] text-dark-light-blue uppercase"
+			class="grid grid-cols-[min-content_auto_min-content_min-content{canManageTraining
+				? '_auto'
+				: ''}] items-center gap-3 text-xs tracking-[0.3em] text-dark-light-blue uppercase"
 		>
 			<CtaButton
 				type="button"
@@ -283,6 +288,17 @@
 			>
 				Aujourd'hui
 			</CtaButton>
+			{#if canManageTraining}
+				<CtaButton
+					type="button"
+					variant="primary"
+					size="sm"
+					class="flex size-7 items-center pr-2 pl-2 uppercase"
+					onclick={() => goto('admin')}
+				>
+					Accès admin
+				</CtaButton>
+			{/if}
 		</div>
 	</header>
 
