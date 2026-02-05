@@ -85,11 +85,11 @@
 								<select
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
-									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+									class="almarai-regular block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									onchange={field.onChange || null}
 									readonly={field.readonly || false}
 								>
-									{#if (field.readonly || false) == false}<option
+									{#if (field.readonly || false) == false && !field.required}<option
 											selected={!field.autoselect}
 											value="NULL">----------</option
 										>
@@ -353,12 +353,12 @@
 								</div>
 								{#if field.completion?.length > 0}
 									<div
-										class="absolute z-10 mt-1 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
+										class="almarai-regular absolute z-10 mt-1 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
 									>
 										{#each field.completion as c}
 											<button
-												class=" flex w-full
-												items-center rounded-lg border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
+												class="almarai-regular flex w-full
+											items-center rounded-lg border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
 												onclick={async (e) => {
 													field.value = c.text;
 													field.data = c.value;
