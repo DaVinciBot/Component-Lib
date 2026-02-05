@@ -1,4 +1,5 @@
 <script>
+	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import { run } from 'svelte/legacy';
 
 	// @ts-nocheck
@@ -75,17 +76,18 @@
 									{field.name}
 								</p>
 							{:else if field.type !== 'duplicate' && field.type !== 'info'}
-								<label
-									for={field.id || field.name.toLowerCase()}
+								<div
 									class="mb-2 block text-sm font-medium text-white"
-									data-utils={field.data || ''}>{field.name}{field.required ? ' *' : ''}</label
+									data-utils={field.data || ''}
 								>
+									{field.name}{field.required ? ' *' : ''}
+								</div>
 							{/if}
 							{#if field.type === 'select'}
 								<select
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
-									class="almarai-regular block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+									class="almarai-regular block w-full cursor-pointer rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									onchange={field.onChange || null}
 									readonly={field.readonly || false}
 								>
@@ -390,23 +392,36 @@
 									</div>
 								{/if}
 							{:else if field.type === 'checkbox'}
-								<input
-									type="checkbox"
-									id={field.id || field.name.toLowerCase()}
-									name={field.id || field.name.toLowerCase()}
-									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-									placeholder={field.placeholder || field.name.toLowerCase()}
-									required={field.required}
-									checked={field.checked || false}
-									value={field.value || ''}
-									readonly={field.readonly || false}
-								/>
+								<label
+									for={field.id || field.name.toLowerCase()}
+									class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-600 bg-gray-700 p-2 text-sm text-white"
+								>
+									<Checkbox
+										id={field.id || field.name.toLowerCase()}
+										name={field.id || field.name.toLowerCase()}
+										value={field.value || ''}
+										required={field.required}
+										disabled={field.readonly || false}
+										checked={field.checked || false}
+										onchange={(event) => {
+											const target = event.target;
+											field.checked = target && target.checked === true;
+											fields = [...fields];
+										}}
+									/>
+									<div class="flex flex-row items-center gap-2">
+										<span class="text-sm text-white">
+											{field.checked ? 'Oui' : 'Non'}
+										</span>
+										<span class="text-xs text-gray-400">Cochez pour activer</span>
+									</div>
+								</label>
 							{:else}
 								<input
 									type={field.type}
 									name={field.id || field.name.toLowerCase()}
 									id={field.id || field.name.toLowerCase()}
-									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+									class="block w-full cursor-text rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									value={field.value || ''}
