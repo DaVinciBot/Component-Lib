@@ -3,11 +3,6 @@
 
 	// @ts-nocheck
 
-	import { readonly } from 'svelte/store';
-
-
-
-
 	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, onSubmit?: any, onClose?: any}} */
 	let {
 		type = 'Utilisateur',
@@ -17,10 +12,9 @@
 		id = 'CrudModal',
 		title = `${action} ${type_accord} ${type}`,
 		onSubmit = async () => {
-		console.log('Submit');
-	},
-		onClose = (e) => {
-	}
+			console.log('Submit');
+		},
+		onClose = (e) => {}
 	} = $props();
 
 	run(() => {
@@ -41,24 +35,24 @@
 <div
 	{id}
 	tabindex="-1"
-	class="fixed top-0 left-0 right-0 z-50 items-center justify-center w-full h-full overflow-x-hidden overflow-y-auto md:inset-0 backdrop-blur-sm"
+	class="fixed top-0 right-0 left-0 z-50 h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto backdrop-blur-sm md:inset-0"
 >
-	<div class="relative flex w-full h-full p-4 m-auto">
+	<div class="relative m-auto flex h-full w-full p-4">
 		<!-- Modal content -->
-		<div class="relative p-4 m-auto bg-gray-800 rounded-lg shadow sm:p-5 min-w-96" id="CrudPopup">
+		<div class="relative m-auto min-w-96 rounded-lg bg-gray-800 p-4 shadow sm:p-5" id="CrudPopup">
 			<!-- Modal header -->
-			<div class="flex justify-between mb-4 rounded-t sm:mb-5">
+			<div class="mb-4 flex justify-between rounded-t sm:mb-5">
 				<h3 class="text-lg font-semibold text-white">
 					{title}
 				</h3>
 				<button
 					type="button"
-					class="text-gray-500 bg-transparent rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
+					class="ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-500 hover:bg-gray-600 hover:text-white"
 					onclick={onClose}
 				>
 					<svg
 						aria-hidden="true"
-						class="w-5 h-5"
+						class="h-5 w-5"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
@@ -73,25 +67,25 @@
 			</div>
 			<!-- Modal body -->
 			<form action="#">
-				<div class="grid gap-4 mb-4 sm:grid-cols-2">
+				<div class="mb-4 grid gap-4 sm:grid-cols-2">
 					{#each fields as field}
 						<div class={field.wide ? 'col-span-2' : ''}>
 							{#if field.type == 'document' || field.type == 'img'}
-								<p class="block mb-2 text-sm font-medium text-white" data-utils={field.data || ''}>
+								<p class="mb-2 block text-sm font-medium text-white" data-utils={field.data || ''}>
 									{field.name}
 								</p>
 							{:else if field.type !== 'duplicate' && field.type !== 'info'}
 								<label
 									for={field.id || field.name.toLowerCase()}
-									class="block mb-2 text-sm font-medium text-white"
-									data-utils={field.data || ''}>{field.name}</label
+									class="mb-2 block text-sm font-medium text-white"
+									data-utils={field.data || ''}>{field.name}{field.required ? ' *' : ''}</label
 								>
 							{/if}
 							{#if field.type === 'select'}
 								<select
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									onchange={field.onChange || null}
 									readonly={field.readonly || false}
 								>
@@ -110,7 +104,7 @@
 								</select>
 							{:else if field.type === 'info'}
 								<p
-									class="block p-3 mb-2 text-sm text-justify text-gray-200 bg-gray-700 rounded-lg max-w-prose"
+									class="mb-2 block max-w-prose rounded-lg bg-gray-700 p-3 text-justify text-sm text-gray-200"
 								>
 									{field.text}
 								</p>
@@ -119,7 +113,7 @@
 									type="number"
 									name={field.id || field.name.toLowerCase()}
 									id={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									value={field.value || ''}
@@ -132,7 +126,7 @@
 								<textarea
 									name={field.id || field.name.toLowerCase()}
 									id={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									value={field.value || ''}
@@ -156,20 +150,20 @@
 								/>
 								<label
 									for={field.id || field.name.toLowerCase()}
-									class="flex items-center justify-center w-full h-12 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 								>
 									{#if field.value}
 										<img
 											id="svelte_breffffffffff"
 											src={field.value}
 											alt={field.name}
-											class="object-contain w-full h-full rounded-lg"
+											class="h-full w-full rounded-lg object-contain"
 										/>
 									{:else}
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
 											viewBox="0 0 24 24"
-											class="w-6 h-6 fill-gray-400"
+											class="h-6 w-6 fill-gray-400"
 											><path
 												d="M12 8.25a.75.75 0 0 1 .75.75v2.25H15a.75.75 0 0 1 0 1.5h-2.25V15a.75.75 0 0 1-1.5 0v-2.25H9a.75.75 0 0 1 0-1.5h2.25V9a.75.75 0 0 1 .75-.75Z"
 											></path><path
@@ -181,10 +175,10 @@
 							{:else if field.type === 'document'}
 								{#if field.multiple}
 									<div
-										class="flex items-center flex-col justify-center w-full border text-sm rounded-lg mb-2 p-2.5 bg-gray-700 border-gray-600 text-white"
+										class="mb-2 flex w-full flex-col items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 									>
 										{#each field.value as doc, i}
-											<div class="flex items-center w-full gap-2 py-1 border-gray-600">
+											<div class="flex w-full items-center gap-2 border-gray-600 py-1">
 												<svg
 													aria-hidden="true"
 													height="16"
@@ -204,7 +198,7 @@
 												</p>
 												<button
 													type="button"
-													class="text-gray-400 bg-transparent hover: rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
+													class="hover: ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 													onclick={async (e) => {
 														field.value = field.value.filter((el) => el.name != doc.name);
 														if (field.onRemove) await field.onRemove(e, doc.name);
@@ -265,14 +259,14 @@
 								/>
 								<label
 									for={field.id || field.name.toLowerCase()}
-									class="flex items-center justify-center w-full h-12 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 								>
 									{#if field.value && field.data === 'image' && !field.multiple}
 										<img
 											id="svelte_breffffffffff"
 											src={field.value}
 											alt={field.name}
-											class="object-contain w-full h-full rounded-lg"
+											class="h-full w-full rounded-lg object-contain"
 										/>
 									{:else if field.value && field.data === 'application' && !field.multiple}
 										<p>
@@ -282,7 +276,7 @@
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
 											viewBox="0 0 24 24"
-											class="w-6 h-6 fill-gray-400"
+											class="h-6 w-6 fill-gray-400"
 											><path
 												d="M12 8.25a.75.75 0 0 1 .75.75v2.25H15a.75.75 0 0 1 0 1.5h-2.25V15a.75.75 0 0 1-1.5 0v-2.25H9a.75.75 0 0 1 0-1.5h2.25V9a.75.75 0 0 1 .75-.75Z"
 											></path><path
@@ -295,7 +289,7 @@
 								<!--Duplicate is a + btn to replicate the last collumn -->
 								<button
 									type="button"
-									class="flex items-center justify-center w-full h-8 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="flex h-8 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									onclick={() => {
 										const clean_filter = fields.filter((el) => el.type != 'duplicate');
 										let lasts = []; // get the last full row, 1 if wide, 2 if not
@@ -333,37 +327,38 @@
 								</button>
 							{:else if field.type === 'autocomplete'}
 								<div
-									class="relative w-full flex flex-row items-center justify-center border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="relative flex w-full flex-row items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 								>
 									{#if field.image}
 										<img
 											src={field.image}
 											alt={field.name}
-											class="w-6 h-6 mr-1 -ml-1 rounded-full"
+											class="mr-1 -ml-1 h-6 w-6 rounded-full"
 										/>
 									{/if}
 									<input
 										type="text"
 										id={field.id || field.name.toLowerCase()}
-										class=" bordertext-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+										class=" bordertext-sm block w-full rounded-lg border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 										placeholder={field.placeholder || field.name.toLowerCase()}
 										required={field.required}
 										value={field.value || ''}
 										readonly={field.readonly || false}
 										name={field.id || field.name.toLowerCase()}
 										oninput={async (e) => {
+											field.value = e.target.value;
 											field.completion = await field.onChange(e);
 										}}
 									/>
 								</div>
 								{#if field.completion?.length > 0}
 									<div
-										class="absolute z-10 block w-full p-2 pl-4 mt-1 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+										class="absolute z-10 mt-1 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
 									>
 										{#each field.completion as c}
 											<button
-												class=" w-full rounded-lg
-												flex items-center border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
+												class=" flex w-full
+												items-center rounded-lg border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
 												onclick={async (e) => {
 													field.value = c.text;
 													field.data = c.value;
@@ -380,12 +375,16 @@
 												}}
 											>
 												{#if c.image}
-													<img src={c.image} alt={c.text} class="w-6 h-6 mr-1 -ml-1 rounded-full" />
+													<img src={c.image} alt={c.text} class="mr-1 -ml-1 h-6 w-6 rounded-full" />
 												{/if}
-												<p>
-													{c.text}
-												</p>
-												<br />
+												<div class="flex flex-col items-start">
+													<p>
+														{c.text}
+													</p>
+													{#if c.subtext}
+														<p class="text-xs text-gray-400">{c.subtext}</p>
+													{/if}
+												</div>
 											</button>
 										{/each}
 									</div>
@@ -395,7 +394,7 @@
 									type="checkbox"
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									checked={field.checked || false}
@@ -407,7 +406,7 @@
 									type={field.type}
 									name={field.id || field.name.toLowerCase()}
 									id={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									value={field.value || ''}
@@ -419,11 +418,11 @@
 				</div>
 				<button
 					type="submit"
-					class="text-white inline-flex items-center focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+					class="inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 focus:ring-4 focus:ring-primary-800 focus:outline-none"
 					onclick={onSubmit}
 				>
 					<svg
-						class="w-6 h-6 mr-1 -ml-1"
+						class="mr-1 -ml-1 h-6 w-6"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
