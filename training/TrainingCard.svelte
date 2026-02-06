@@ -46,22 +46,26 @@
 </script>
 
 <article
-	class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[12px] border-2 border-[var(--card-color)] bg-gradient-to-b from-[rgba(1,1,50,0.96)] to-[rgba(1,1,30,0.92)] px-[18px] pt-[14px] pb-[16px] ${className}`.trim()}
+	class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[12px] border-2 border-[var(--card-color)] bg-gradient-to-b from-[rgba(1,1,50,0.96)] to-[rgba(1,1,30,0.92)] px-[10px] pt-[20px] pb-[5px] ${className}`.trim()}
 >
 	<h3 class={`m-0 mb-2 text-[1.05rem] font-bold text-(--card-color)`.trim()}>
 		{slot.name}
 	</h3>
-	<div class="flex flex-col gap-1.5">
+	<div class="flex flex-col gap-1.1">
 		<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
 			<span class="text-dark-light-blue">Heure</span>
-			<span class="text-[0.8rem] font-bold text-light-blue">
+		</p>
+		<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
+			<span class="text-[0.85rem] font-bold text-light-blue">
 				{formatTimeRange(slot.start, slot.duration_hours)}
 			</span>
 		</p>
 		{#if status === 'my'}
 			<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
-				<span class="text-dark-light-blue">Inscriptions</span>
-				<span class="text-[0.8rem] font-bold text-light-blue">
+				<span class="text-primary-50">Inscriptions :</span>
+			</p>
+			<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
+				<span class="text-[0.85rem] font-bold text-light-blue">
 					{getConfirmedRegistrations(slot)} inscrit·e{getConfirmedRegistrations(slot) > 1
 						? '·s'
 						: ''}
@@ -69,8 +73,10 @@
 			</p>
 		{:else}
 			<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
-				<span class="text-dark-light-blue">Lieu</span>
-				<span class="text-[0.8rem] font-bold text-light-blue">
+				<span class="text-primary-50">Lieu :</span>
+			</p>
+			<p class="m-0 flex items-baseline gap-2 text-[0.85rem] font-semibold">
+				<span class="text-[0.85rem] font-bold text-light-blue">
 					{slot.location ?? '-'}
 				</span>
 			</p>
