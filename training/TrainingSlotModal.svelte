@@ -261,7 +261,7 @@
 			aria-label="Fermer"
 		></button>
 		<section
-			class="relative w-full max-w-140 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(6,10,44,0.98)] to-[rgba(4,6,26,0.96)] p-6 text-light-blue shadow-[0_26px_70px_rgba(2,6,30,0.6)]"
+			class="relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-140 overflow-y-auto rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(6,10,44,0.98)] to-[rgba(4,6,26,0.96)] p-4 text-light-blue shadow-[0_26px_70px_rgba(2,6,30,0.6)] sm:p-6"
 		>
 			<header class="flex items-start justify-between gap-4 border-b border-light-blue/20 pb-4">
 				<div>

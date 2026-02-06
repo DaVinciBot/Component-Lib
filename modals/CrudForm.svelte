@@ -40,7 +40,10 @@
 >
 	<div class="relative m-auto flex h-full w-full p-4">
 		<!-- Modal content -->
-		<div class="relative m-auto min-w-96 rounded-lg bg-gray-800 p-4 shadow sm:p-5" id="CrudPopup">
+		<div
+			class="relative m-auto max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg bg-gray-800 p-4 shadow sm:min-w-96 sm:p-5"
+			id="CrudPopup"
+		>
 			<!-- Modal header -->
 			<div class="mb-4 flex justify-between rounded-t sm:mb-5">
 				<h3 class="text-lg font-semibold text-white">

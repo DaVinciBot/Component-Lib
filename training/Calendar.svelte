@@ -233,7 +233,7 @@
 		</div>
 		<div
 			class="grid {canManageTraining
-				? 'grid-cols-[min-content_auto_min-content_min-content_auto'
+				? 'grid-cols-[min-content_auto_min-content_min-content_auto]'
 				: 'grid-cols-[min-content_auto_min-content_min-content]'} items-center gap-3 text-xs tracking-[0.3em] text-dark-light-blue uppercase"
 		>
 			<CtaButton
