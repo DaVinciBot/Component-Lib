@@ -325,7 +325,7 @@
 		<div class="grid min-h-full grid-cols-7">
 			{#each calendarDays() as day, index}
 				<div class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}>
-					<div class="flex h-full flex-col gap-3 p-4">
+					<div class="flex h-full flex-col gap-3 p-3">
 						{#each slotsByDay().get(day.key) ?? [] as slot}
 							<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
 								<TrainingCard {slot} status={slot.cardStatus ?? 'free'} />
