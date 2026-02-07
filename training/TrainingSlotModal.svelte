@@ -261,217 +261,219 @@
 			aria-label="Fermer"
 		></button>
 		<section
-			class="relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-140 overflow-y-auto rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(6,10,44,0.98)] to-[rgba(4,6,26,0.96)] p-4 text-light-blue shadow-[0_26px_70px_rgba(2,6,30,0.6)] sm:p-6"
+			class="relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-140 overflow-hidden rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(6,10,44,0.98)] to-[rgba(4,6,26,0.96)] text-light-blue shadow-[0_26px_70px_rgba(2,6,30,0.6)]"
 		>
-			<header class="flex items-start justify-between gap-4 border-b border-light-blue/20 pb-4">
-				<div>
-					<p class="m-0 text-xs tracking-[0.38em] text-dark-light-blue uppercase">
-						{slot ? formatDate(slot.start) : ''}
-					</p>
-					<h2 class="m-0 mt-2 text-2xl font-semibold text-light-blue">
-						{slot?.name}
-					</h2>
-				</div>
-				<button
-					type="button"
-					class="flex size-9 items-center justify-center rounded-full border border-light-blue/30 text-light-blue transition hover:border-light-blue/60"
-					onclick={onClose}
-					aria-label="Fermer"
-				>
-					<X class="size-5.5" />
-				</button>
-			</header>
-			<div class="mt-5 grid gap-3">
-				<div class="grid gap-3 rounded-2xl border border-light-blue/20 bg-blue-gray/20 p-4">
-					<div class="grid gap-3 md:grid-cols-2">
-						<div class="flex items-center gap-3">
-							<div
-								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
-							>
-								<Calendar class="size-5.5" />
-							</div>
-							<div>
-								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
-									Date
-								</p>
-								<p class="m-0 text-sm font-semibold text-light-blue">
-									{slot ? formatDate(slot.start) : ''}
-								</p>
-							</div>
-						</div>
-						<div class="flex items-center gap-3">
-							<div
-								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
-							>
-								<Clock class="size-5.5" />
-							</div>
-							<div>
-								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
-									Heure
-								</p>
-								<p class="m-0 text-sm font-semibold text-light-blue">
-									{slot ? formatTimeRange(slot.start, slot.duration_hours) : ''}
-								</p>
-							</div>
-						</div>
-						<div class="flex items-center gap-3">
-							<div
-								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
-							>
-								<MapPin class="size-5.5" />
-							</div>
-							<div>
-								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
-									Lieu
-								</p>
-								<p class="m-0 text-sm font-semibold text-light-blue">
-									{slot?.location ?? '-'}
-								</p>
-							</div>
-						</div>
-						<div class="flex items-center gap-3">
-							<div
-								class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
-							>
-								<UserRound class="size-5.5" />
-							</div>
-							<div>
-								<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
-									Formateur·ice
-								</p>
-								<p class="m-0 text-sm font-semibold text-light-blue">
-									{slot?.trainer_username ?? '-'}
-								</p>
-							</div>
-						</div>
+			<div class="max-h-[calc(100vh-2rem)] overflow-y-auto p-4 sm:p-6">
+				<header class="flex items-start justify-between gap-4 border-b border-light-blue/20 pb-4">
+					<div>
+						<p class="m-0 text-xs tracking-[0.38em] text-dark-light-blue uppercase">
+							{slot ? formatDate(slot.start) : ''}
+						</p>
+						<h2 class="m-0 mt-2 text-2xl font-semibold text-light-blue">
+							{slot?.name}
+						</h2>
 					</div>
-				</div>
-
-				{#if availability().length > 0}
-					<div class="rounded-2xl border border-light-blue/20 bg-dark-blue-gray/30 p-4">
-						<div
-							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
-						>
-							<Armchair class="size-4" />
-							<span>Places</span>
-						</div>
-						<div class="mt-4 grid gap-3 md:grid-cols-2">
-							{#each availability() as mode}
+					<button
+						type="button"
+						class="flex size-9 items-center justify-center rounded-full border border-light-blue/30 text-light-blue transition hover:border-light-blue/60"
+						onclick={onClose}
+						aria-label="Fermer"
+					>
+						<X class="size-5.5" />
+					</button>
+				</header>
+				<div class="mt-5 grid gap-3">
+					<div class="grid gap-3 rounded-2xl border border-light-blue/20 bg-blue-gray/20 p-4">
+						<div class="grid gap-3 md:grid-cols-2">
+							<div class="flex items-center gap-3">
 								<div
-									class={`flex items-center gap-3 rounded-xl border p-3 ${
-										registration && isRegistrationMode(mode.key)
-											? isWaitlisted()
-												? 'border-waiting/40 bg-waiting/10 text-waiting'
-												: 'border-registered/30 bg-registered/10 text-registered'
-											: 'border-light-blue/20 bg-dark-blue/60 text-dark-light-blue'
-									}`}
+									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
 								>
-									<div
-										class="flex size-10 items-center justify-center rounded-lg border border-light-blue/30 bg-dark-blue/80 text-dark-light-blue"
-									>
-										{#if mode.key === 'on-site'}
-											<House />
-										{:else}
-											<LaptopMinimal />
-										{/if}
-									</div>
-									<div>
-										<p class="m-0 text-[0.6rem] tracking-[0.32em] uppercase">
-											{mode.label}
-										</p>
-										{#if registration && isRegistrationMode(mode.key)}
-											<p class="m-0 font-semibold">
-												{isWaitlisted() ? "Sur liste d'attente" : 'Inscrit·e'}
-											</p>
-										{:else if mode.isFull}
-											<p class="m-0 text-[0.9rem] text-waiting">Liste d'attente ouverte</p>
-										{:else}
-											<p class="m-0 font-semibold">
-												{`${mode.remaining} ${mode.remaining > 1 ? 'places restantes' : 'place restante'}`}
-											</p>
-										{/if}
-									</div>
+									<Calendar class="size-5.5" />
 								</div>
-							{/each}
+								<div>
+									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+										Date
+									</p>
+									<p class="m-0 text-sm font-semibold text-light-blue">
+										{slot ? formatDate(slot.start) : ''}
+									</p>
+								</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<div
+									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
+								>
+									<Clock class="size-5.5" />
+								</div>
+								<div>
+									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+										Heure
+									</p>
+									<p class="m-0 text-sm font-semibold text-light-blue">
+										{slot ? formatTimeRange(slot.start, slot.duration_hours) : ''}
+									</p>
+								</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<div
+									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
+								>
+									<MapPin class="size-5.5" />
+								</div>
+								<div>
+									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+										Lieu
+									</p>
+									<p class="m-0 text-sm font-semibold text-light-blue">
+										{slot?.location ?? '-'}
+									</p>
+								</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<div
+									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
+								>
+									<UserRound class="size-5.5" />
+								</div>
+								<div>
+									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+										Formateur·ice
+									</p>
+									<p class="m-0 text-sm font-semibold text-light-blue">
+										{slot?.trainer_username ?? '-'}
+									</p>
+								</div>
+							</div>
 						</div>
 					</div>
-				{/if}
 
-				{#if hasDescription()}
-					<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
-						<div
-							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
-						>
-							<MessageSquare class="size-4" />
-							<span>Description</span>
+					{#if availability().length > 0}
+						<div class="rounded-2xl border border-light-blue/20 bg-dark-blue-gray/30 p-4">
+							<div
+								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+							>
+								<Armchair class="size-4" />
+								<span>Places</span>
+							</div>
+							<div class="mt-4 grid gap-3 md:grid-cols-2">
+								{#each availability() as mode}
+									<div
+										class={`flex items-center gap-3 rounded-xl border p-3 ${
+											registration && isRegistrationMode(mode.key)
+												? isWaitlisted()
+													? 'border-waiting/40 bg-waiting/10 text-waiting'
+													: 'border-registered/30 bg-registered/10 text-registered'
+												: 'border-light-blue/20 bg-dark-blue/60 text-dark-light-blue'
+										}`}
+									>
+										<div
+											class="flex size-10 items-center justify-center rounded-lg border border-light-blue/30 bg-dark-blue/80 text-dark-light-blue"
+										>
+											{#if mode.key === 'on-site'}
+												<House />
+											{:else}
+												<LaptopMinimal />
+											{/if}
+										</div>
+										<div>
+											<p class="m-0 text-[0.6rem] tracking-[0.32em] uppercase">
+												{mode.label}
+											</p>
+											{#if registration && isRegistrationMode(mode.key)}
+												<p class="m-0 font-semibold">
+													{isWaitlisted() ? "Sur liste d'attente" : 'Inscrit·e'}
+												</p>
+											{:else if mode.isFull}
+												<p class="m-0 text-[0.9rem] text-waiting">Liste d'attente ouverte</p>
+											{:else}
+												<p class="m-0 font-semibold">
+													{`${mode.remaining} ${mode.remaining > 1 ? 'places restantes' : 'place restante'}`}
+												</p>
+											{/if}
+										</div>
+									</div>
+								{/each}
+							</div>
 						</div>
-						<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
-							{@html slot?.description ?? ''}
-						</p>
-					</div>
-				{/if}
+					{/if}
 
-				{#if hasPrerequisites()}
-					<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
-						<div
-							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
-						>
-							<TextAlignStart class="size-4" />
-							<span>Prérequis</span>
+					{#if hasDescription()}
+						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+							<div
+								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+							>
+								<MessageSquare class="size-4" />
+								<span>Description</span>
+							</div>
+							<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
+								{@html slot?.description ?? ''}
+							</p>
 						</div>
-						<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
-							{@html slot?.prerequisites ?? ''}
-						</p>
-					</div>
-				{/if}
+					{/if}
 
-				{#if hasVideoLink()}
-					<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
-						<div
-							class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
-						>
-							<Video class="size-4" />
-							<span>Lien distanciel</span>
+					{#if hasPrerequisites()}
+						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+							<div
+								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+							>
+								<TextAlignStart class="size-4" />
+								<span>Prérequis</span>
+							</div>
+							<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
+								{@html slot?.prerequisites ?? ''}
+							</p>
 						</div>
-						<a
-							href={slot?.video_conference_link ?? '#'}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-light-blue transition hover:text-blue-peps"
-						>
-							<span>Rejoindre la session en ligne</span>
-							<MoveUpRight class="size-4" />
-						</a>
+					{/if}
+
+					{#if hasVideoLink()}
+						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+							<div
+								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+							>
+								<Video class="size-4" />
+								<span>Lien distanciel</span>
+							</div>
+							<a
+								href={slot?.video_conference_link ?? '#'}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-light-blue transition hover:text-blue-peps"
+							>
+								<span>Rejoindre la session en ligne</span>
+								<MoveUpRight class="size-4" />
+							</a>
+						</div>
+					{/if}
+				</div>
+
+				{#if actionCount() > 0}
+					<div class="mt-4 grid gap-3 md:grid-cols-2">
+						{#if showExcuseToggle()}
+							<CtaButton
+								type="button"
+								size="sm"
+								variant="secondary"
+								onclick={handleExcuseToggle}
+								disabled={confirmLoading || excuseUpdating}
+							>
+								{excuseUpdating ? 'Mise à jour...' : excuseToggleLabel()}
+							</CtaButton>
+						{/if}
+						{#each actionButtons() as action}
+							<CtaButton
+								type="button"
+								size="sm"
+								variant={action.variant}
+								onclick={() => handleActionClick(action)}
+								disabled={confirmLoading || excuseUpdating}
+								class={actionCount() === 1 ? 'w-auto justify-self-end md:col-start-2' : ''}
+								>{action.label}
+							</CtaButton>
+						{/each}
 					</div>
 				{/if}
 			</div>
-
-			{#if actionCount() > 0}
-				<div class="mt-4 grid gap-3 md:grid-cols-2">
-					{#if showExcuseToggle()}
-						<CtaButton
-							type="button"
-							size="sm"
-							variant="secondary"
-							onclick={handleExcuseToggle}
-							disabled={confirmLoading || excuseUpdating}
-						>
-							{excuseUpdating ? 'Mise à jour...' : excuseToggleLabel()}
-						</CtaButton>
-					{/if}
-					{#each actionButtons() as action}
-						<CtaButton
-							type="button"
-							size="sm"
-							variant={action.variant}
-							onclick={() => handleActionClick(action)}
-							disabled={confirmLoading || excuseUpdating}
-							class={actionCount() === 1 ? 'w-auto justify-self-end md:col-start-2' : ''}
-							>{action.label}
-						</CtaButton>
-					{/each}
-				</div>
-			{/if}
 		</section>
 	</div>
 {/if}
