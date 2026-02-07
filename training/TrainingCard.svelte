@@ -51,21 +51,27 @@
 	<h3 class={`m-0 mb-1 text-[1.05rem] font-bold text-(--card-color)`.trim()}>
 		{slot.name}
 	</h3>
-	<div class="flex flex-col gap-0 font-semibold">
-		<p class="flex text-[0.85rem] text-dark-light-blue">Heure :</p>
-		<p class="flex text-[0.8rem] text-light-blue">
-			{formatTimeRange(slot.start, slot.duration_hours)}
-		</p>
+	<div class="flex flex-col gap-1 text-left font-semibold">
+		<div class="flex flex-wrap items-baseline gap-x-2">
+			<span class="text-[0.85rem] text-dark-light-blue">Heure :</span>
+			<span class="text-[0.8rem] text-light-blue">
+				{formatTimeRange(slot.start, slot.duration_hours)}
+			</span>
+		</div>
 		{#if status === 'my'}
-			<p class="flex text-[0.85rem] text-dark-light-blue">Inscriptions :</p>
-			<p class="flex text-[0.8rem] text-light-blue">
-				{getConfirmedRegistrations(slot)} inscrit·e{getConfirmedRegistrations(slot) > 1 ? '·s' : ''}
-			</p>
+			<div class="flex flex-wrap items-baseline gap-x-2">
+				<span class="text-[0.85rem] text-dark-light-blue">Inscriptions :</span>
+				<span class="text-[0.8rem] text-light-blue">
+					{getConfirmedRegistrations(slot)} inscrit·e{getConfirmedRegistrations(slot) > 1
+						? '·s'
+						: ''}
+				</span>
+			</div>
 		{:else}
-			<p class="flex text-[0.85rem] text-dark-light-blue">Lieu :</p>
-			<p class="flex text-[0.8rem] text-light-blue">
-				{slot.location ?? '-'}
-			</p>
+			<div class="flex flex-wrap items-baseline gap-x-2">
+				<span class="text-[0.85rem] text-dark-light-blue">Lieu :</span>
+				<span class="text-[0.8rem] text-light-blue">{slot.location ?? '-'}</span>
+			</div>
 		{/if}
 	</div>
 </article>
