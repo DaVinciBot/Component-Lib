@@ -438,7 +438,7 @@
 								href={slot?.video_conference_link ?? '#'}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-light-blue transition hover:text-blue-peps"
+								class="mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-light-blue transition hover:text-blue-peps"
 							>
 								<span>Rejoindre la session en ligne</span>
 								<MoveUpRight class="size-4" />
