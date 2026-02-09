@@ -191,7 +191,7 @@
 	class="flex h-full flex-col rounded-[26px] border border-light-blue/40 bg-dark-blue/90 p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
 >
 	<header
-		class="flex flex-col gap-3 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-4 py-4 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
+		class="flex flex-col gap-3 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
 		<div class="grid grid-cols-[auto_1fr_auto] items-center gap-2">
 			<CtaButton
@@ -264,26 +264,15 @@
 		</div>
 		<div class="grid grid-cols-2 gap-2">
 			<label
-				class="flex cursor-pointer items-center gap-2 rounded-full border border-light-blue/20 bg-dark-blue/60 px-3 py-2 text-[0.62rem] tracking-[0.28em] text-dark-light-blue uppercase"
+				class="flex cursor-pointer items-center gap-1.5 rounded-full border border-light-blue/20 bg-dark-blue/60 px-3 py-2 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
 			>
-				<Checkbox
-					bind:checked={isInPerson}
-					name="filter_in_person"
-					value="in-person"
-					required
-					className="size-4.5"
-				/>
+				<Checkbox bind:checked={isInPerson} name="filter_in_person" value="in-person" required />
 				Présentiel
 			</label>
 			<label
-				class="flex cursor-pointer items-center gap-2 rounded-full border border-light-blue/20 bg-dark-blue/60 px-3 py-2 text-[0.62rem] tracking-[0.28em] text-dark-light-blue uppercase"
+				class="flex cursor-pointer items-center gap-1.5 rounded-full border border-light-blue/20 bg-dark-blue/60 px-3 py-2 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
 			>
-				<Checkbox
-					bind:checked={isOnline}
-					name="filter_online"
-					value="online"
-					className="size-4.5"
-				/>
+				<Checkbox bind:checked={isOnline} name="filter_online" value="online" />
 				En ligne
 			</label>
 		</div>
@@ -295,13 +284,19 @@
 			<label
 				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
 			>
-				<Checkbox bind:checked={isInPerson} name="filter_in_person" value="in-person" required />
+				<Checkbox
+					bind:checked={isInPerson}
+					name="filter_in_person"
+					value="in-person"
+					required
+					className="size-4"
+				/>
 				Présentiel
 			</label>
 			<label
 				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
 			>
-				<Checkbox bind:checked={isOnline} name="filter_online" value="online" />
+				<Checkbox bind:checked={isOnline} name="filter_online" value="online" className="size-4" />
 				En ligne
 			</label>
 		</div>
@@ -422,7 +417,7 @@
 				<div class="flex items-start gap-3">
 					<button
 						type="button"
-						class={`flex h-14 w-16 flex-col items-center justify-center rounded-xl border-2 border-light-blue/30 bg-dark-blue/60 text-center ${
+						class={`flex h-14 min-w-16 flex-col items-center justify-center rounded-xl border-2 border-light-blue/30 bg-dark-blue/60 text-center ${
 							day.isToday ? 'border-primary-400/60 text-primary-400' : 'text-light-blue'
 						}`}
 						onclick={() => handleDaySelect(day.date)}

@@ -20,7 +20,7 @@
 
 <input
 	type="checkbox"
-	class="grid size-4 cursor-pointer appearance-none place-content-center rounded border-[0.15em] border-solid border-light-blue before:size-[0.8em] before:origin-center before:content-[''] checked:bg-light-blue disabled:cursor-not-allowed disabled:border-dark-light-blue-faded {className}"
+	class="grid size-3.5 cursor-pointer appearance-none place-content-center rounded border-[0.15em] border-solid border-light-blue before:size-[0.8em] before:origin-center before:content-[''] checked:bg-light-blue disabled:cursor-not-allowed disabled:border-dark-light-blue-faded {className}"
 	bind:checked
 	{name}
 	{disabled}

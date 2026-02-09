@@ -408,13 +408,14 @@
 								{:else if field.type === 'checkbox'}
 									<label
 										for={field.id || field.name.toLowerCase()}
-										class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-600 bg-gray-700 p-2 text-sm text-white"
+										class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-600 bg-gray-700 p-2 text-sm text-white"
 									>
 										<Checkbox
 											id={field.id || field.name.toLowerCase()}
 											name={field.id || field.name.toLowerCase()}
 											value={field.value || ''}
 											required={field.required}
+											className="size-4"
 											disabled={field.readonly || false}
 											checked={field.checked || false}
 											onchange={(event) => {

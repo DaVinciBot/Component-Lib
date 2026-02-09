@@ -51,8 +51,8 @@
 				Confirmation de l'inscription à la formation {trainingName}
 			</h2>
 			{#if showExcuse}
-				<label class="mt-5 flex items-center gap-3 text-sm text-light-blue">
-					<Checkbox bind:checked={toExcuse} />
+				<label class="mt-5 flex items-center gap-2.5 text-sm text-light-blue sm:gap-3">
+					<Checkbox bind:checked={toExcuse} className="size-4" />
 					<span>J'ai besoin de me faire excuser</span>
 				</label>
 			{/if}
