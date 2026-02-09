@@ -40,7 +40,6 @@
 
 	let isInPerson = $state(false);
 	let isOnline = $state(false);
-	let hasSeats = $state(false);
 	let selectedSlot = $state<CalendarSlot | null>(null);
 	let isModalOpen = $state(false);
 	let filtersReady = $state(false);
@@ -55,9 +54,7 @@
 		try {
 			if (typeof localStorage === 'undefined') return null;
 			const raw = localStorage.getItem(FILTERS_KEY);
-			return raw
-				? (JSON.parse(raw) as { inPerson?: boolean; online?: boolean; hasSeats?: boolean })
-				: null;
+			return raw ? (JSON.parse(raw) as { inPerson?: boolean; online?: boolean }) : null;
 		} catch (err) {
 			return null;
 		}
@@ -67,8 +64,7 @@
 		if (!filtersReady || typeof localStorage === 'undefined') return;
 		const payload = {
 			inPerson: isInPerson,
-			online: isOnline,
-			hasSeats
+			online: isOnline
 		};
 		try {
 			localStorage.setItem(FILTERS_KEY, JSON.stringify(payload));
@@ -82,7 +78,6 @@
 		if (saved) {
 			isInPerson = Boolean(saved.inPerson);
 			isOnline = Boolean(saved.online);
-			hasSeats = Boolean(saved.hasSeats);
 		}
 		filtersReady = true;
 	});
@@ -119,24 +114,12 @@
 		return map;
 	});
 
-	function hasAvailableSeats(slot: CalendarSlot) {
-		const hasCapacityInfo = slot.on_site_remaining !== null || slot.remote_remaining !== null;
-		if (!hasCapacityInfo) return true;
-		return (slot.on_site_remaining ?? 0) > 0 || (slot.remote_remaining ?? 0) > 0;
-	}
-
 	function isInPersonSlot(slot: CalendarSlot) {
-		return (
-			Boolean(slot.location) || (slot.on_site_seats ?? 0) > 0 || (slot.on_site_remaining ?? 0) > 0
-		);
+		return (slot.on_site_seats ?? 0) > 0 || (slot.on_site_remaining ?? 0) > 0;
 	}
 
 	function isOnlineSlot(slot: CalendarSlot) {
-		return (
-			Boolean(slot.video_conference_link) ||
-			(slot.remote_seats ?? 0) > 0 ||
-			(slot.remote_remaining ?? 0) > 0
-		);
+		return (slot.remote_seats ?? 0) > 0 || (slot.remote_remaining ?? 0) > 0;
 	}
 
 	const filteredSlots = $derived(() => {
@@ -144,8 +127,7 @@
 		return slots.filter((slot) => {
 			const matchesFormat =
 				!filterByFormat || (isInPerson && isInPersonSlot(slot)) || (isOnline && isOnlineSlot(slot));
-			const matchesSeats = !hasSeats || hasAvailableSeats(slot);
-			return matchesFormat && matchesSeats;
+			return matchesFormat;
 		});
 	});
 
@@ -209,107 +191,100 @@
 	class="flex h-full flex-col rounded-[26px] border border-light-blue/40 bg-dark-blue/90 p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
 >
 	<header
-		class="flex flex-col gap-4 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-4 py-4 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
+		class="flex flex-col gap-3 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-4 py-4 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
-		<div class="flex items-center justify-between gap-3">
-			<div class="flex items-center gap-3 text-light-blue">
-				<CtaButton
-					type="button"
-					variant="peps"
-					size="sm"
-					class="flex size-8 items-center justify-center rounded-full pr-1 pl-1"
-					onclick={goPrev}
-					aria-label="Semaine précédente"
-				>
-					<svg
-						class="size-3.5"
-						viewBox="0 0 12 12"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.6"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M7.5 2.5 4 6l3.5 3.5" />
-					</svg>
-				</CtaButton>
-				<span class=" text-[0.7rem] tracking-[0.32em] text-dark-light-blue uppercase"
-					>{weekLabel()}</span
-				>
-			</div>
-			<div class="flex items-center gap-2">
-				<CtaButton
-					type="button"
-					variant="peps"
-					size="sm"
-					class="flex size-8 items-center justify-center rounded-full pr-1 pl-1"
-					onclick={goNext}
-					aria-label="Semaine suivante"
-				>
-					<svg
-						class="size-3.5"
-						viewBox="0 0 12 12"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.6"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M4.5 2.5 8 6l-3.5 3.5" />
-					</svg>
-				</CtaButton>
-				<CtaButton
-					type="button"
-					variant="peps"
-					class="hidden items-center pr-2 pl-2 uppercase sm:flex"
-					size="sm"
-					onclick={goToday}
-				>
-					Aujourd'hui
-				</CtaButton>
-				<CtaButton
-					type="button"
-					variant="peps"
-					class="flex h-8 items-center justify-center rounded-full px-3 uppercase sm:hidden"
-					size="sm"
-					onclick={goToday}
-					aria-label="Revenir à aujourd'hui"
-				>
-					Auj
-				</CtaButton>
-				{#if canManageTraining}
-					<CtaButton
-						type="button"
-						variant="primary"
-						size="sm"
-						class="hidden items-center pr-2 pl-2 uppercase sm:flex"
-						onclick={() => goto('admin')}
-					>
-						Accès admin
-					</CtaButton>
-				{/if}
-			</div>
-		</div>
-		<div class="no-scrollbar flex flex-wrap items-center gap-4">
-			<label
-				class="flex cursor-pointer items-center gap-2 text-[0.68rem] tracking-[0.3em] text-dark-light-blue uppercase"
+		<div class="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+			<CtaButton
+				type="button"
+				variant="peps"
+				size="sm"
+				class="flex size-9 items-center justify-center rounded-full"
+				onclick={goPrev}
+				aria-label="Semaine précédente"
 			>
-				<Checkbox bind:checked={isInPerson} name="filter_in_person" value="in-person" required />
+				<svg
+					class="size-3.5"
+					viewBox="0 0 12 12"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.6"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M7.5 2.5 4 6l3.5 3.5" />
+				</svg>
+			</CtaButton>
+			<span class="text-center text-[0.8rem] tracking-[0.3em] text-dark-light-blue uppercase">
+				{weekLabel()}
+			</span>
+			<CtaButton
+				type="button"
+				variant="peps"
+				size="sm"
+				class="flex size-9 items-center justify-center rounded-full"
+				onclick={goNext}
+				aria-label="Semaine suivante"
+			>
+				<svg
+					class="size-3.5"
+					viewBox="0 0 12 12"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.6"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M4.5 2.5 8 6l-3.5 3.5" />
+				</svg>
+			</CtaButton>
+		</div>
+		<div class="flex flex-wrap items-center justify-center gap-2">
+			<CtaButton
+				type="button"
+				variant="peps"
+				class="flex h-9 items-center justify-center rounded-full px-4 text-[0.7rem] uppercase"
+				size="sm"
+				onclick={goToday}
+			>
+				Aujourd'hui
+			</CtaButton>
+			{#if canManageTraining}
+				<CtaButton
+					type="button"
+					variant="primary"
+					size="sm"
+					class="flex h-9 items-center justify-center rounded-full px-4 text-[0.7rem] uppercase"
+					onclick={() => goto('admin')}
+				>
+					Accès admin
+				</CtaButton>
+			{/if}
+		</div>
+		<div class="grid grid-cols-2 gap-2">
+			<label
+				class="flex cursor-pointer items-center gap-2 rounded-full border border-light-blue/20 bg-dark-blue/60 px-3 py-2 text-[0.62rem] tracking-[0.28em] text-dark-light-blue uppercase"
+			>
+				<Checkbox
+					bind:checked={isInPerson}
+					name="filter_in_person"
+					value="in-person"
+					required
+					className="size-4.5"
+				/>
 				Présentiel
 			</label>
 			<label
-				class="flex cursor-pointer items-center gap-2 text-[0.68rem] tracking-[0.3em] text-dark-light-blue uppercase"
+				class="flex cursor-pointer items-center gap-2 rounded-full border border-light-blue/20 bg-dark-blue/60 px-3 py-2 text-[0.62rem] tracking-[0.28em] text-dark-light-blue uppercase"
 			>
-				<Checkbox bind:checked={isOnline} name="filter_online" value="online" />
+				<Checkbox
+					bind:checked={isOnline}
+					name="filter_online"
+					value="online"
+					className="size-4.5"
+				/>
 				En ligne
-			</label>
-			<label
-				class="flex cursor-pointer items-center gap-2 text-[0.68rem] tracking-[0.3em] text-dark-light-blue uppercase"
-			>
-				<Checkbox bind:checked={hasSeats} name="filter_has_seats" value="has-seats" />
-				Avec de la place
 			</label>
 		</div>
 	</header>
@@ -328,12 +303,6 @@
 			>
 				<Checkbox bind:checked={isOnline} name="filter_online" value="online" />
 				En ligne
-			</label>
-			<label
-				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
-			>
-				<Checkbox bind:checked={hasSeats} name="filter_has_seats" value="has-seats" />
-				Avec de la place
 			</label>
 		</div>
 		<div
@@ -450,7 +419,7 @@
 	>
 		<div class="flex flex-col gap-4">
 			{#each calendarDays() as day, index}
-				<div class="flex items-center gap-3">
+				<div class="flex items-start gap-3">
 					<button
 						type="button"
 						class={`flex h-14 w-16 flex-col items-center justify-center rounded-xl border-2 border-light-blue/30 bg-dark-blue/60 text-center ${
@@ -494,8 +463,10 @@
 		<div class="text-registered">Inscrit·e</div>
 		<div class="text-waiting">Sur liste d'attente</div>
 		<div class="text-blue-peps">Ma formation</div>
-		<div class="text-complete">Complète</div>
-		<div class="text-dark-blue-gray opacity-55">Masquée</div>
+		{#if canManageTraining}
+			<div class="text-complete">Complète</div>
+			<div class="text-dark-blue-gray opacity-55">Masquée</div>
+		{/if}
 	</div>
 </section>
 

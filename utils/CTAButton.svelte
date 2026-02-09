@@ -5,6 +5,7 @@
 		variant?: 'primary' | 'secondary' | 'disabled' | 'peps' | 'peps-outline' | 'deep';
 		href?: string;
 		size?: 'sm' | 'md' | 'lg';
+		fullWidth?: boolean;
 		children?: import('svelte').Snippet;
 	};
 
@@ -12,12 +13,15 @@
 		variant = 'primary',
 		href = '',
 		size = 'md',
+		fullWidth = true,
 		type = 'button',
 		disabled: disabledProp = false,
 		class: className = '',
 		children,
 		...rest
 	}: CtaButtonProps = $props();
+
+	let widthClass = $derived(fullWidth ? 'w-full' : 'w-auto');
 
 	let sizeClasses = $derived(
 		{
@@ -40,12 +44,12 @@
 
 	const computedDisabled = $derived(variant === 'disabled' || disabledProp);
 	const buttonClass = $derived(
-		`w-full ${sizeClasses} rounded-xl ${classes} border-[3.25px] font-bold tracking-wider cursor-pointer ${className}`.trim()
+		`${widthClass} ${sizeClasses} rounded-xl ${classes} border-[3.25px] font-bold tracking-wider cursor-pointer ${className}`.trim()
 	);
 </script>
 
 {#if href}
-	<a {href} class="inline-block w-full no-underline">
+	<a {href} class={`inline-block ${widthClass} no-underline`}>
 		<button class={buttonClass} {type} disabled={computedDisabled} {...rest}>
 			{@render children?.()}
 		</button>
