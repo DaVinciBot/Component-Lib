@@ -206,10 +206,115 @@
 </script>
 
 <section
-	class="flex h-full flex-col rounded-[26px] border border-light-blue/40 bg-dark-blue/90 p-6 shadow-[0_18px_60px_rgba(2,10,60,0.45)]"
+	class="flex h-full flex-col rounded-[26px] border border-light-blue/40 bg-dark-blue/90 p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
 >
 	<header
-		class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-light-blue/30 bg-dark-blue/70 px-4 py-3 text-sm text-light-blue"
+		class="flex flex-col gap-4 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-4 py-4 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
+	>
+		<div class="flex items-center justify-between gap-3">
+			<div class="flex items-center gap-3 text-light-blue">
+				<CtaButton
+					type="button"
+					variant="peps"
+					size="sm"
+					class="flex size-8 items-center justify-center rounded-full pr-1 pl-1"
+					onclick={goPrev}
+					aria-label="Semaine précédente"
+				>
+					<svg
+						class="size-3.5"
+						viewBox="0 0 12 12"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M7.5 2.5 4 6l3.5 3.5" />
+					</svg>
+				</CtaButton>
+				<span class=" text-[0.7rem] tracking-[0.32em] text-dark-light-blue uppercase"
+					>{weekLabel()}</span
+				>
+			</div>
+			<div class="flex items-center gap-2">
+				<CtaButton
+					type="button"
+					variant="peps"
+					size="sm"
+					class="flex size-8 items-center justify-center rounded-full pr-1 pl-1"
+					onclick={goNext}
+					aria-label="Semaine suivante"
+				>
+					<svg
+						class="size-3.5"
+						viewBox="0 0 12 12"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M4.5 2.5 8 6l-3.5 3.5" />
+					</svg>
+				</CtaButton>
+				<CtaButton
+					type="button"
+					variant="peps"
+					class="hidden items-center pr-2 pl-2 uppercase sm:flex"
+					size="sm"
+					onclick={goToday}
+				>
+					Aujourd'hui
+				</CtaButton>
+				<CtaButton
+					type="button"
+					variant="peps"
+					class="flex h-8 items-center justify-center rounded-full px-3 uppercase sm:hidden"
+					size="sm"
+					onclick={goToday}
+					aria-label="Revenir à aujourd'hui"
+				>
+					Auj
+				</CtaButton>
+				{#if canManageTraining}
+					<CtaButton
+						type="button"
+						variant="primary"
+						size="sm"
+						class="hidden items-center pr-2 pl-2 uppercase sm:flex"
+						onclick={() => goto('admin')}
+					>
+						Accès admin
+					</CtaButton>
+				{/if}
+			</div>
+		</div>
+		<div class="no-scrollbar flex flex-wrap items-center gap-4">
+			<label
+				class="flex cursor-pointer items-center gap-2 text-[0.68rem] tracking-[0.3em] text-dark-light-blue uppercase"
+			>
+				<Checkbox bind:checked={isInPerson} name="filter_in_person" value="in-person" required />
+				Présentiel
+			</label>
+			<label
+				class="flex cursor-pointer items-center gap-2 text-[0.68rem] tracking-[0.3em] text-dark-light-blue uppercase"
+			>
+				<Checkbox bind:checked={isOnline} name="filter_online" value="online" />
+				En ligne
+			</label>
+			<label
+				class="flex cursor-pointer items-center gap-2 text-[0.68rem] tracking-[0.3em] text-dark-light-blue uppercase"
+			>
+				<Checkbox bind:checked={hasSeats} name="filter_has_seats" value="has-seats" />
+				Avec de la place
+			</label>
+		</div>
+	</header>
+	<header
+		class="hidden flex-wrap items-center justify-between gap-4 rounded-xl border border-light-blue/30 bg-dark-blue/70 px-4 py-3 text-sm text-light-blue lg:flex"
 	>
 		<div class="flex flex-wrap items-center gap-6">
 			<label
@@ -257,7 +362,7 @@
 					<path d="M7.5 2.5 4 6l3.5 3.5" />
 				</svg>
 			</CtaButton>
-			<span class="text-light-blue uppercase">{weekLabel()}</span>
+			<span class="text-dark-light-blue uppercase">{weekLabel()}</span>
 			<CtaButton
 				type="button"
 				variant="peps"
@@ -302,41 +407,88 @@
 		</div>
 	</header>
 
-	<div
-		class="mt-4 grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase"
-	>
-		{#each calendarDays() as day, index}
-			<button
-				type="button"
-				class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
-					index !== 6 ? 'border-r' : ''
-				} ${day.isToday ? 'text-primary-400' : ''}`}
-				onclick={() => handleDaySelect(day.date)}
-			>
-				<span>{weekdays[index]}</span>
-				<span>{format(day.date, 'dd/MM')}</span>
-			</button>
-		{/each}
+	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+		<div
+			class="grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase"
+		>
+			{#each calendarDays() as day, index}
+				<button
+					type="button"
+					class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
+						index !== 6 ? 'border-r' : ''
+					} ${day.isToday ? 'text-primary-400' : ''}`}
+					onclick={() => handleDaySelect(day.date)}
+				>
+					<span>{weekdays[index]}</span>
+					<span>{format(day.date, 'dd/MM')}</span>
+				</button>
+			{/each}
+		</div>
+		<div
+			class="no-scrollbar min-h-0 flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20"
+		>
+			<div class="grid min-h-full grid-cols-7">
+				{#each calendarDays() as day, index}
+					<div
+						class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}
+					>
+						<div class="flex h-full flex-col gap-3 p-3">
+							{#each slotsByDay().get(day.key) ?? [] as slot}
+								<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+									<TrainingCard {slot} status={slot.cardStatus ?? 'free'} />
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
 	</div>
 
 	<div
-		class="no-scrollbar flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20"
+		class="no-scrollbar mt-4 flex-1 overflow-y-auto rounded-2xl border border-light-blue/30 bg-blue-gray/20 p-3 lg:hidden"
 	>
-		<div class="grid min-h-full grid-cols-7">
+		<div class="flex flex-col gap-4">
 			{#each calendarDays() as day, index}
-				<div class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}>
-					<div class="flex h-full flex-col gap-3 p-3">
-						{#each slotsByDay().get(day.key) ?? [] as slot}
-							<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
-								<TrainingCard {slot} status={slot.cardStatus ?? 'free'} />
-							</button>
-						{/each}
+				<div class="flex items-center gap-3">
+					<button
+						type="button"
+						class={`flex h-14 w-16 flex-col items-center justify-center rounded-xl border-2 border-light-blue/30 bg-dark-blue/60 text-center ${
+							day.isToday ? 'border-primary-400/60 text-primary-400' : 'text-light-blue'
+						}`}
+						onclick={() => handleDaySelect(day.date)}
+					>
+						<span class="text-[0.72rem] tracking-[0.24em] text-dark-light-blue uppercase">
+							{weekdays[index]}
+						</span>
+						<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
+					</button>
+					<div class="flex flex-1 flex-col gap-2">
+						{#if (slotsByDay().get(day.key) ?? []).length === 0}
+							<div
+								class="flex h-14 items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+							>
+								Aucune formation
+							</div>
+						{:else}
+							{#each slotsByDay().get(day.key) ?? [] as slot}
+								<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+									<TrainingCard
+										{slot}
+										status={slot.cardStatus ?? 'free'}
+										variant="compact"
+										className="text-left"
+									/>
+								</button>
+							{/each}
+						{/if}
 					</div>
 				</div>
 			{/each}
 		</div>
 	</div>
-	<div class="flex gap-5 pt-4 pl-0.5 text-sm tracking-wide">
+
+	<div class="flex flex-wrap gap-3 pt-4 pl-0.5 text-xs tracking-wide sm:gap-5 sm:text-sm">
 		<div class="text-light-blue">Légende :</div>
 		<div class="text-light-blue">Libre</div>
 		<div class="text-registered">Inscrit·e</div>
