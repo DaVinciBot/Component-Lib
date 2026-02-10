@@ -8,7 +8,7 @@
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import type { TrainingSlotListItem } from '$lib/services/training';
 	import { format } from 'date-fns';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 
 	export type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
 		start: Date | string;
@@ -25,7 +25,15 @@
 		canManageTraining?: boolean;
 	};
 
-	const weekdays = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
+	const weekdays: string[] = [
+		'Lundi',
+		'Mardi',
+		'Mercredi',
+		'Jeudi',
+		'Vendredi',
+		'Samedi',
+		'Dimanche'
+	];
 	const FILTERS_KEY = 'training_calendar_filters';
 
 	let {
@@ -43,6 +51,7 @@
 	let selectedSlot = $state<CalendarSlot | null>(null);
 	let isModalOpen = $state(false);
 	let filtersReady = $state(false);
+	let todayRow: HTMLDivElement | null = $state(null);
 
 	let viewDate = $state(new Date());
 
@@ -80,6 +89,13 @@
 			isOnline = Boolean(saved.online);
 		}
 		filtersReady = true;
+	});
+
+	onMount(async () => {
+		if (typeof window === 'undefined') return;
+		if (!window.matchMedia('(max-width: 1023px)').matches) return;
+		await tick();
+		todayRow?.scrollIntoView({ block: 'start', behavior: 'smooth' });
 	});
 
 	const weekStart = $derived(() => getWeekStart(viewDate));
@@ -383,7 +399,7 @@
 					} ${day.isToday ? 'text-primary-400' : ''}`}
 					onclick={() => handleDaySelect(day.date)}
 				>
-					<span>{weekdays[index]}</span>
+					<span>{weekdays[index].substring(0, 2)}</span>
 					<span>{format(day.date, 'dd/MM')}</span>
 				</button>
 			{/each}
@@ -414,40 +430,75 @@
 	>
 		<div class="flex flex-col gap-4">
 			{#each calendarDays() as day, index}
-				<div class="flex items-start gap-3">
-					<button
-						type="button"
-						class={`flex h-14 min-w-16 flex-col items-center justify-center rounded-xl border-2 border-light-blue/30 bg-dark-blue/60 text-center ${
-							day.isToday ? 'border-primary-400/60 text-primary-400' : 'text-light-blue'
-						}`}
-						onclick={() => handleDaySelect(day.date)}
-					>
-						<span class="text-[0.72rem] tracking-[0.24em] text-dark-light-blue uppercase">
-							{weekdays[index]}
-						</span>
-						<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
-					</button>
-					<div class="flex flex-1 flex-col gap-2">
-						{#if (slotsByDay().get(day.key) ?? []).length === 0}
-							<div
-								class="flex h-14 items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
-							>
-								Aucune formation
-							</div>
-						{:else}
-							{#each slotsByDay().get(day.key) ?? [] as slot}
-								<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
-									<TrainingCard
-										{slot}
-										status={slot.cardStatus ?? 'free'}
-										variant="compact"
-										className="text-left"
-									/>
-								</button>
-							{/each}
-						{/if}
+				{#if day.isToday}
+					<div class="flex scroll-mt-4 flex-col gap-2" bind:this={todayRow}>
+						<button
+							type="button"
+							class={`flex h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue ${
+								day.isToday ? 'border-primary-400/60 text-primary-400' : ''
+							}`}
+							onclick={() => handleDaySelect(day.date)}
+						>
+							<span class="text-[0.72rem] uppercase">
+								{weekdays[index]}
+							</span>
+							<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
+						</button>
+						<div class="flex flex-1 flex-col gap-2">
+							{#if (slotsByDay().get(day.key) ?? []).length === 0}
+								<div
+									class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+								>
+									Aucune formation
+								</div>
+							{:else}
+								{#each slotsByDay().get(day.key) ?? [] as slot}
+									<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+										<TrainingCard
+											{slot}
+											status={slot.cardStatus ?? 'free'}
+											variant="compact"
+											className="text-left"
+										/>
+									</button>
+								{/each}
+							{/if}
+						</div>
 					</div>
-				</div>
+				{:else}
+					<div class="flex flex-col gap-2">
+						<button
+							type="button"
+							class="h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue not-last:flex"
+							onclick={() => handleDaySelect(day.date)}
+						>
+							<span class="text-[0.72rem] uppercase">
+								{weekdays[index]}
+							</span>
+							<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
+						</button>
+						<div class="flex flex-1 flex-col gap-2">
+							{#if (slotsByDay().get(day.key) ?? []).length === 0}
+								<div
+									class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+								>
+									Aucune formation
+								</div>
+							{:else}
+								{#each slotsByDay().get(day.key) ?? [] as slot}
+									<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+										<TrainingCard
+											{slot}
+											status={slot.cardStatus ?? 'free'}
+											variant="compact"
+											className="text-left"
+										/>
+									</button>
+								{/each}
+							{/if}
+						</div>
+					</div>
+				{/if}
 			{/each}
 		</div>
 	</div>

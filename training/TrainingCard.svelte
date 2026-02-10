@@ -55,7 +55,7 @@
 
 {#if variant === 'compact'}
 	<article
-		class={`training-card--${status} w-full cursor-pointer rounded-[14px] border-2 border-(--card-color) bg-transparent px-2 py-0 ${className}`.trim()}
+		class={`training-card--${status} w-full cursor-pointer rounded-[14px] border-[1.5px] border-(--card-color) bg-transparent px-2 py-0 ${className}`.trim()}
 	>
 		<div class="flex min-h-14 items-center justify-between gap-3">
 			<h3
