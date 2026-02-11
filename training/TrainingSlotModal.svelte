@@ -1,10 +1,14 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import type { CalendarSlot } from '$lib/components/training/Calendar.svelte';
 	import TrainingRegistrationPopup from '$lib/components/training/TrainingRegistrationPopup.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
+	import type { RegistrationListItem } from '$lib/services/training';
 	import {
 		cancelRegistration,
 		getMyRegistrationForSlot,
+		getSlotRegistrations,
+		getTrainerSlotRegistrations,
 		registerToSlot,
 		updateMyRegistrationExcuse,
 		type RegistrationSummary
@@ -20,6 +24,7 @@
 		MoveUpRight,
 		TextAlignStart,
 		UserRound,
+		Users,
 		Video,
 		X
 	} from '@lucide/svelte';
@@ -44,16 +49,22 @@
 		open?: boolean;
 		onClose?: () => void;
 		onRegistrationChange?: () => void;
+		canManageTraining?: boolean;
 	};
 
 	let {
 		slot = null,
 		open = false,
 		onClose = () => {},
-		onRegistrationChange
+		onRegistrationChange,
+		canManageTraining = false
 	}: TrainingSlotModalProps = $props();
 	let registration = $state<RegistrationSummary | null>(null);
 	let registrationRequestId = 0;
+	let participants = $state<RegistrationListItem[]>([]);
+	let participantsLoading = $state(false);
+	let participantsError = $state<string | null>(null);
+	let participantsRequestId = 0;
 	let confirmOpen = $state(false);
 	let confirmMode = $state<AvailabilityMode['key'] | null>(null);
 	let confirmLoading = $state(false);
@@ -72,6 +83,9 @@
 	const showExcuseToggle = $derived(() => slot?.excusable && registration?.status === 'registered');
 	const excuseToggleLabel = $derived(() =>
 		registration?.to_excuse ? "Je n'ai plus besoin d'excuse" : "J'ai besoin d'une excuse"
+	);
+	const canViewParticipants = $derived(
+		() => slot?.cardStatus === 'my' || Boolean(canManageTraining)
 	);
 
 	function isRegistrationMode(modeKey: AvailabilityMode['key']) {
@@ -178,6 +192,28 @@
 		}
 	}
 
+	async function refreshParticipants() {
+		if (!slot || !canViewParticipants()) return;
+		const currentRequest = ++participantsRequestId;
+		participantsLoading = true;
+		participantsError = null;
+		try {
+			const data = canManageTraining
+				? await getSlotRegistrations(slot.slot_id)
+				: await getTrainerSlotRegistrations(slot.slot_id);
+			if (currentRequest !== participantsRequestId) return;
+			participants = data;
+		} catch (err) {
+			if (currentRequest !== participantsRequestId) return;
+			participantsError = 'Impossible de charger les inscriptions.';
+			participants = [];
+		} finally {
+			if (currentRequest === participantsRequestId) {
+				participantsLoading = false;
+			}
+		}
+	}
+
 	function openConfirmation(mode: AvailabilityMode['key']) {
 		confirmMode = mode;
 		confirmOpen = true;
@@ -241,10 +277,14 @@
 	$effect(() => {
 		if (!open || !slot) {
 			registration = null;
+			participants = [];
+			participantsError = null;
+			participantsLoading = false;
 			closeConfirmation();
 			return;
 		}
 		refreshRegistration();
+		refreshParticipants();
 	});
 </script>
 
@@ -398,6 +438,60 @@
 						</div>
 					{/if}
 
+					{#if canViewParticipants()}
+						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+							<div
+								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+							>
+								<Users class="size-4" />
+								<span>Participant·e·s</span>
+							</div>
+							{#if participantsLoading}
+								<p class="mt-3 text-sm text-light-blue/70">Chargement des inscrit·e·s...</p>
+							{:else if participantsError}
+								<p class="mt-3 text-sm text-waiting">{participantsError}</p>
+							{:else if participants.length === 0}
+								<p class="mt-3 text-sm text-light-blue/70">Aucun·e inscrit·e pour le moment.</p>
+							{:else}
+								<div class="mt-3 grid gap-2 sm:grid-cols-2">
+									{#each participants as reg}
+										<div
+											class={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
+												reg.status === 'waitlisted'
+													? 'border-waiting/40 bg-waiting/10 text-waiting'
+													: reg.remote
+														? 'border-blue-peps/40 bg-blue-peps/10'
+														: 'border-registered/30 bg-registered/10'
+											}`}
+										>
+											{#if reg.member_avatar_url}
+												<img
+													src={reg.member_avatar_url}
+													alt={reg.member_username ?? 'Membre'}
+													class="size-9 rounded-full border border-light-blue/20 object-cover"
+												/>
+											{:else}
+												<div
+													class="flex size-9 items-center justify-center rounded-full border border-light-blue/20 bg-dark-blue/70 text-xs font-semibold text-light-blue/80"
+												>
+													{(reg.member_username ?? '?').charAt(0).toUpperCase()}
+												</div>
+											{/if}
+											<div class="min-w-0 flex-1">
+												<p class="m-0 truncate text-sm font-semibold text-light-blue">
+													{reg.member_username ?? 'Membre'}
+												</p>
+												<p class="m-0 text-[0.7rem] text-light-blue/70">
+													{reg.remote ? 'Distanciel' : 'Présentiel'}
+												</p>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					{/if}
+
 					{#if hasDescription()}
 						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
 							<div
@@ -471,6 +565,17 @@
 								>{action.label}
 							</CtaButton>
 						{/each}
+					</div>
+				{:else if slot?.cardStatus === 'my'}
+					<div class="mt-4 grid gap-3 md:grid-cols-2">
+						<CtaButton
+							type="button"
+							size="sm"
+							variant="secondary"
+							onclick={() => goto('presences')}
+							class="w-auto justify-self-end md:col-start-2"
+							>Gérer les présences
+						</CtaButton>
 					</div>
 				{/if}
 			</div>
