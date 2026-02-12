@@ -215,7 +215,7 @@
 				variant="peps"
 				size="sm"
 				class="flex h-auto items-center justify-center rounded-full"
-fullWidth={false}
+				fullWidth={false}
 				onclick={goPrev}
 				aria-label="Semaine précédente"
 			>
@@ -240,7 +240,7 @@ fullWidth={false}
 				variant="peps"
 				size="sm"
 				class="flex h-auto items-center justify-center rounded-full"
-fullWidth={false}
+				fullWidth={false}
 				onclick={goNext}
 				aria-label="Semaine suivante"
 			>
@@ -261,27 +261,14 @@ fullWidth={false}
 				type="button"
 				variant="peps"
 				class="flex h-auto items-center justify-center rounded-full px-4 text-[0.7rem] uppercase"
-fullWidth={false}
+				fullWidth={false}
 				size="sm"
 				onclick={goToday}
 			>
 				Ajd
 			</CtaButton>
-</div>
-					{#if canManageTraining}
-<div class="flex flex-wrap items-center justify-center lg:hidden">
-				<CtaButton
-					type="button"
-					variant="primary"
-					size="sm"
-					class="flex h-9 items-center justify-center rounded-full px-4 text-[0.7rem] uppercase"
-					onclick={() => goto('admin')}
-				>
-					Accès admin
-				</CtaButton>
-</div>
-			{/if}
-				<div class="grid grid-cols-2 gap-1">
+		</div>
+		<div class="grid grid-cols-2 gap-1">
 			<label
 				class="flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
 			>
@@ -524,7 +511,7 @@ fullWidth={false}
 	open={isModalOpen}
 	onClose={handleModalClose}
 	{onRegistrationChange}
-{canManageTraining}
+	{canManageTraining}
 />
 
 <style>

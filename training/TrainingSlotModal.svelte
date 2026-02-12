@@ -3,7 +3,6 @@
 	import type { CalendarSlot } from '$lib/components/training/Calendar.svelte';
 	import TrainingRegistrationPopup from '$lib/components/training/TrainingRegistrationPopup.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
-	import type { RegistrationListItem } from '$lib/services/training';
 	import {
 		cancelRegistration,
 		getMyRegistrationForSlot,
@@ -11,6 +10,7 @@
 		getTrainerSlotRegistrations,
 		registerToSlot,
 		updateMyRegistrationExcuse,
+		type RegistrationListItem,
 		type RegistrationSummary
 	} from '$lib/services/training';
 	import {
