@@ -25,7 +25,7 @@
 
 	let sizeClasses = $derived(
 		{
-lb: 'text-sm py-2.5 px-0.5',
+			lb: 'text-sm py-2.5 px-0.5',
 			sm: 'text-sm py-1.5 px-3',
 			md: 'text-lg py-2 px-6',
 			lg: 'text-xl py-3 px-8'

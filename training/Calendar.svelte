@@ -219,7 +219,7 @@
 fullWidth={false}
 				onclick={goPrev}
 				aria-label="Semaine précédente"
-			>
+			>			
 				<svg
 					class="size-4"
 					viewBox="0 0 12 12"
@@ -259,7 +259,7 @@ fullWidth={false}
 				</svg>
 			</CtaButton>
 			</div>
-			<CtaButton
+		<CtaButton
 				type="button"
 				variant="secondary"
 				class="flex w-27 h-1 items-center justify-center  border-light-blue/30 rounded-full px-4 text-[0.7rem] uppercase"
@@ -269,9 +269,9 @@ fullWidth={false}
 			>
 				Aujourd'hui
 			</CtaButton>
-</div>
+		</div>
 					
-				<div class="grid grid-cols-2 gap-1">
+		<div class="grid grid-cols-2 gap-1">
 			<label
 				class="flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
 			>
