@@ -209,7 +209,7 @@
 	<header
 		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
-		<div class="grid grid-cols-[auto_1fr_auto_auto] ">
+		<div class="grid grid-cols-[auto_1fr_auto_auto] gap-1">
 			<div class='grid grid-cols-[auto_1fr_auto_auto]  wrap justify-between items-center inset-y-0 left-center'>
 			<CtaButton
 				type="button"
@@ -262,7 +262,7 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				class="flex w-27 h-1 items-center justify-center  border-light-blue/30 rounded-full px-4 text-[0.7rem] uppercase"
+				class="flex items-center justify-center  border-light-blue/30 rounded-full px-4 text-[0.7rem] uppercase"
 				fullWidth={false}
 				size="sm"
 				onclick={goToday}
@@ -506,19 +506,6 @@
 			<div class="text-dark-blue-gray opacity-55">Masquée</div>
 		{/if}
 	</div>
-	{#if canManageTraining}
-<div class="flex flex-wrap items-center justify-center lg:hidden">
-				<CtaButton
-					type="button"
-					variant="primary"
-					size="sm"
-					class="flex h-9 items-center justify-center rounded-full px-4 text-[0.7rem] uppercase"
-					onclick={() => goto('admin')}
-				>
-					Accès admin
-				</CtaButton>
-</div>
-			{/if}
 </section>
 
 <TrainingSlotModal
