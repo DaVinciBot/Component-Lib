@@ -214,7 +214,7 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				size="lb"
+				size="sb"
 				class="flex w-5 h-1  items-center justify-center border-light-blue/0 rounded-full text-dark-light-blue"
 				fullWidth={false}
 				onclick={goPrev}
@@ -239,7 +239,7 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				size="lb"
+				size="sb"
 				class="flex w-5 h-1 items-center justify-center border-light-blue/0 rounded-full text-dark-light-blue"
 				fullWidth={false}
 				onclick={goNext}
