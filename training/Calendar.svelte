@@ -209,18 +209,19 @@
 	<header
 		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
-		<div class="grid grid-cols-[auto_1fr_auto_auto] items-center gap-2">
+		<div class="grid grid-cols-[auto_1fr_auto_auto] gap-1">
+			<div class='grid grid-cols-[auto_1fr_auto_auto]  wrap justify-between items-center inset-y-0 left-center'>
 			<CtaButton
 				type="button"
-				variant="peps"
-				size="sm"
-				class="flex h-auto items-center justify-center rounded-full"
+				variant="secondary"
+				size="sb"
+				class="flex w-5 h-1  items-center justify-center border-light-blue/0 rounded-full text-dark-light-blue"
 				fullWidth={false}
 				onclick={goPrev}
 				aria-label="Semaine précédente"
-			>
+			>			
 				<svg
-					class="size-3.5"
+					class="size-4"
 					viewBox="0 0 12 12"
 					fill="none"
 					stroke="currentColor"
@@ -232,20 +233,20 @@
 					<path d="M7.5 2.5 4 6l3.5 3.5" />
 				</svg>
 			</CtaButton>
-			<span class="text-center text-[0.8rem] tracking-[0.3em] text-dark-light-blue uppercase">
+			<span class="text-center text-[0.75rem] tracking-[0.3em] text-dark-light-blue uppercase">
 				{weekLabel()}
 			</span>
 			<CtaButton
 				type="button"
-				variant="peps"
-				size="sm"
-				class="flex h-auto items-center justify-center rounded-full"
+				variant="secondary"
+				size="sb"
+				class="flex w-5 h-1 items-center justify-center border-light-blue/0 rounded-full text-dark-light-blue"
 				fullWidth={false}
 				onclick={goNext}
 				aria-label="Semaine suivante"
 			>
 				<svg
-					class="size-3.5"
+					class="size-4"
 					viewBox="0 0 12 12"
 					fill="none"
 					stroke="currentColor"
@@ -257,18 +258,19 @@
 					<path d="M4.5 2.5 8 6l-3.5 3.5" />
 				</svg>
 			</CtaButton>
+			</div>
 			<CtaButton
 				type="button"
-				variant="peps"
-				class="flex h-auto items-center justify-center rounded-full px-4 text-[0.7rem] uppercase"
+				variant="secondary"
+				class="flex items-center justify-center  border-light-blue/30 rounded-full px-4 text-[0.7rem] uppercase"
 				fullWidth={false}
 				size="sm"
 				onclick={goToday}
 			>
-				Ajd
+				Aujourd'hui
 			</CtaButton>
 		</div>
-		<div class="grid grid-cols-2 gap-1">
+				<div class="grid grid-cols-2 gap-1">
 			<label
 				class="flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
 			>
