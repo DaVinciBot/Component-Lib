@@ -8,7 +8,7 @@
 	// Props
 
 	// Optional topic name; when an app-wide event with this topic fires, the table reloads
-	/** @type {{actions?: any, headers?: any, filters?: any, dbInfo?: any, searchable?: string, type?: string, type_accord?: string, parseItems?: any, size?: number, can_load?: boolean, clickable?: boolean, addNew?: any, refreshTopic?: any, rows?: any, showToolbar?: boolean, showPagination?: boolean, emptyMessage?: string}} */
+	/** @type {{actions?: any, headers?: any, filters?: any, dbInfo?: any, searchable?: string, type?: string, type_accord?: string, parseItems?: any, size?: number, can_load?: boolean, clickable?: boolean, addNew?: any, refreshTopic?: any, showToolbar?: boolean, showPagination?: boolean}} */
 	let {
 		actions = [],
 		headers = ['Nom', 'Email', 'Rôle', 'Actions'],
@@ -23,29 +23,21 @@
 		clickable = false,
 		addNew = null,
 		refreshTopic = undefined,
-		rows = null,
 		showToolbar = true,
-		showPagination = true,
-		emptyMessage = 'Aucun résultat'
+		showPagination = true
 	} = $props();
 
 	// State
 	let search = $state('');
-	let items = $state([]);
+	let items: Array<any[]> = $state([]);
 	let current_page = $state(0);
 	let total_items = $state(0);
 
 	// derived pagination helpers
-	let isManual = $derived(Array.isArray(rows));
-	let displayItems = $derived(isManual ? rows : items);
-	let displayTotalItems = $derived(isManual ? rows.length : total_items);
-	let pagedItems = $derived(
-		isManual ? displayItems.slice(current_page * size, current_page * size + size) : displayItems
-	);
-	let totalPages = $derived(Math.max(1, Math.ceil((displayTotalItems || 0) / size)));
+	let totalPages = $derived(Math.max(1, Math.ceil((total_items || 0) / size)));
 	let pages = $derived(Array.from({ length: totalPages }, (_, i) => i + 1));
-	let showingFrom = $derived(pagedItems.length ? current_page * size + 1 : 0);
-	let showingTo = $derived(current_page * size + pagedItems.length);
+	let showingFrom = $derived(items.length ? current_page * size + 1 : 0);
+	let showingTo = $derived(current_page * size + items.length);
 
 	$effect(() => {
 		if (current_page >= totalPages) current_page = Math.max(0, totalPages - 1);
@@ -105,7 +97,6 @@
 
 	// Public API: refresh current page (optionally reset to first page)
 	export async function reload({ resetPage = false } = {}) {
-		if (isManual) return;
 		if (resetPage) current_page = 0;
 		items = await loadPage(current_page, getFiltersString(filters));
 	}
@@ -117,8 +108,10 @@
 	});
 
 	$effect.pre(() => {
-		current_page = 0;
-		filtersStore.set(filters);
+		if (search.length > 0) {
+			current_page = 0;
+			filtersStore.set(filters);
+		}
 	});
 
 	$effect(() => {
@@ -141,6 +134,7 @@
 			if (dropdown) {
 				setupDropdown();
 				document.body.appendChild(dropdown);
+
 				onresize = () => {
 					setupDropdown();
 				};
@@ -149,11 +143,11 @@
 
 		// Subscribe to global refresh events
 		if (refreshTopic) {
-			unsub = tableRefresh.subscribe(async (evt: any) => {
+			unsub = tableRefresh.subscribe(async (evt) => {
 				if (!evt || !evt.topic) return;
 				if (evt.topic === refreshTopic) {
 					// If payload asks for reset, honor it
-					const resetPage = evt?.payload?.resetPage === true;
+					const resetPage = (evt?.payload as any)?.resetPage === true;
 					await reload({ resetPage });
 				}
 			});
@@ -204,7 +198,7 @@
 		} catch (e) {
 			if (!(e instanceof ReferenceError)) {
 				console.error(e);
-			} // else the el is prerenred
+			} // else the el is prerendered
 		}
 		if (typeof unsub === 'function') unsub();
 	});
@@ -408,7 +402,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each pagedItems as row, i}
+						{#each items as row, i}
 							<tr
 								class="border-b border-gray-700 {clickable ? 'cursor-pointer' : ''} max-w-52"
 								onclick={clickable
@@ -422,9 +416,7 @@
 									{#if j === 0}
 										<th
 											scope="row"
-											class={`flex items-center px-4 py-3 font-medium whitespace-nowrap text-white ${
-												cell.className || ''
-											}`.trim()}
+											class="flex items-center px-4 py-3 font-medium whitespace-nowrap text-white"
 											data-utils={cell.data || ''}
 										>
 											{#if cell.warn}
@@ -446,137 +438,10 @@
 													<img src={cell.avatar} alt="avatar" class="h-8 w-8 rounded-full" />
 												</div>
 											{/if}
-											{#if cell.component}
-												<svelte:component this={cell.component} {...cell.props || {}} />
-											{:else if cell.action}
-												<div class={cell.action.wrapClass || ''}>
-													<button
-														type="button"
-														class={cell.action.className ||
-															'text-xs font-medium text-gray-300 hover:text-white'}
-														onclick={cell.action.onClick}
-													>
-														{cell.action.label}
-													</button>
-												</div>
-											{:else}
-												{#if cell.value !== undefined && cell.value !== null && cell.value !== ''}
-													<span>{cell.value}</span>
-												{/if}
-												{#if cell.badge}
-													<span
-														class={cell.badgeClass ||
-															'ml-2 rounded-full border border-gray-600 px-2.5 py-1 text-[0.6rem] uppercase'}
-													>
-														{cell.badge}
-													</span>
-												{/if}
-											{/if}
-											{#if cell.subvalue}
-												<span
-													class={cell.subvalueClass || 'ml-2 text-[0.6rem] text-gray-400 uppercase'}
-												>
-													{cell.subvalue}
-												</span>
-											{/if}
+											{cell.value}
 										</th>
 									{:else}
-										<td
-											class={`px-4 py-3 ${cell.className || ''}`.trim()}
-											data-utils={cell.data || ''}
-										>
-											{#if cell.avatar || cell.warn}
-												<div class="flex items-center gap-2">
-													{#if cell.warn}
-														<svg
-															class="h-4 w-4 text-red-400"
-															viewBox="0 0 20 20"
-															fill="currentColor"
-															role="img"
-															aria-label="Aucun justificatif"
-															><path
-																fill-rule="evenodd"
-																d="M8.257 3.099c.765-1.36 2.721-1.36 3.486 0l6.518 11.59c.75 1.335-.213 3.011-1.742 3.011H3.48c-1.53 0-2.492-1.676-1.743-3.01L8.257 3.1zM11 14a1 1 0 10-2 0 1 1 0 002 0zm-1-2a1 1 0 01-1-1V7a1 1 0 112 0v4a1 1 0 01-1 1z"
-																clip-rule="evenodd"
-															/></svg
-														>
-													{/if}
-													{#if cell.avatar}
-														<img src={cell.avatar} alt="avatar" class="h-8 w-8 rounded-full" />
-													{/if}
-													<div class="flex flex-col gap-1">
-														{#if cell.component}
-															<svelte:component this={cell.component} {...cell.props || {}} />
-														{:else if cell.action}
-															<div class={cell.action.wrapClass || ''}>
-																<button
-																	type="button"
-																	class={cell.action.className ||
-																		'text-xs font-medium text-gray-300 hover:text-white'}
-																	onclick={cell.action.onClick}
-																>
-																	{cell.action.label}
-																</button>
-															</div>
-														{:else}
-															{#if cell.value !== undefined && cell.value !== null && cell.value !== ''}
-																<span>{cell.value}</span>
-															{/if}
-															{#if cell.badge}
-																<span
-																	class={cell.badgeClass ||
-																		'ml-2 rounded-full border border-gray-600 px-2.5 py-1 text-[0.6rem] uppercase'}
-																>
-																	{cell.badge}
-																</span>
-															{/if}
-														{/if}
-														{#if cell.subvalue}
-															<span
-																class={cell.subvalueClass ||
-																	'text-[0.6rem] text-gray-400 uppercase'}
-															>
-																{cell.subvalue}
-															</span>
-														{/if}
-													</div>
-												</div>
-											{:else}
-												{#if cell.component}
-													<svelte:component this={cell.component} {...cell.props || {}} />
-												{:else if cell.action}
-													<div class={cell.action.wrapClass || ''}>
-														<button
-															type="button"
-															class={cell.action.className ||
-																'text-xs font-medium text-gray-300 hover:text-white'}
-															onclick={cell.action.onClick}
-														>
-															{cell.action.label}
-														</button>
-													</div>
-												{:else}
-													{#if cell.value !== undefined && cell.value !== null && cell.value !== ''}
-														<span>{cell.value}</span>
-													{/if}
-													{#if cell.badge}
-														<span
-															class={cell.badgeClass ||
-																'ml-2 rounded-full border border-gray-600 px-2.5 py-1 text-[0.6rem] uppercase'}
-														>
-															{cell.badge}
-														</span>
-													{/if}
-												{/if}
-												{#if cell.subvalue}
-													<span
-														class={cell.subvalueClass || 'text-[0.6rem] text-gray-400 uppercase'}
-													>
-														{cell.subvalue}
-													</span>
-												{/if}
-											{/if}
-										</td>
+										<td class="px-4 py-3" data-utils={cell.data || ''}>{cell.value}</td>
 									{/if}
 								{/each}
 								{#if actions.length > 0}
@@ -601,8 +466,8 @@
 								{/if}
 							</tr>
 						{/each}
-						{#if pagedItems.length === 0}
-							<tr><td class="px-4 py-3 text-center" colspan={headers.length}>{emptyMessage}</td></tr
+						{#if items.length === 0}
+							<tr><td class="px-4 py-3 text-center" colspan={headers.length}>Aucun résultat</td></tr
 							>
 						{/if}
 					</tbody>
@@ -617,7 +482,7 @@
 					<span class="text-sm font-normal text-gray-400"
 						>Affichage <span class="font-semibold text-white">{showingFrom}</span> -
 						<span class="font-semibold text-white">{showingTo}</span>
-						sur <span class="font-semibold text-white">{displayTotalItems}</span></span
+						sur <span class="font-semibold text-white">{total_items}</span></span
 					>
 					<ul class="inline-flex items-stretch -space-x-px">
 						<li>
