@@ -3,7 +3,6 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { hashCode, hideOnClickOutside, loadSettings, saveSettings } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
-	import { run } from 'svelte/legacy';
 	import { writable } from 'svelte/store';
 
 	// Props
@@ -58,7 +57,7 @@
 	const filtersStore = writable(filters);
 	let hasWideFilter = $derived(filters?.some((f) => f?.wide));
 
-	run(() => {
+	$effect.pre(() => {
 		filtersStore.set(filters);
 		if (can_update_settings) saveSettings(hash, filters);
 	});
@@ -117,11 +116,16 @@
 		await reload({ resetPage: true });
 	});
 
-	run(() => {
-		if (search.length > 0) {
-			current_page = 0;
-			filtersStore.set(filters);
-		}
+	$effect.pre(() => {
+		current_page = 0;
+		filtersStore.set(filters);
+	});
+
+	$effect(() => {
+		search;
+		filters;
+		if (!mounted) return;
+		void reload({ resetPage: true });
 	});
 
 	let unsub: (() => void) | null = null;
@@ -159,7 +163,7 @@
 	function setupDropdown() {
 		// set position of the popup just below the button
 		const dropdown = document.querySelector<HTMLElement>('#filterDropdown-' + hash);
-		const button = document.getElementById('filterDropdownButton') as HTMLElement | null;
+		const button = document.getElementById(`filterDropdownButton-${hash}`) as HTMLElement | null;
 		if (!dropdown || !button) return;
 
 		const wasHidden = dropdown.classList.contains('hidden');
@@ -273,7 +277,7 @@
 						{/if}
 
 						<button
-							id="filterDropdownButton"
+							id={'filterDropdownButton-' + hash}
 							type="button"
 							class="flex w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:z-10 focus:ring-4 focus:ring-gray-700 focus:outline-none md:w-auto"
 							onclick={(e) => {
@@ -327,7 +331,7 @@
 												class={filter.wide
 													? 'grid grid-cols-1 gap-2 text-sm md:grid-cols-2'
 													: 'space-y-2 text-sm'}
-												aria-labelledby="filterDropdownButton"
+												aria-labelledby={'filterDropdownButton-' + hash}
 											>
 												{#each filter.options as option}
 													<li class="flex items-center">
