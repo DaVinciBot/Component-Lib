@@ -24,7 +24,8 @@
 		addNew = null,
 		refreshTopic = undefined,
 		showToolbar = true,
-		showPagination = true
+		showPagination = true,
+		emptyMessage = 'Aucun résultat'
 	} = $props();
 
 	// State
@@ -467,7 +468,7 @@
 							</tr>
 						{/each}
 						{#if items.length === 0}
-							<tr><td class="px-4 py-3 text-center" colspan={headers.length}>Aucun résultat</td></tr
+							<tr><td class="px-4 py-3 text-center" colspan={headers.length}>{emptyMessage}</td></tr
 							>
 						{/if}
 					</tbody>
