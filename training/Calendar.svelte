@@ -213,10 +213,10 @@
 			<div class='grid grid-cols-[auto_1fr_auto_auto]  wrap justify-between items-center inset-y-0 left-center'>
 			<CtaButton
 				type="button"
-				variant="secondary"	
-				size='lb'
+				variant="secondary"
+				size="lb"
 				class="flex w-5 h-1  items-center justify-center border-light-blue/0 rounded-full text-dark-light-blue"
-fullWidth={false}
+				fullWidth={false}
 				onclick={goPrev}
 				aria-label="Semaine précédente"
 			>			
@@ -241,7 +241,7 @@ fullWidth={false}
 				variant="secondary"
 				size="lb"
 				class="flex w-5 h-1 items-center justify-center border-light-blue/0 rounded-full text-dark-light-blue"
-fullWidth={false}
+				fullWidth={false}
 				onclick={goNext}
 				aria-label="Semaine suivante"
 			>
@@ -259,19 +259,18 @@ fullWidth={false}
 				</svg>
 			</CtaButton>
 			</div>
-		<CtaButton
+			<CtaButton
 				type="button"
 				variant="secondary"
 				class="flex w-27 h-1 items-center justify-center  border-light-blue/30 rounded-full px-4 text-[0.7rem] uppercase"
-fullWidth={false}
-				size="lb"
+				fullWidth={false}
+				size="sm"
 				onclick={goToday}
 			>
 				Aujourd'hui
 			</CtaButton>
 		</div>
-					
-		<div class="grid grid-cols-2 gap-1">
+				<div class="grid grid-cols-2 gap-1">
 			<label
 				class="flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
 			>
@@ -527,7 +526,7 @@ fullWidth={false}
 	open={isModalOpen}
 	onClose={handleModalClose}
 	{onRegistrationChange}
-{canManageTraining}
+	{canManageTraining}
 />
 
 <style>
