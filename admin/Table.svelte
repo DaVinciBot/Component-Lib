@@ -443,10 +443,22 @@
 													<img src={cell.avatar} alt="avatar" class="h-8 w-8 rounded-full" />
 												</div>
 											{/if}
-											{cell.value}
+											{#if cell.component}
+												{@const CellComponent = cell.component}
+												<CellComponent {...cell.props || {}} />
+											{:else}
+												{cell.value}
+											{/if}
 										</th>
 									{:else}
-										<td class="px-4 py-3" data-utils={cell.data || ''}>{cell.value}</td>
+										<td class="px-4 py-3" data-utils={cell.data || ''}>
+											{#if cell.component}
+												{@const CellComponent = cell.component}
+												<CellComponent {...cell.props || {}} />
+											{:else}
+												{cell.value}
+											{/if}
+										</td>
 									{/if}
 								{/each}
 								{#if actions.length == 1 && actions[0].type === 'view'}
