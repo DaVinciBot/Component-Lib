@@ -70,7 +70,7 @@
 
 	async function loadPage(page: number, filter = '', step = size) {
 		if (!can_load) return [];
-		let query = supabase.from(dbInfo.table).select(dbInfo.key, { count: 'estimated', head: false });
+		let query = supabase.from(dbInfo.table).select(dbInfo.key, { count: 'exact', head: false });
 
 		if (filter) {
 			const parts = filter.split('&').filter(Boolean);
@@ -445,11 +445,21 @@
 										<td class="px-4 py-3" data-utils={cell.data || ''}>{cell.value}</td>
 									{/if}
 								{/each}
-								{#if actions.length > 0}
+								{#if actions.length == 1 && actions[0].type === 'view'}
 									<td class="flex items-center justify-end px-4 py-3">
 										<button
 											type="button"
-											class="inline-flex items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
+											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
+											onclick={(e) => actions[0].handler(e)}
+										>
+											{actions[0].title}
+										</button>
+									</td>
+								{:else if actions.length > 1}
+									<td class="flex items-center justify-end px-4 py-3">
+										<button
+											type="button"
+											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
 											onclick={(e) => actions.find((a) => a.type === 'view')?.handler(e)}
 										>
 											<svg
