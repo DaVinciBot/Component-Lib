@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import { tableRefresh } from '$lib/store';
 	import { supabase } from '$lib/supabaseClient';
 	import { hashCode, hideOnClickOutside, loadSettings, saveSettings } from '$lib/utils';
@@ -332,23 +333,21 @@
 												>
 													{#each filter.options as option}
 														<li class="flex items-center">
-															<input
+															<Checkbox
 																id={option.name}
-																type="checkbox"
 																value={option.value}
 																checked={option.active}
-																class="h-4 w-4 rounded border-gray-500 bg-gray-600 ring-offset-gray-700 focus:ring-2 focus:ring-primary-600"
-																onchange={(e) => {
+																className="size-4"
+																onchange={(e:any) => {
 																	e.preventDefault();
 																	can_update_settings = true;
 																	const target = e.target as HTMLInputElement | null;
 																	option.active = target?.checked ?? false;
 																	filtersStore.set(filters);
-																}}
-															/>
+																}}/>
 															<label
 																for={option.name}
-																class="ml-2 text-sm font-medium text-gray-100">{option.name}</label
+																class="ml-2 cursor-pointer text-sm font-medium text-gray-100">{option.name}</label
 															>
 														</li>
 													{/each}
