@@ -1,6 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { CalendarSlot } from '$lib/components/training/Calendar.svelte';
+	import {
+		buildActionButtons,
+		buildAvailability,
+		formatDate,
+		formatTimeRange,
+		hasContent,
+		isRegistrationMode,
+		type ActionButton,
+		type AvailabilityMode
+	} from '$lib/components/training/helpers/slotModal';
 	import TrainingRegistrationPopup from '$lib/components/training/TrainingRegistrationPopup.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import {
@@ -28,21 +38,6 @@
 		Video,
 		X
 	} from '@lucide/svelte';
-	import { format } from 'date-fns';
-
-	type AvailabilityMode = {
-		key: 'on-site' | 'remote';
-		label: string;
-		remaining: number;
-		isFull: boolean;
-	};
-
-	type ActionButton = {
-		key: AvailabilityMode['key'];
-		label: string;
-		variant: 'primary' | 'secondary';
-		isCancel?: boolean;
-	};
 
 	type TrainingSlotModalProps = {
 		slot: CalendarSlot | null;
@@ -88,94 +83,11 @@
 		() => slot?.cardStatus === 'my' || Boolean(canManageTraining)
 	);
 
-	function isRegistrationMode(modeKey: AvailabilityMode['key']) {
-		if (!registration) return false;
-		return registration.remote ? modeKey === 'remote' : modeKey === 'on-site';
-	}
+	const availability = $derived(() => buildAvailability(slot));
 
-	function formatDate(value: Date | string) {
-		const date = new Date(value);
-		if (Number.isNaN(date.getTime())) return '--/--/----';
-		return format(date, 'dd/MM/yyyy');
-	}
-
-	function formatTime(value: Date | string) {
-		const date = new Date(value);
-		if (Number.isNaN(date.getTime())) return '--h--';
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
-		return `${hours}h${minutes}`;
-	}
-
-	function formatTimeRange(startValue: Date | string, durationHours: number) {
-		const start = new Date(startValue);
-		if (Number.isNaN(start.getTime())) return '--h-- - --h--';
-		const safeDuration = Number.isFinite(durationHours) ? Math.max(0.25, durationHours) : 1;
-		const end = new Date(start.getTime() + safeDuration * 60 * 60 * 1000);
-		return `${formatTime(start)} - ${formatTime(end)}`;
-	}
-
-	function resolveRemaining(seats: number | null, remaining: number | null) {
-		if (seats === null || seats === undefined) return null;
-		if (remaining === null || remaining === undefined) return Math.max(seats, 0);
-		return Math.max(remaining, 0);
-	}
-
-	function hasContent(value?: string | null) {
-		if (!value) return false;
-		return value.trim().length > 0;
-	}
-
-	const availability = $derived((): AvailabilityMode[] => {
-		if (!slot) return [];
-		const modes: AvailabilityMode[] = [];
-
-		const onSiteRemaining = resolveRemaining(slot.on_site_seats, slot.on_site_remaining);
-		if (onSiteRemaining !== null) {
-			modes.push({
-				key: 'on-site',
-				label: 'Présentiel',
-				remaining: onSiteRemaining,
-				isFull: onSiteRemaining <= 0
-			});
-		}
-
-		const remoteRemaining = resolveRemaining(slot.remote_seats, slot.remote_remaining);
-		if (remoteRemaining !== null) {
-			modes.push({
-				key: 'remote',
-				label: 'Distanciel',
-				remaining: remoteRemaining,
-				isFull: remoteRemaining <= 0
-			});
-		}
-
-		return modes;
-	});
-
-	const actionButtons = $derived((): ActionButton[] => {
-		if (slot?.cardStatus === 'hidden' || slot?.cardStatus === 'my') return [];
-		if (registration) {
-			return [
-				{
-					key: registration.remote ? 'remote' : 'on-site',
-					label:
-						registration.status === 'waitlisted'
-							? "Se retirer de la liste d'attente"
-							: 'Se désinscrire',
-					variant: 'primary',
-					isCancel: true
-				}
-			];
-		}
-		return availability().map((mode) => ({
-			key: mode.key,
-			label: mode.isFull
-				? `Sur liste d'attente (${mode.label.toLowerCase()})`
-				: `S'inscrire (${mode.label.toLowerCase()})`,
-			variant: mode.isFull ? 'secondary' : 'primary'
-		}));
-	});
+	const actionButtons = $derived(() =>
+		buildActionButtons({ slot, registration, availability: availability() })
+	);
 
 	const actionCount = $derived(() => actionButtons().length + (showExcuseToggle() ? 1 : 0));
 
@@ -400,7 +312,7 @@
 								{#each availability() as mode}
 									<div
 										class={`flex items-center gap-3 rounded-xl border p-3 ${
-											registration && isRegistrationMode(mode.key)
+											isRegistrationMode(registration, mode.key)
 												? isWaitlisted()
 													? 'border-waiting/40 bg-waiting/10 text-waiting'
 													: 'border-registered/30 bg-registered/10 text-registered'
@@ -420,7 +332,7 @@
 											<p class="m-0 text-[0.6rem] tracking-[0.32em] uppercase">
 												{mode.label}
 											</p>
-											{#if registration && isRegistrationMode(mode.key)}
+											{#if isRegistrationMode(registration, mode.key)}
 												<p class="m-0 font-semibold">
 													{isWaitlisted() ? "Sur liste d'attente" : 'Inscrit·e'}
 												</p>

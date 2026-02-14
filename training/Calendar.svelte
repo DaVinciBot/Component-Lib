@@ -1,6 +1,15 @@
 <script lang="ts">
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import Spinner from '$lib/components/share/Spinner.svelte';
+	import {
+		filterSlotsByFormat,
+		getCalendarDays,
+		getWeekNumber,
+		getWeekStart,
+		groupSlotsByDay,
+		weekdays
+	} from '$lib/components/training/helpers/calendar';
+	import { calendarFilters } from '$lib/components/training/stores/trainingCalendarFilters';
 	import TrainingCard, {
 		type TrainingCardStatus
 	} from '$lib/components/training/TrainingCard.svelte';
@@ -28,17 +37,6 @@
 		onRetry?: () => void;
 	};
 
-	const weekdays: string[] = [
-		'Lundi',
-		'Mardi',
-		'Mercredi',
-		'Jeudi',
-		'Vendredi',
-		'Samedi',
-		'Dimanche'
-	];
-	const FILTERS_KEY = 'training_calendar_filters';
-
 	let {
 		slots = [],
 		initialDate = new Date(),
@@ -65,36 +63,21 @@
 		viewDate = new Date(initialDate.getFullYear(), initialDate.getMonth(), initialDate.getDate());
 	});
 
-	function loadFilters() {
-		try {
-			if (typeof localStorage === 'undefined') return null;
-			const raw = localStorage.getItem(FILTERS_KEY);
-			return raw ? (JSON.parse(raw) as { inPerson?: boolean; online?: boolean }) : null;
-		} catch (err) {
-			return null;
-		}
-	}
-
 	$effect(() => {
-		if (!filtersReady || typeof localStorage === 'undefined') return;
-		const payload = {
-			inPerson: isInPerson,
-			online: isOnline
-		};
-		try {
-			localStorage.setItem(FILTERS_KEY, JSON.stringify(payload));
-		} catch (err) {
-			// ignore
-		}
+		if (!filtersReady) return;
+		calendarFilters.update((current) => {
+			if (current.inPerson === isInPerson && current.online === isOnline) return current;
+			return { inPerson: isInPerson, online: isOnline };
+		});
 	});
 
 	onMount(() => {
-		const saved = loadFilters();
-		if (saved) {
-			isInPerson = Boolean(saved.inPerson);
-			isOnline = Boolean(saved.online);
-		}
+		const unsubscribe = calendarFilters.subscribe((value) => {
+			isInPerson = value.inPerson;
+			isOnline = value.online;
+		});
 		filtersReady = true;
+		return () => unsubscribe();
 	});
 
 	onMount(async () => {
@@ -107,72 +90,13 @@
 	const weekStart = $derived(() => getWeekStart(viewDate));
 	const weekLabel = $derived(() => `Semaine ${getWeekNumber(viewDate)}`);
 
-	const calendarDays = $derived(() =>
-		Array.from({ length: 7 }, (_, index) => {
-			const date = new Date(
-				weekStart().getFullYear(),
-				weekStart().getMonth(),
-				weekStart().getDate() + index
-			);
-			const key = toDateKey(date);
-			return {
-				date,
-				key,
-				isToday: key === toDateKey(new Date())
-			};
-		})
+	const calendarDays = $derived(() => getCalendarDays(weekStart()));
+
+	const filteredSlots = $derived(() =>
+		filterSlotsByFormat(slots, { inPerson: isInPerson, online: isOnline })
 	);
 
-	const slotsByDay = $derived(() => {
-		const map = new Map<string, CalendarSlot[]>();
-		for (const slot of filteredSlots()) {
-			const date = new Date(slot.start);
-			if (Number.isNaN(date.getTime())) continue;
-			const key = toDateKey(date);
-			const existing = map.get(key) ?? [];
-			existing.push(slot);
-			map.set(key, existing);
-		}
-		return map;
-	});
-
-	function isInPersonSlot(slot: CalendarSlot) {
-		return (slot.on_site_seats ?? 0) > 0 || (slot.on_site_remaining ?? 0) > 0;
-	}
-
-	function isOnlineSlot(slot: CalendarSlot) {
-		return (slot.remote_seats ?? 0) > 0 || (slot.remote_remaining ?? 0) > 0;
-	}
-
-	const filteredSlots = $derived(() => {
-		const filterByFormat = isInPerson || isOnline;
-		return slots.filter((slot) => {
-			const matchesFormat =
-				!filterByFormat || (isInPerson && isInPersonSlot(slot)) || (isOnline && isOnlineSlot(slot));
-			return matchesFormat;
-		});
-	});
-
-	function toDateKey(date: Date) {
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
-	}
-
-	function getWeekStart(date: Date) {
-		const dayIndex = (date.getDay() + 6) % 7;
-		return new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayIndex);
-	}
-
-	function getWeekNumber(date: Date) {
-		const target = new Date(date.getTime());
-		const dayNr = (target.getDay() + 6) % 7;
-		target.setDate(target.getDate() - dayNr + 3);
-		const firstThursday = new Date(target.getFullYear(), 0, 4);
-		const diff = target.getTime() - firstThursday.getTime();
-		return 1 + Math.round(diff / (7 * 24 * 60 * 60 * 1000));
-	}
+	const slotsByDay = $derived(() => groupSlotsByDay(filteredSlots()));
 
 	function setViewDate(date: Date) {
 		viewDate = date;
@@ -465,9 +389,8 @@
 						<div class="flex scroll-mt-4 flex-col gap-2" bind:this={todayRow}>
 							<button
 								type="button"
-								class={`flex h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue ${
-									day.isToday ? 'border-primary-400/60 text-primary-400' : ''
-								}`}
+								class="flex h-14 w-full flex-col items-center justify-center rounded-[14px] border-primary-400/60 text-center tracking-[0.32em] text-primary-400
+								"
 								onclick={() => handleDaySelect(day.date)}
 							>
 								<span class="text-[0.72rem] uppercase">
