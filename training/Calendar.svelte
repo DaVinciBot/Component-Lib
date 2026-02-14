@@ -190,6 +190,14 @@
 
 	function goToday() {
 		setViewDate(new Date());
+		void scrollToToday();
+	}
+
+	async function scrollToToday() {
+		if (typeof window === 'undefined') return;
+		if (!window.matchMedia('(max-width: 1023px)').matches) return;
+		await tick();
+		todayRow?.scrollIntoView({ block: 'start', behavior: 'smooth' });
 	}
 
 	function handleSlotSelect(slot: CalendarSlot) {
