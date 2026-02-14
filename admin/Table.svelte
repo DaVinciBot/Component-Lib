@@ -338,16 +338,18 @@
 																value={option.value}
 																checked={option.active}
 																className="size-4"
-																onchange={(e:any) => {
+																onchange={(e: any) => {
 																	e.preventDefault();
 																	can_update_settings = true;
 																	const target = e.target as HTMLInputElement | null;
 																	option.active = target?.checked ?? false;
 																	filtersStore.set(filters);
-																}}/>
+																}}
+															/>
 															<label
 																for={option.name}
-																class="ml-2 cursor-pointer text-sm font-medium text-gray-100">{option.name}</label
+																class="ml-2 cursor-pointer text-sm font-medium text-gray-100"
+																>{option.name}</label
 															>
 														</li>
 													{/each}
@@ -420,7 +422,7 @@
 									{#if j === 0}
 										<th
 											scope="row"
-											class="flex items-center px-4 py-3 font-medium whitespace-nowrap text-white"
+											class="flex items-center px-2 py-2 font-medium whitespace-nowrap text-white sm:px-4 sm:py-3"
 											data-utils={cell.data || ''}
 										>
 											{#if cell.warn}
@@ -450,7 +452,7 @@
 											{/if}
 										</th>
 									{:else}
-										<td class="px-4 py-3" data-utils={cell.data || ''}>
+										<td class="px-2 py-2 sm:px-4 sm:py-3" data-utils={cell.data || ''}>
 											{#if cell.component}
 												{@const CellComponent = cell.component}
 												<CellComponent {...cell.props || {}} />
@@ -461,7 +463,7 @@
 									{/if}
 								{/each}
 								{#if actions.length == 1 && actions[0].type === 'view'}
-									<td class="flex items-center justify-end px-4 py-3">
+									<td class="flex items-center justify-end px-2 py-2 sm:px-4 sm:py-3">
 										<button
 											type="button"
 											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
@@ -471,7 +473,7 @@
 										</button>
 									</td>
 								{:else if actions.length > 1}
-									<td class="flex items-center justify-end px-4 py-3">
+									<td class="flex items-center justify-end px-2 py-2 sm:px-4 sm:py-3">
 										<button
 											type="button"
 											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
+	import Spinner from '$lib/components/share/Spinner.svelte';
 	import TrainingCard, {
 		type TrainingCardStatus
 	} from '$lib/components/training/TrainingCard.svelte';
@@ -23,6 +24,9 @@
 		onWeekChange?: (weekStart: Date) => void;
 		onRegistrationChange?: () => void;
 		canManageTraining?: boolean;
+		isLoading?: boolean;
+		errorMessage?: string | null;
+		onRetry?: () => void;
 	};
 
 	const weekdays: string[] = [
@@ -43,7 +47,10 @@
 		onSelectDay,
 		onWeekChange,
 		onRegistrationChange,
-		canManageTraining = false
+		canManageTraining = false,
+		isLoading = false,
+		errorMessage = null,
+		onRetry
 	}: CalendarProps = $props();
 
 	let isInPerson = $state(false);
@@ -399,102 +406,146 @@
 			{/each}
 		</div>
 		<div
-			class="no-scrollbar min-h-0 flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20"
+			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20"
 		>
-			<div class="grid min-h-full grid-cols-7">
-				{#each calendarDays() as day, index}
-					<div
-						class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}
-					>
-						<div class="flex h-full flex-col gap-3 p-3">
-							{#each slotsByDay().get(day.key) ?? [] as slot}
-								<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
-									<TrainingCard {slot} status={slot.cardStatus ?? 'free'} />
-								</button>
-							{/each}
-						</div>
+			{#if errorMessage}
+				<div class="flex min-h-full items-center justify-center p-6">
+					<div class="flex flex-col items-center gap-3 text-waiting">
+						<p class="text-sm tracking-wide">{errorMessage}</p>
+						{#if onRetry}
+							<CtaButton type="button" variant="peps" size="sm" onclick={onRetry}>
+								Réessayer
+							</CtaButton>
+						{/if}
 					</div>
-				{/each}
-			</div>
+				</div>
+			{:else}
+				<div class="grid min-h-full grid-cols-7">
+					{#each calendarDays() as day, index}
+						<div
+							class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}
+						>
+							<div class="flex h-full flex-col gap-3 p-3">
+								{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
+									<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+										<TrainingCard {slot} status={slot.cardStatus ?? 'free'} />
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+			{#if isLoading}
+				<div class="absolute inset-0 flex items-center justify-center bg-dark-blue/70">
+					<Spinner
+						divClass="rounded-[22px] border border-light-blue/30 bg-dark-blue/80 px-5 py-4 text-light-blue/80"
+					>
+						Chargement du calendrier
+					</Spinner>
+				</div>
+			{/if}
 		</div>
 	</div>
 
 	<div
-		class="no-scrollbar mt-4 flex-1 overflow-y-auto rounded-2xl border border-light-blue/30 bg-blue-gray/20 p-3 lg:hidden"
+		class="no-scrollbar relative mt-4 flex-1 overflow-y-auto rounded-2xl border border-light-blue/30 bg-blue-gray/20 p-3 lg:hidden"
 	>
-		<div class="flex flex-col gap-4">
-			{#each calendarDays() as day, index}
-				{#if day.isToday}
-					<div class="flex scroll-mt-4 flex-col gap-2" bind:this={todayRow}>
-						<button
-							type="button"
-							class={`flex h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue ${
-								day.isToday ? 'border-primary-400/60 text-primary-400' : ''
-							}`}
-							onclick={() => handleDaySelect(day.date)}
-						>
-							<span class="text-[0.72rem] uppercase">
-								{weekdays[index]}
-							</span>
-							<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
-						</button>
-						<div class="flex flex-1 flex-col gap-2">
-							{#if (slotsByDay().get(day.key) ?? []).length === 0}
-								<div
-									class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
-								>
-									Aucune formation
-								</div>
-							{:else}
-								{#each slotsByDay().get(day.key) ?? [] as slot}
-									<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
-										<TrainingCard
-											{slot}
-											status={slot.cardStatus ?? 'free'}
-											variant="compact"
-											className="text-left"
-										/>
-									</button>
-								{/each}
-							{/if}
+		{#if errorMessage}
+			<div class="flex min-h-[12rem] items-center justify-center px-3 py-8">
+				<div class="flex flex-col items-center gap-3 text-waiting">
+					<p class="text-sm tracking-wide">{errorMessage}</p>
+					{#if onRetry}
+						<CtaButton type="button" variant="peps" size="sm" onclick={onRetry}>
+							Réessayer
+						</CtaButton>
+					{/if}
+				</div>
+			</div>
+		{:else}
+			<div class="flex flex-col gap-4">
+				{#each calendarDays() as day, index}
+					{#if day.isToday}
+						<div class="flex scroll-mt-4 flex-col gap-2" bind:this={todayRow}>
+							<button
+								type="button"
+								class={`flex h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue ${
+									day.isToday ? 'border-primary-400/60 text-primary-400' : ''
+								}`}
+								onclick={() => handleDaySelect(day.date)}
+							>
+								<span class="text-[0.72rem] uppercase">
+									{weekdays[index]}
+								</span>
+								<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
+							</button>
+							<div class="flex flex-1 flex-col gap-2">
+								{#if (slotsByDay().get(day.key) ?? []).length === 0}
+									<div
+										class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+									>
+										Aucune formation
+									</div>
+								{:else}
+									{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
+										<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+											<TrainingCard
+												{slot}
+												status={slot.cardStatus ?? 'free'}
+												variant="compact"
+												className="text-left"
+											/>
+										</button>
+									{/each}
+								{/if}
+							</div>
 						</div>
-					</div>
-				{:else}
-					<div class="flex flex-col gap-2">
-						<button
-							type="button"
-							class="h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue not-last:flex"
-							onclick={() => handleDaySelect(day.date)}
-						>
-							<span class="text-[0.72rem] uppercase">
-								{weekdays[index]}
-							</span>
-							<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
-						</button>
-						<div class="flex flex-1 flex-col gap-2">
-							{#if (slotsByDay().get(day.key) ?? []).length === 0}
-								<div
-									class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
-								>
-									Aucune formation
-								</div>
-							{:else}
-								{#each slotsByDay().get(day.key) ?? [] as slot}
-									<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
-										<TrainingCard
-											{slot}
-											status={slot.cardStatus ?? 'free'}
-											variant="compact"
-											className="text-left"
-										/>
-									</button>
-								{/each}
-							{/if}
+					{:else}
+						<div class="flex flex-col gap-2">
+							<button
+								type="button"
+								class="h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue not-last:flex"
+								onclick={() => handleDaySelect(day.date)}
+							>
+								<span class="text-[0.72rem] uppercase">
+									{weekdays[index]}
+								</span>
+								<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
+							</button>
+							<div class="flex flex-1 flex-col gap-2">
+								{#if (slotsByDay().get(day.key) ?? []).length === 0}
+									<div
+										class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+									>
+										Aucune formation
+									</div>
+								{:else}
+									{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
+										<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+											<TrainingCard
+												{slot}
+												status={slot.cardStatus ?? 'free'}
+												variant="compact"
+												className="text-left"
+											/>
+										</button>
+									{/each}
+								{/if}
+							</div>
 						</div>
-					</div>
-				{/if}
-			{/each}
-		</div>
+					{/if}
+				{/each}
+			</div>
+		{/if}
+		{#if isLoading}
+			<div class="absolute inset-0 flex items-center justify-center bg-dark-blue/70">
+				<Spinner
+					divClass="rounded-[22px] border border-light-blue/30 bg-dark-blue/80 px-5 py-4 text-light-blue/80"
+				>
+					Chargement du calendrier
+				</Spinner>
+			</div>
+		{/if}
 	</div>
 
 	<div class="flex flex-wrap gap-3 pt-2 pl-0.5 text-xs tracking-wide sm:gap-5 sm:pt-4 sm:text-sm">
