@@ -1,10 +1,7 @@
-<script>
+<script lang="ts">
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
-	import { run } from 'svelte/legacy';
 
-	// @ts-nocheck
-
-	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, onSubmit?: any, onClose?: any}} */
+	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, onSubmit?: any, onClose?: (event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) => any}} */
 	let {
 		type = 'Utilisateur',
 		type_accord = 'un',
@@ -12,16 +9,16 @@
 		fields = $bindable([]),
 		id = 'CrudModal',
 		title = `${action} ${type_accord} ${type}`,
-		onSubmit = async () => {
+		onSubmit = async (e: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) => {
 			console.log('Submit');
 		},
-		onClose = (e) => {}
+		onClose = (e: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) => {}
 	} = $props();
 
-	run(() => {
+	$effect.pre(() => {
 		for (let field of fields) {
 			if (field.type === 'select' && field.value) {
-				field.options = field.options.map((option) => {
+				field.options = field.options.map((option: { value: any }) => {
 					if (option.value === field.value) field.autoselect = true;
 					return {
 						...option,
@@ -53,7 +50,7 @@
 					<button
 						type="button"
 						class="ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-500 hover:bg-gray-600 hover:text-white"
-						onclick={onClose}
+						onclick={(e) => onClose(e)}
 					>
 						<svg
 							aria-hidden="true"
@@ -96,7 +93,7 @@
 										name={field.id || field.name.toLowerCase()}
 										class="almarai-regular block w-full cursor-pointer rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 										onchange={field.onChange || null}
-										readonly={field.readonly || false}
+										disabled={field.readonly || false}
 									>
 										{#if (field.readonly || false) == false && !field.required}<option
 												selected={!field.autoselect}
@@ -150,11 +147,17 @@
 										class="hidden"
 										onchange={field.onChange ||
 											((e) => {
-												console.log(e.target.files[0]);
-												const file = e.target.files[0];
-												const reader = new FileReader();
-												reader.onload = (e) => (field.value = e.target.result);
-												reader.readAsDataURL(file);
+												const target = e.target as HTMLInputElement;
+												if (target && target.files) {
+													console.log(target.files[0]);
+													const file = target.files[0];
+													const reader = new FileReader();
+													reader.onload = (fileEvent) => {
+														const fileTarget = fileEvent.target as FileReader;
+														field.value = fileTarget.result;
+													};
+													reader.readAsDataURL(file);
+												}
 											})}
 									/>
 									<label
@@ -207,9 +210,10 @@
 													</p>
 													<button
 														type="button"
+														aria-label="Remove {doc.name}"
 														class="hover: ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
-														onclick={async (e) => {
-															field.value = field.value.filter((el) => el.name != doc.name);
+														onclick={async (e: MouseEvent) => {
+															field.value = field.value.filter((el: any) => el.name != doc.name);
 															if (field.onRemove) await field.onRemove(e, doc.name);
 														}}
 													>
@@ -241,27 +245,38 @@
 										class="hidden"
 										onchange={field.onChange ||
 											((e) => {
-												if (field.multiple) {
-													const temp_arr = [...e.target.files].map((file) => {
-														return { name: file.name, type: file.type };
-													});
-													for (let i = 0; i < temp_arr.length; i++) {
-														if (temp_arr[i].type.split('/')[0] === 'image') {
-															const reader = new FileReader();
-															reader.onload = (e) => (temp_arr.value = e.target.result);
-															reader.readAsDataURL(e.target.files[i]);
+												const target = e.target as HTMLInputElement;
+												if (target && target.files) {
+													if (field.multiple) {
+														const temp_arr = [...target.files].map((file) => {
+															return { name: file.name, type: file.type, value: '' };
+														});
+														for (let i = 0; i < temp_arr.length; i++) {
+															if (temp_arr[i].type.split('/')[0] === 'image') {
+																const reader = new FileReader();
+																reader.onload = (fileEvent) => {
+																	const fileTarget = fileEvent.target as FileReader;
+																	if (typeof fileTarget.result === 'string') {
+																		temp_arr[i].value = fileTarget.result;
+																	}
+																};
+																reader.readAsDataURL(target.files[i]);
+															}
 														}
-													}
-													field.value = [...field.value, ...temp_arr];
-												} else {
-													const file = e.target.files[0];
-													field.data = file.type.split('/')[0];
-													if (field.data === 'image') {
-														const reader = new FileReader();
-														reader.onload = (e) => (field.value = e.target.result);
-														reader.readAsDataURL(file);
+														field.value = [...field.value, ...temp_arr];
 													} else {
-														field.value = file;
+														const file = target.files[0];
+														field.data = file.type.split('/')[0];
+														if (field.data === 'image') {
+															const reader = new FileReader();
+															reader.onload = (fileEvent) => {
+																const fileTarget = fileEvent.target as FileReader;
+																field.value = fileTarget.result;
+															};
+															reader.readAsDataURL(file);
+														} else {
+															field.value = file;
+														}
 													}
 												}
 											})}
@@ -355,8 +370,11 @@
 											readonly={field.readonly || false}
 											name={field.id || field.name.toLowerCase()}
 											oninput={async (e) => {
-												field.value = e.target.value;
-												field.completion = await field.onChange(e);
+												const target = e.target as HTMLInputElement;
+												if (target) {
+													field.value = target.value;
+													field.completion = await field.onChange(e);
+												}
 											}}
 										/>
 									</div>
@@ -419,7 +437,7 @@
 											disabled={field.readonly || false}
 											checked={field.checked || false}
 											onchange={(event) => {
-												const target = event.target;
+												const target = event.target as HTMLInputElement;
 												field.checked = target && target.checked === true;
 												fields = [...fields];
 											}}
@@ -449,7 +467,7 @@
 					<button
 						type="submit"
 						class="inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 focus:ring-4 focus:ring-primary-800 focus:outline-none"
-						onclick={onSubmit}
+						onclick={(e) => onSubmit(e)}
 					>
 						<svg
 							class="mr-1 -ml-1 h-6 w-6"
