@@ -572,7 +572,7 @@
 							type="button"
 							size="sm"
 							variant="secondary"
-							onclick={() => goto('presences')}
+							onclick={() => goto('/formation/presences')}
 							class="w-auto justify-self-end md:col-start-2"
 							>Gérer les présences
 						</CtaButton>

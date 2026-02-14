@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import Spinner from '$lib/components/share/Spinner.svelte';
 	import TrainingCard, {
@@ -231,7 +230,7 @@
 				<CtaButton
 					type="button"
 					variant="secondary"
-					size="sb"
+					size="xs"
 					class="flex h-1 w-5  items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
 					fullWidth={false}
 					onclick={goPrev}
@@ -256,7 +255,7 @@
 				<CtaButton
 					type="button"
 					variant="secondary"
-					size="sb"
+					size="xs"
 					class="flex h-1 w-5 items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
 					fullWidth={false}
 					onclick={goNext}
@@ -382,17 +381,6 @@
 			>
 				Aujourd'hui
 			</CtaButton>
-			{#if canManageTraining}
-				<CtaButton
-					type="button"
-					variant="primary"
-					size="sm"
-					class="flex size-7 items-center pr-2 pl-2 uppercase"
-					onclick={() => goto('admin')}
-				>
-					Accès admin
-				</CtaButton>
-			{/if}
 		</div>
 	</header>
 
