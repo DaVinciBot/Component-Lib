@@ -1,3 +1,4 @@
+import { formatParisDate, formatParisTime, formatParisTimeRange } from '$lib/helpers/parisTime';
 import type { RegistrationSummary } from '$lib/services/training';
 
 export type AvailabilityMode = {
@@ -30,28 +31,15 @@ export function hasContent(value?: string | null) {
 }
 
 export function formatDate(value: Date | string) {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return '--/--/----';
-	const day = String(date.getDate()).padStart(2, '0');
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const year = date.getFullYear();
-	return `${day}/${month}/${year}`;
+	return formatParisDate(value);
 }
 
 export function formatTime(value: Date | string) {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return '--h--';
-	const hours = String(date.getHours()).padStart(2, '0');
-	const minutes = String(date.getMinutes()).padStart(2, '0');
-	return `${hours}h${minutes}`;
+	return formatParisTime(value);
 }
 
 export function formatTimeRange(startValue: Date | string, durationHours: number) {
-	const start = new Date(startValue);
-	if (Number.isNaN(start.getTime())) return '--h-- - --h--';
-	const safeDuration = Number.isFinite(durationHours) ? Math.max(0.25, durationHours) : 1;
-	const end = new Date(start.getTime() + safeDuration * 60 * 60 * 1000);
-	return `${formatTime(start)} - ${formatTime(end)}`;
+	return formatParisTimeRange(startValue, durationHours);
 }
 
 export function resolveRemaining(seats?: number | null, remaining?: number | null) {

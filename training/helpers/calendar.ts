@@ -1,3 +1,9 @@
+import {
+	getParisDateKey,
+	getParisDateParts,
+	getParisMidnightUtcFromParts
+} from '$lib/helpers/parisTime';
+
 export const weekdays: string[] = [
 	'Lundi',
 	'Mardi',
@@ -17,33 +23,38 @@ export type CalendarSlotLike = {
 };
 
 export function toDateKey(date: Date) {
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const day = String(date.getDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
+	return getParisDateKey(date);
 }
 
 export function getWeekStart(date: Date) {
-	const dayIndex = (date.getDay() + 6) % 7;
-	return new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayIndex);
+	const parts = getParisDateParts(date);
+	if (!parts) return new Date(NaN);
+	const baseUtc = Date.UTC(parts.year, parts.month - 1, parts.day);
+	const dayIndex = (new Date(baseUtc).getUTCDay() + 6) % 7;
+	const weekStartUtc = new Date(baseUtc - dayIndex * 24 * 60 * 60 * 1000);
+	return (
+		getParisMidnightUtcFromParts({
+			year: weekStartUtc.getUTCFullYear(),
+			month: weekStartUtc.getUTCMonth() + 1,
+			day: weekStartUtc.getUTCDate()
+		}) ?? new Date(NaN)
+	);
 }
 
 export function getWeekNumber(date: Date) {
-	const target = new Date(date.getTime());
-	const dayNr = (target.getDay() + 6) % 7;
-	target.setDate(target.getDate() - dayNr + 3);
-	const firstThursday = new Date(target.getFullYear(), 0, 4);
+	const parts = getParisDateParts(date);
+	if (!parts) return NaN;
+	const target = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+	const dayNr = (target.getUTCDay() + 6) % 7;
+	target.setUTCDate(target.getUTCDate() - dayNr + 3);
+	const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
 	const diff = target.getTime() - firstThursday.getTime();
 	return 1 + Math.round(diff / (7 * 24 * 60 * 60 * 1000));
 }
 
 export function getCalendarDays(weekStart: Date) {
 	return Array.from({ length: 7 }, (_, index) => {
-		const date = new Date(
-			weekStart.getFullYear(),
-			weekStart.getMonth(),
-			weekStart.getDate() + index
-		);
+		const date = new Date(weekStart.getTime() + index * 24 * 60 * 60 * 1000);
 		const key = toDateKey(date);
 		return {
 			date,

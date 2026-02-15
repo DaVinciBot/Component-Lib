@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatParisTimeRange } from '$lib/helpers/parisTime';
 	import type { TrainingSlotListItem } from '$lib/services/training';
 
 	export type TrainingCardStatus = 'complete' | 'free' | 'hidden' | 'registered' | 'waiting' | 'my';
@@ -23,22 +24,9 @@
 		variant?: 'default' | 'compact';
 	} = $props();
 
-	function formatTime(value: Date | string) {
-		const date = new Date(value);
-		if (Number.isNaN(date.getTime())) return '--h--';
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
-		return `${hours}h${minutes}`;
-	}
-
 	function formatTimeRange(startValue: Date | string, durationHours: number) {
-		const start = new Date(startValue);
-		if (Number.isNaN(start.getTime())) return '--h-- - --h--';
-		const safeDuration = Number.isFinite(durationHours) ? Math.max(0.25, durationHours) : 1;
-		const end = new Date(start.getTime() + safeDuration * 60 * 60 * 1000);
-		return `${formatTime(start)} - ${formatTime(end)}`;
+		return formatParisTimeRange(startValue, durationHours);
 	}
-
 	function getConfirmedRegistrations(slot: TrainingSlotView) {
 		return (slot.on_site_registered ?? 0) + (slot.remote_registered ?? 0);
 	}

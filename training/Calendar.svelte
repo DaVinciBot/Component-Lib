@@ -15,8 +15,8 @@
 	} from '$lib/components/training/TrainingCard.svelte';
 	import TrainingSlotModal from '$lib/components/training/TrainingSlotModal.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
+	import { formatParisDayShort, getParisDateUtc } from '$lib/helpers/parisTime';
 	import type { TrainingSlotListItem } from '$lib/services/training';
-	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 
 	export type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
@@ -57,10 +57,10 @@
 	let filtersReady = $state(false);
 	let todayRow: HTMLDivElement | null = $state(null);
 
-	let viewDate = $state(new Date());
+	let viewDate = $state(getParisDateUtc(new Date()) ?? new Date());
 
 	$effect(() => {
-		viewDate = new Date(initialDate.getFullYear(), initialDate.getMonth(), initialDate.getDate());
+		viewDate = getParisDateUtc(initialDate) ?? new Date();
 	});
 
 	$effect(() => {
@@ -104,15 +104,15 @@
 	}
 
 	function goPrev() {
-		setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() - 7));
+		setViewDate(new Date(viewDate.getTime() - 7 * 24 * 60 * 60 * 1000));
 	}
 
 	function goNext() {
-		setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + 7));
+		setViewDate(new Date(viewDate.getTime() + 7 * 24 * 60 * 60 * 1000));
 	}
 
 	function goToday() {
-		setViewDate(new Date());
+		setViewDate(getParisDateUtc(new Date()) ?? new Date());
 		void scrollToToday();
 	}
 
@@ -321,7 +321,7 @@
 					onclick={() => handleDaySelect(day.date)}
 				>
 					<span>{weekdays[index].substring(0, 2)}</span>
-					<span>{format(day.date, 'dd/MM')}</span>
+					<span>{formatParisDayShort(day.date)}</span>
 				</button>
 			{/each}
 		</div>
@@ -396,7 +396,7 @@
 								<span class="text-[0.72rem] uppercase">
 									{weekdays[index]}
 								</span>
-								<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
+								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>
 							<div class="flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
@@ -429,7 +429,7 @@
 								<span class="text-[0.72rem] uppercase">
 									{weekdays[index]}
 								</span>
-								<span class="font-semibold">{format(day.date, 'dd/MM')}</span>
+								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>
 							<div class="flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
