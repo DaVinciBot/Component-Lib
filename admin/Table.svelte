@@ -144,6 +144,7 @@
 	});
 
 	let unsub: (() => void) | null = null;
+	let resizeHandler: (() => void) | null = null;
 
 	onMount(async () => {
 		mounted = true;
@@ -157,9 +158,10 @@
 				setupDropdown();
 				document.body.appendChild(dropdown);
 
-				onresize = () => {
+				resizeHandler = () => {
 					setupDropdown();
 				};
+				window.addEventListener('resize', resizeHandler);
 			}
 		}
 
@@ -222,6 +224,7 @@
 				console.error(e);
 			} // else the el is prerendered
 		}
+		if (resizeHandler) window.removeEventListener('resize', resizeHandler);
 		if (typeof unsub === 'function') unsub();
 	});
 </script>

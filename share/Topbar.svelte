@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import { userdata } from '$lib/store';
 	import { hideOnClickOutside, loadUserdata } from '$lib/utils';
@@ -12,6 +12,7 @@
 	let skip = false;
 	let sidebarOpen = $state(false);
 	let onMobile = $state(false);
+	let resizeHandler: (() => void) | null = null;
 
 	let dropdown = $state({
 		projects: false,
@@ -84,7 +85,7 @@
 		// detach, dedupe and initialize dropdowns
 		attachDropdowns();
 
-		onresize = () => {
+		resizeHandler = () => {
 			onMobile = window.innerWidth < 768;
 			// reposition dropdowns
 			document.querySelectorAll('.dropdown').forEach((el) => {
@@ -94,6 +95,7 @@
 				}
 			});
 		};
+		window.addEventListener('resize', resizeHandler);
 	});
 
 	// make sure dropdowns are closed and detached dropdown nodes removed when navigating
@@ -120,6 +122,7 @@
 		} catch (e) {
 			// ignore
 		}
+		if (resizeHandler) window.removeEventListener('resize', resizeHandler);
 	});
 
 	function closeSidebar() {

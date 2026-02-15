@@ -14,15 +14,6 @@
 		variant?: 'default' | 'compact';
 	};
 
-	const allowedStatuses = new Set<TrainingCardStatus>([
-		'complete',
-		'free',
-		'hidden',
-		'registered',
-		'waiting',
-		'my'
-	]);
-
 	let {
 		slot,
 		status,

@@ -460,7 +460,7 @@
 															<img
 																src={c.image}
 																alt={c.text}
-																class="mr-1 -ml-3 h-6 w-6 rounded-full"
+																class="mr-2 -ml-3 h-6 w-6 rounded-full"
 															/>
 														{/if}
 														<div class="flex flex-col items-start">
