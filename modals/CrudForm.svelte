@@ -15,6 +15,11 @@
 		onClose = (e: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) => {}
 	} = $props();
 
+	let autocompleteValues: Record<string, string> = $state({});
+	let autocompleteCompletions: Record<string, any[]> = $state({});
+	let autocompleteImages: Record<string, string | null> = $state({});
+	let autocompleteRequestIds: Record<string, number> = $state({});
+
 	$effect.pre(() => {
 		for (let field of fields) {
 			if (field.type === 'select' && field.value) {
@@ -70,7 +75,7 @@
 				<!-- Modal body -->
 				<form action="#">
 					<div class="mb-4 grid gap-4 sm:grid-cols-2">
-						{#each fields as field}
+						{#each fields as field (field.id || field.name)}
 							<div class={field.wide ? 'col-span-2' : ''}>
 								{#if field.type == 'document' || field.type == 'img'}
 									<p
@@ -350,79 +355,127 @@
 										>+
 									</button>
 								{:else if field.type === 'autocomplete'}
-									<div
-										class="relative flex w-full flex-row items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-									>
-										{#if field.image}
-											<img
-												src={field.image}
-												alt={field.name}
-												class="mr-1 -ml-1 h-6 w-6 rounded-full"
-											/>
-										{/if}
-										<input
-											type="text"
-											id={field.id || field.name.toLowerCase()}
-											class=" bordertext-sm block w-full rounded-lg border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-											placeholder={field.placeholder || field.name.toLowerCase()}
-											required={field.required}
-											value={field.value || ''}
-											readonly={field.readonly || false}
-											name={field.id || field.name.toLowerCase()}
-											oninput={async (e) => {
-												const target = e.target as HTMLInputElement;
-												if (target) {
-													field.value = target.value;
-													field.completion = await field.onChange(e);
-												}
-											}}
-										/>
-									</div>
-									{#if field.completion?.length > 0}
+									{@const fieldKey = field.id || field.name.toLowerCase()}
+									{@const inputValue = autocompleteValues[fieldKey] ?? field.value ?? ''}
+									{@const completion = autocompleteCompletions[fieldKey] ?? field.completion ?? []}
+									{@const displayImage = autocompleteImages[fieldKey] ?? field.image}
+									<div class="relative w-full">
 										<div
-											class="almarai-regular absolute z-10 mt-1 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
+											class="flex w-full flex-row items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 										>
-											{#each field.completion as c}
-												<button
-													class="almarai-regular flex w-full
-											items-center rounded-lg border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
-													onclick={async (e) => {
-														field.value = c.text;
-														field.data = c.value;
-														field.completion = [];
-														// add image to field if exists
-														if (c.image) {
-															field.image = c.image;
+											{#if displayImage}
+												<img
+													src={displayImage}
+													alt={field.name}
+													class="mr-1 -ml-1 h-6 w-6 rounded-full"
+												/>
+											{/if}
+											<input
+												type="text"
+												id={field.id || field.name.toLowerCase()}
+												class=" bordertext-sm block w-full rounded-lg border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+												placeholder={field.placeholder || field.name.toLowerCase()}
+												required={field.required}
+												value={inputValue}
+												readonly={field.readonly || false}
+												name={field.id || field.name.toLowerCase()}
+												oninput={(e) => {
+													const target = e.target as HTMLInputElement;
+													if (target) {
+														const nextValue = target.value;
+														autocompleteValues = {
+															...autocompleteValues,
+															[fieldKey]: nextValue
+														};
+														field.value = nextValue;
+														const result = field.onChange ? field.onChange(e) : [];
+														if (result && typeof result.then === 'function') {
+															const requestId = (autocompleteRequestIds[fieldKey] || 0) + 1;
+															autocompleteRequestIds = {
+																...autocompleteRequestIds,
+																[fieldKey]: requestId
+															};
+															result
+																.then((completion: any[]) => {
+																	if (autocompleteRequestIds[fieldKey] !== requestId) return;
+																	autocompleteCompletions = {
+																		...autocompleteCompletions,
+																		[fieldKey]: completion || []
+																	};
+																})
+																.catch((error: any) => {
+																	console.error('[admin][trainer-search] onChange failed', error);
+																});
+														} else {
+															autocompleteCompletions = {
+																...autocompleteCompletions,
+																[fieldKey]: (result as any[]) || []
+															};
 														}
-														// call onSelect function if exists
-														if (
-															field.onSelect &&
-															field.onSelect.constructor.name == 'AsyncFunction'
-														)
-															await field.onSelect(c.value);
-														if (field.onSelect && field.onSelect.constructor.name == 'Function')
-															field.onSelect(c.value);
-													}}
-												>
-													{#if c.image}
-														<img
-															src={c.image}
-															alt={c.text}
-															class="mr-1 -ml-1 h-6 w-6 rounded-full"
-														/>
-													{/if}
-													<div class="flex flex-col items-start">
-														<p>
-															{c.text}
-														</p>
-														{#if c.subtext}
-															<p class="text-xs text-gray-400">{c.subtext}</p>
-														{/if}
-													</div>
-												</button>
-											{/each}
+													}
+												}}
+											/>
 										</div>
-									{/if}
+										{#if completion?.length > 0}
+											<div
+												class="almarai-regular absolute top-full left-0 z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
+											>
+												{#each completion as c}
+													<button
+														type="button"
+														class="almarai-regular flex w-full items-center rounded-lg border-b border-gray-700 {c.image
+															? 'p-1'
+															: ''} cursor-pointer"
+														onclick={async (e) => {
+															field.value = c.text;
+															field.data = c.value;
+															field.completion = [];
+															// add image to field if exists
+															if (c.image) {
+																field.image = c.image;
+															}
+															autocompleteImages = {
+																...autocompleteImages,
+																[fieldKey]: c.image || null
+															};
+															// call onSelect function if exists
+															if (
+																field.onSelect &&
+																field.onSelect.constructor.name == 'AsyncFunction'
+															)
+																await field.onSelect(c.value);
+															if (field.onSelect && field.onSelect.constructor.name == 'Function')
+																field.onSelect(c.value);
+															autocompleteValues = {
+																...autocompleteValues,
+																[fieldKey]: c.text
+															};
+															autocompleteCompletions = {
+																...autocompleteCompletions,
+																[fieldKey]: []
+															};
+														}}
+													>
+														{#if c.image}
+															<img
+																src={c.image}
+																alt={c.text}
+																class="mr-1 -ml-1 h-6 w-6 rounded-full"
+															/>
+														{/if}
+														<div class="flex flex-col items-start">
+															<p>
+																{c.text}
+															</p>
+															{#if c.subtext}
+																<p class="text-xs text-gray-400">{c.subtext}</p>
+															{/if}
+														</div>
+													</button>
+												{/each}
+											</div>
+										{/if}
+									</div>
 								{:else if field.type === 'checkbox'}
 									<label
 										for={field.id || field.name.toLowerCase()}
