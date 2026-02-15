@@ -224,6 +224,15 @@
 						<h2 class="m-0 mt-2 text-2xl font-semibold text-light-blue">
 							{slot?.name}
 						</h2>
+						{#if slot?.cardStatus === 'hidden'}
+							<p class="m-0 mt-1 text-sm text-waiting">
+								Cette session est {slot?.status === 'canceled'
+									? 'annulée'
+									: slot?.status === 'postponed'
+										? 'reportée'
+										: 'en cours de planification'}
+							</p>
+						{/if}
 					</div>
 					<button
 						type="button"
@@ -453,7 +462,7 @@
 					{/if}
 				</div>
 
-				{#if actionCount() > 0}
+				{#if actionCount() > 0 && slot?.cardStatus !== 'hidden'}
 					<div class="mt-4 grid gap-3 md:grid-cols-2">
 						{#if showExcuseToggle()}
 							<CtaButton

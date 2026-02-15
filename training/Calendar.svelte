@@ -372,7 +372,7 @@
 		class="no-scrollbar relative mt-4 flex-1 overflow-y-auto rounded-2xl border border-light-blue/30 bg-blue-gray/20 p-3 lg:hidden"
 	>
 		{#if errorMessage}
-			<div class="flex min-h-[12rem] items-center justify-center px-3 py-8">
+			<div class="flex min-h-48 items-center justify-center px-3 py-8">
 				<div class="flex flex-col items-center gap-3 text-waiting">
 					<p class="text-sm tracking-wide">{errorMessage}</p>
 					{#if onRetry}
