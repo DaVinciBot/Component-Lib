@@ -54,7 +54,7 @@
 					</h3>
 					<button
 						type="button"
-						class="ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-500 hover:bg-gray-600 hover:text-white"
+						class="ml-auto inline-flex cursor-pointer items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-500 hover:bg-gray-600 hover:text-white"
 						onclick={(e) => onClose(e)}
 					>
 						<svg
@@ -361,7 +361,7 @@
 									{@const displayImage = autocompleteImages[fieldKey] ?? field.image}
 									<div class="relative w-full">
 										<div
-											class="flex w-full flex-row items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+											class="flex w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 										>
 											{#if displayImage}
 												<img

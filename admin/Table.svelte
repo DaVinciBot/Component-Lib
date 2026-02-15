@@ -45,8 +45,24 @@
 		if (current_page >= totalPages) current_page = Math.max(0, totalPages - 1);
 	});
 
+	function getFiltersSignature(filters: any[]) {
+		return (filters || []).map((filter) => ({
+			category: filter?.category,
+			value: filter?.value,
+			wide: filter?.wide,
+			options: (filter?.options || []).map((option: any) => ({
+				value: option?.value,
+				name: option?.name
+			}))
+		}));
+	}
+
 	// persistable filter state
-	const hash = Math.abs(hashCode(JSON.stringify(filters) + JSON.stringify(dbInfo) + searchable));
+	const hash = $derived(
+		Math.abs(
+			hashCode(JSON.stringify(getFiltersSignature(filters)) + JSON.stringify(dbInfo) + searchable)
+		)
+	);
 	let can_update_settings = $state(false);
 	const filtersStore = writable(filters);
 	let hasWideFilter = $derived(filters?.some((f) => f?.wide));
@@ -70,17 +86,20 @@
 		return out.slice(0, -1);
 	}
 
+	function applyFilters(query: any, filter: string) {
+		if (!filter) return query;
+		const parts = filter.split('&').filter(Boolean);
+		for (const p of parts) {
+			const [column, operator, value] = p.split(':');
+			query = query.filter(column, operator as any, value as any);
+		}
+		return query;
+	}
+
 	async function loadPage(page: number, filter = '', step = size) {
 		if (!can_load) return [];
 		let query = supabase.from(dbInfo.table).select(dbInfo.key, { count: 'exact', head: false });
-
-		if (filter) {
-			const parts = filter.split('&').filter(Boolean);
-			for (const p of parts) {
-				const [column, operator, value] = p.split(':');
-				query = query.filter(column, operator as any, value as any);
-			}
-		}
+		query = applyFilters(query, filter);
 		if (dbInfo.ordering) {
 			const [col, dir] = dbInfo.ordering.split(':');
 			query = query.order(col, { ascending: dir === 'asc' });
