@@ -1,8 +1,14 @@
 <script>
+	export let small = false;
 </script>
 
-<a href="https://mouser.fr/">
-	<svg height="80" viewBox="0 0 859 332" fill="none" xmlns="http://www.w3.org/2000/svg">
+<a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer">
+	<svg
+		height={small ? 50 : 80}
+		viewBox="0 0 859 332"
+		fill="none"
+		xmlns="http://www.w3.org/2000/svg"
+	>
 		<g clip-path="url(#clip0_821_29)">
 			<path
 				d="M431.22 116.255H431.444V177.768H448.691V90.9492H422.776L404.23 150.67H404.006L384.429 90.9492H358.491V177.768H375.738V116.858H375.985L396.502 177.768H410.681L431.22 116.255Z"

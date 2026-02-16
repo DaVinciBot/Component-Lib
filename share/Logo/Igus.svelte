@@ -1,8 +1,9 @@
 <script>
+	export let small = false;
 </script>
 
-<a href="https://www.igus.fr/">
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 307.68 159.53" height="80">
+<a href="https://www.igus.fr/" target="_blank" rel="noopener noreferrer">
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 307.68 159.53" height={small ? 50 : 80}>
 		<path
 			fill="#B3C2FF"
 			d="M294.45,38.34c0-1.35-.81-1.92-2.42-1.92h-2.52v6.66h1.09V40.23h1l1.72,2.85h1.23l-1.86-2.93A1.69,1.69,0,0,0,294.45,38.34Zm-3.85,1V37.36h1.32c.66,0,1.44.09,1.44.89,0,1-.72,1-1.54,1Z"

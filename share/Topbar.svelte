@@ -18,6 +18,9 @@
 		infos: false
 	};
 
+	let projectsDropdownEl;
+	let infosDropdownEl;
+
 	userdata.subscribe((value) => {
 		if (value) {
 			user = value;
@@ -31,90 +34,72 @@
 		dropdownEl.style.left = 'calc(' + rect.left + 'px + 0rem)';
 	}
 
-	function attachDropdowns() {
-		// Move dropdowns to body once, remove stale duplicates, position, and bind outside-click once
-		const dropdownNodes = Array.from(document.querySelectorAll('.dropdown'));
-		dropdownNodes.forEach((el) => {
-			const activatorId = el.dataset.activator;
-			if (!activatorId) return;
+	function initDropdown(el, activatorId) {
+		if (!el) return;
 
-			// If there is an older, stale dropdown in <body> for the same activator, remove it
-			document
-				.querySelectorAll('body > .dropdown[data-activator="' + activatorId + '"]')
-				.forEach((stale) => {
-					if (stale !== el && stale.parentNode) {
-						stale.parentNode.removeChild(stale);
-					}
-				});
+		// Remove from current parent if not body
+		if (el.parentNode !== document.body) {
+			document.body.appendChild(el);
+		}
 
-			// Only append to body if not already there
-			if (el.parentNode !== document.body) {
-				document.body.appendChild(el);
+		const activator = document.getElementById(activatorId);
+		if (activator) {
+			setupDropdown(el, activator);
+		}
+
+		if (!el.dataset.clickOutsideBound) {
+			try {
+				hideOnClickOutside(
+					el,
+					() => {
+						dropdown.projects = false;
+						dropdown.infos = false;
+					},
+					true
+				);
+				el.dataset.clickOutsideBound = 'true';
+			} catch (e) {
+				console.error('Failed to bind outside click for dropdown:', e);
 			}
-
-			// Position under its activator
-			const activator = document.getElementById(activatorId);
-			if (activator) {
-				setupDropdown(el, activator);
-			}
-
-			// Bind outside click only once per element
-			if (!el.dataset.clickOutsideBound) {
-				try {
-					hideOnClickOutside(
-						el,
-						() => {
-							dropdown.projects = false;
-							dropdown.infos = false;
-						},
-						true
-					);
-					el.dataset.clickOutsideBound = 'true';
-				} catch (e) {
-					// ignore binding failures
-				}
-			}
-		});
+		}
 	}
 
 	onMount(async () => {
 		if (!skip) await loadUserdata();
 		onMobile = window.innerWidth < 768;
 
-		// detach, dedupe and initialize dropdowns
-		attachDropdowns();
+		initDropdown(projectsDropdownEl, 'ProjectsButton');
+		initDropdown(infosDropdownEl, 'AssosButton');
 
 		onresize = () => {
 			onMobile = window.innerWidth < 768;
 			// reposition dropdowns
-			document.querySelectorAll('.dropdown').forEach((el) => {
-				const activator = document.querySelector('#' + el.dataset.activator);
-				if (activator) {
-					setupDropdown(el, activator);
-				}
-			});
+			if (projectsDropdownEl && document.getElementById('ProjectsButton'))
+				setupDropdown(projectsDropdownEl, document.getElementById('ProjectsButton'));
+			if (infosDropdownEl && document.getElementById('AssosButton'))
+				setupDropdown(infosDropdownEl, document.getElementById('AssosButton'));
 		};
 	});
 
-	// make sure dropdowns are closed and detached dropdown nodes removed when navigating
+	// make sure dropdowns are closed when navigating
 	const _afterUnsub = afterNavigate(() => {
 		dropdown.projects = false;
 		dropdown.infos = false;
-
-		// remove any dropdown elements that were detached to document.body
-		try {
-			document.querySelectorAll('body > .dropdown').forEach((el) => {
-				if (el && el.parentNode) el.parentNode.removeChild(el);
-			});
-		} catch (e) {
-			// ignore
-		}
 	});
 
 	onDestroy(() => {
 		// unregister navigation handler
 		dropdown.projects = false;
 		dropdown.infos = false;
+
+		// Remove dropdowns from body
+		if (projectsDropdownEl && projectsDropdownEl.parentNode === document.body) {
+			projectsDropdownEl.parentNode.removeChild(projectsDropdownEl);
+		}
+		if (infosDropdownEl && infosDropdownEl.parentNode === document.body) {
+			infosDropdownEl.parentNode.removeChild(infosDropdownEl);
+		}
+
 		try {
 			if (typeof _afterUnsub === 'function') _afterUnsub();
 		} catch (e) {
@@ -203,6 +188,7 @@
 							</svg></button
 						>
 						<div
+							bind:this={projectsDropdownEl}
 							data-activator="ProjectsButton"
 							class="{dropdown.projects
 								? ''
@@ -261,6 +247,7 @@
 							</svg></button
 						>
 						<div
+							bind:this={infosDropdownEl}
 							data-activator="AssosButton"
 							class="{dropdown.infos
 								? ''
@@ -306,10 +293,17 @@
 		</div>
 	</nav>
 	{#if onMobile}
-		<div
-			class="fixed inset-0 z-10 bg-black bg-opacity-40 {!sidebarOpen ? 'hidden' : ''}"
+		<button
+			type="button"
+			class="fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black bg-opacity-40 {!sidebarOpen
+				? 'hidden'
+				: ''}"
+			aria-label="Close sidebar"
 			on:click={closeSidebar}
-		></div>
+			on:keydown={(e) => {
+				if (e.key === 'Escape') closeSidebar();
+			}}
+		></button>
 
 		<SideBar
 			open={sidebarOpen}
@@ -322,9 +316,9 @@
 					title: 'Nos Projets',
 					icon: 'briefcase',
 					sub: [
-						{ title: 'La CDR', uri: '/projets/coupe-de-france-de-robotique' },
-						{ title: 'Exodus', uri: '#' },
-						{ title: 'CoHoMa', uri: '#' }
+						{ title: 'La CDR', uri: '/project/coupe-de-robotique' },
+						{ title: 'Exodus', uri: '/project/exodus' },
+						{ title: 'CoHoMa', uri: '/project/cohoma' }
 					]
 				},
 				{
