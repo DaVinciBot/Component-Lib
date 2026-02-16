@@ -148,15 +148,15 @@
 	<header
 		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
-		<div class="grid grid-cols-[auto_1fr_auto_auto] gap-1">
+		<div class="grid grid-cols-3 gap-1">
 			<div
-				class="wrap left-center inset-y-0 grid grid-cols-[auto_1fr_auto_auto] items-center justify-between"
+				class="wrap left-center inset-y-0 col-span-2 gap-2 flex flex-row items-center"
 			>
 				<CtaButton
 					type="button"
 					variant="secondary"
 					size="xs"
-					class="flex h-1 w-5  items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
+					class="flex h-1 w-5 items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
 					fullWidth={false}
 					onclick={goPrev}
 					aria-label="Semaine précédente"
@@ -203,14 +203,14 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				class="flex items-center justify-center  rounded-full border-light-blue/30 px-4 text-[0.7rem] uppercase"
+				class="flex items-center justify-end col-span-1 rounded-full border-light-blue/0 text-[0.7rem] uppercase"
 				fullWidth={false}
 				size="sm"
 				onclick={goToday}
-				><CalendarSync />
+				><CalendarSync class="size-4.5" />
 			</CtaButton>
 		</div>
-		<div class="grid grid-cols-2 gap-1">
+		<div class="flex flex-row gap-3 pb-2">
 			<label
 				class="flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
 			>
