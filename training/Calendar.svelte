@@ -17,6 +17,7 @@
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import { formatParisDayShort, getParisDateUtc } from '$lib/helpers/parisTime';
 	import type { TrainingSlotListItem } from '$lib/services/training';
+	import { CalendarSync } from '@lucide/svelte';
 	import { onMount, tick } from 'svelte';
 
 	export type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
@@ -206,8 +207,7 @@
 				fullWidth={false}
 				size="sm"
 				onclick={goToday}
-			>
-				Aujourd'hui
+				><CalendarSync />
 			</CtaButton>
 		</div>
 		<div class="grid grid-cols-2 gap-1">
@@ -255,7 +255,7 @@
 		>
 			<CtaButton
 				type="button"
-				variant="peps"
+				variant="secondary"
 				size="sm"
 				class="flex size-7 items-center justify-center pr-1 pl-1"
 				onclick={goPrev}
@@ -277,7 +277,7 @@
 			<span class="text-dark-light-blue uppercase">{weekLabel()}</span>
 			<CtaButton
 				type="button"
-				variant="peps"
+				variant="secondary"
 				size="sm"
 				class="flex size-7 items-center justify-center pr-1 pl-1"
 				onclick={goNext}
@@ -298,12 +298,11 @@
 			</CtaButton>
 			<CtaButton
 				type="button"
-				variant="peps"
+				variant="secondary"
 				class="flex size-7 items-center pr-2 pl-2 uppercase"
 				size="sm"
 				onclick={goToday}
-			>
-				Aujourd'hui
+				><CalendarSync />
 			</CtaButton>
 		</div>
 	</header>

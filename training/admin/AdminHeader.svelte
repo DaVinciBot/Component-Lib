@@ -21,11 +21,11 @@
 			</p>
 		</div>
 		<div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-			<CTAButton type="button" variant="primary" size="sm" onclick={onAddTraining}>
-				Nouvelle formation
+			<CTAButton type="button" variant="primary" size="sm" onclick={onAddSlot}>
+				Nouveau créneaux
 			</CTAButton>
-			<CTAButton type="button" variant="secondary" size="sm" onclick={onAddSlot}>
-				Nouveau slot
+			<CTAButton type="button" variant="secondary" size="sm" onclick={onAddTraining}>
+				Nouvelle formation
 			</CTAButton>
 		</div>
 	</div>
