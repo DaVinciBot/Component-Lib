@@ -165,7 +165,7 @@
 
 <!-- Backdrop -->
 <div
-	class="fixed inset-0 z-40 bg-black bg-opacity-40 backdrop-blur-sm"
+	class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
 	role="button"
 	tabindex="0"
 	on:click={__onClose}

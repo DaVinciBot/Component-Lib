@@ -26,6 +26,7 @@
 
 	// State
 	let search = '';
+	let searchTimer;
 	let items = [];
 	let current_page = 0;
 	let total_items = 0;
@@ -62,7 +63,7 @@
 
 	async function loadPage(page, filter = '', step = size) {
 		if (!can_load) return [];
-		let query = supabase.from(dbInfo.table).select(dbInfo.key, { count: 'estimated', head: false });
+		let query = supabase.from(dbInfo.table).select(dbInfo.key, { count: 'exact', head: false });
 
 		if (filter) {
 			const parts = filter.split('&').filter(Boolean);
@@ -97,10 +98,7 @@
 		await reload({ resetPage: true });
 	});
 
-	$: if (search.length > 0) {
-		current_page = 0;
-		filtersStore.set(filters);
-	}
+	// search reactivity is handled by the on:input handler on the input element
 
 	let unsub = null;
 
@@ -211,6 +209,13 @@
 								class="block w-full p-2 pl-10 text-sm text-white placeholder-gray-400 bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500"
 								placeholder="Search"
 								bind:value={search}
+								on:input={() => {
+									clearTimeout(searchTimer);
+									searchTimer = setTimeout(() => {
+										current_page = 0;
+										filtersStore.set(filters);
+									}, 300);
+								}}
 							/>
 						</div>
 					</form>
