@@ -257,12 +257,12 @@
 				type="button"
 				variant="secondary"
 				size="sm"
-				class="flex size-7 items-center justify-center pr-1 pl-1"
+				class="flex size-7 items-center justify-center pr-1 pl-1 border-light-blue/0"
 				onclick={goPrev}
 				aria-label="Semaine précédente"
 			>
 				<svg
-					class="size-3.5"
+					class="size-4.5"
 					viewBox="0 0 12 12"
 					fill="none"
 					stroke="currentColor"
@@ -279,12 +279,12 @@
 				type="button"
 				variant="secondary"
 				size="sm"
-				class="flex size-7 items-center justify-center pr-1 pl-1"
+				class="flex size-7 items-center justify-center pr-1 pl-1 border-light-blue/0"
 				onclick={goNext}
 				aria-label="Semaine suivante"
 			>
 				<svg
-					class="size-3.5"
+					class="size-4.5"
 					viewBox="0 0 12 12"
 					fill="none"
 					stroke="currentColor"
@@ -299,10 +299,10 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				class="flex size-7 items-center pr-2 pl-2 uppercase"
+				class="flex size-7 items-center pr-1 pl-1 uppercase border-light-blue/0"
 				size="sm"
 				onclick={goToday}
-				><CalendarSync />
+				><CalendarSync class="size-4.5" />
 			</CtaButton>
 		</div>
 	</header>
