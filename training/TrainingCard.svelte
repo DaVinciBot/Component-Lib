@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { formatParisTimeRange } from '$lib/helpers/parisTime';
 	import type { TrainingSlotListItem } from '$lib/services/training';
+	import { MapPin,Clock,UserRound } from '@lucide/svelte'
 
 	export type TrainingCardStatus = 'complete' | 'free' | 'hidden' | 'registered' | 'waiting' | 'my';
 
@@ -62,31 +63,31 @@
 	</article>
 {:else}
 	<article
-		class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[12px] border-2 border-[var(--card-color)] bg-gradient-to-b from-[rgba(1,1,50,0.96)] to-[rgba(1,1,30,0.92)] p-[8px] ${className}`.trim()}
+		class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[8px] border-l-8 border-[var(--card-color)] bg-[rgba(1,1,50,0.96)] py-[8px] px-[12px] ${className}`.trim()}
 	>
-		<h3 class={`training-card__title m-0 text-[1.05rem] font-bold text-(--card-color)`.trim()}>
+		<h3 class={`training-card__title overflow-hidden text-ellipsis text-start m-0 mb-1 text-[1.05rem] font-bold`.trim()}>
 			{slot.name}
 		</h3>
 		<div class="flex flex-col gap-1 text-left font-semibold">
-			<div class="flex flex-wrap items-baseline gap-x-2">
-				<span class="text-[0.85rem] text-dark-light-blue">Heure :</span>
-				<span class="text-[0.8rem] text-light-blue">
+			<div class="flex flex-wrap items-center gap-x-2">
+				<span class="text-[0.85rem] text-dark-light-blue"><Clock class="size-4" /></span>
+				<span class="text-[0.8rem] text-dark-light-blue">
 					{formatTimeRange(slot.start, slot.duration_hours)}
 				</span>
 			</div>
 			{#if status === 'my'}
-				<div class="flex flex-wrap items-baseline gap-x-2">
-					<span class="text-[0.85rem] text-dark-light-blue">Inscriptions :</span>
-					<span class="text-[0.8rem] text-light-blue">
+				<div class="flex flex-wrap items-center gap-x-2">
+					<span class="text-[0.85rem] text-dark-light-blue"><UserRound class="size-4" /></span>
+					<span class="text-[0.8rem] text-dark-light-blue">
 						{getConfirmedRegistrations(slot)} inscrit·e{getConfirmedRegistrations(slot) > 1
 							? '·s'
 							: ''}
 					</span>
 				</div>
 			{:else}
-				<div class="flex flex-wrap items-baseline gap-x-2">
-					<span class="text-[0.85rem] text-dark-light-blue">Lieu :</span>
-					<span class="text-[0.8rem] text-light-blue">
+				<div class="flex flex-wrap items-center gap-x-2">
+					<span class="text-[0.85rem] text-dark-light-blue"><MapPin class="size-4" /></span>
+					<span class="text-[0.8rem] text-dark-light-blue">
 						{slot.location ?? '-'}
 					</span>
 				</div>

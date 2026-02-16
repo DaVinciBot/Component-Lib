@@ -309,7 +309,7 @@
 
 	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
 		<div
-			class="grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase"
+			class="grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase rounded-t-xl"
 		>
 			{#each calendarDays() as day, index}
 				<button
@@ -325,7 +325,7 @@
 			{/each}
 		</div>
 		<div
-			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20"
+			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20 rounded-b-xl"
 		>
 			{#if errorMessage}
 				<div class="flex min-h-full items-center justify-center p-6">
