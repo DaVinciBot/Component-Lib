@@ -65,7 +65,7 @@
 	<article
 		class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[8px] border-l-8 border-[var(--card-color)] bg-[rgba(1,1,50,0.96)] py-[8px] px-[12px] ${className}`.trim()}
 	>
-		<h3 class={`training-card__title overflow-hidden text-ellipsis text-start m-0 mb-1 text-[1.05rem] font-bold`.trim()}>
+		<h3 class={`training-card__title overflow-hidden text-ellipsis text-start m-0 mb-1 text-[1.0rem] font-bold`.trim()}>
 			{slot.name}
 		</h3>
 		<div class="flex flex-col gap-1 text-left font-semibold">

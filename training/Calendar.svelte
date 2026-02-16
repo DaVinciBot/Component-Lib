@@ -466,15 +466,15 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-wrap gap-3 pt-2 pl-0.5 text-xs tracking-wide sm:gap-5 sm:pt-4 sm:text-sm">
-		<div class="text-light-blue">Légende :</div>
-		<div class="text-light-blue">Libre</div>
-		<div class="text-registered">Inscrit·e</div>
-		<div class="text-waiting">Sur liste d'attente</div>
-		<div class="text-blue-peps">Ma formation</div>
+	<div class="flex flex-wrap gap-2 pt-2 pl-0.5 text-xs tracking-wide sm:gap-3 sm:pt-4 sm:text-sm">
+		<div class="text-light-blue">Légende</div>
+		<div class="text-light-blue border-1 border-light-blue px-2 py-0 rounded-2xl">Libre</div>
+		<div class="text-registered border-1 border-registered px-2 py-0 rounded-2xl">Inscrit·e</div>
+		<div class="text-waiting border-1 border-waiting px-2 py-0 rounded-2xl">Sur liste d'attente</div>
+		<div class="text-blue-peps border-1 border-blue-peps px-2 py-0 rounded-2xl">Ma formation</div>
 		{#if canManageTraining}
-			<div class="text-complete">Complète</div>
-			<div class="text-dark-blue-gray opacity-55">Masquée</div>
+			<div class="text-complete border-1 border-complete px-2 py-0 rounded-2xl">Complète</div>
+			<div class="text-dark-blue-gray opacity-55 border-1 border-b-dark-blue-gray px-2 py-0 rounded-2xl">Masquée</div>
 		{/if}
 	</div>
 </section>
