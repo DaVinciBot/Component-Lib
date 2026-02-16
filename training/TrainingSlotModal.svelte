@@ -74,6 +74,7 @@
 			((registration?.status === 'registered' && registration.remote) || slot?.cardStatus === 'my')
 	);
 	const isWaitlisted = $derived(() => registration?.status === 'waitlisted');
+	const isDone = $derived(() => slot?.status === 'done');
 	const confirmLabel = $derived(() => (confirmLoading ? 'Inscription...' : "S'inscrire"));
 	const showExcuseToggle = $derived(() => slot?.excusable && registration?.status === 'registered');
 	const excuseToggleLabel = $derived(() =>
@@ -89,7 +90,9 @@
 		buildActionButtons({ slot, registration, availability: availability() })
 	);
 
-	const actionCount = $derived(() => actionButtons().length + (showExcuseToggle() ? 1 : 0));
+	const actionCount = $derived(() =>
+		isDone() ? 0 : actionButtons().length + (showExcuseToggle() ? 1 : 0)
+	);
 
 	async function refreshRegistration() {
 		if (!slot) return;
@@ -462,7 +465,7 @@
 					{/if}
 				</div>
 
-				{#if actionCount() > 0 && slot?.cardStatus !== 'hidden'}
+				{#if !isDone() && actionCount() > 0 && slot?.cardStatus !== 'hidden'}
 					<div class="mt-4 grid gap-3 md:grid-cols-2">
 						{#if showExcuseToggle()}
 							<CtaButton

@@ -20,7 +20,7 @@
 <section class="rounded-[28px] border border-light-blue/10 bg-dark-blue/80 p-5 sm:p-6">
 	<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 		<div>
-			<h2 class="text-xl font-semibold text-white">Slots de formation</h2>
+			<h2 class="text-xl font-semibold text-white">Créneaux de formation</h2>
 			<p class="text-sm text-light-blue/70">Planifiez, suivez et ajustez les sessions.</p>
 		</div>
 		<div class="flex flex-col sm:w-40 sm:flex-row sm:flex-wrap">

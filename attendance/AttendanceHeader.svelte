@@ -20,7 +20,7 @@
 			<p class="text-xs tracking-[0.3em] text-light-blue/60 uppercase">Formateur·ice·s</p>
 			<h1 class="mt-2 text-2xl font-bold text-white sm:text-3xl">Présences aux formations</h1>
 			<p class="mt-2 text-sm text-light-blue/70">
-				Indiquez les présences des membres sur vos slots de formation.
+				Indiquez les présences des membres sur vos créneaux de formation.
 			</p>
 		</div>
 		<div class="flex flex-wrap gap-3 sm:justify-end">
