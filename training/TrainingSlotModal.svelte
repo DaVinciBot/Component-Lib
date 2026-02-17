@@ -247,7 +247,7 @@
 					</button>
 				</header>
 				<div class="mt-5 grid gap-3">
-					<div class="grid gap-3 rounded-2xl border border-light-blue/20 bg-blue-gray/20 p-4">
+					<div class="grid gap-3 rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
 						<div class="grid gap-3 md:grid-cols-2">
 							<div class="flex items-center gap-3">
 								<div
@@ -313,7 +313,7 @@
 					</div>
 
 					{#if availability().length > 0}
-						<div class="rounded-2xl border border-light-blue/20 bg-dark-blue-gray/30 p-4">
+						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
 							<div
 								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
 							>
@@ -323,13 +323,7 @@
 							<div class="mt-4 grid gap-3 md:grid-cols-2">
 								{#each availability() as mode}
 									<div
-										class={`flex items-center gap-3 rounded-xl border p-3 ${
-											isRegistrationMode(registration, mode.key)
-												? isWaitlisted()
-													? 'border-waiting/40 bg-waiting/10 text-waiting'
-													: 'border-registered/30 bg-registered/10 text-registered'
-												: 'border-light-blue/20 bg-dark-blue/60 text-dark-light-blue'
-										}`}
+										class={`flex items-center gap-3 rounded-xl border-0`}
 									>
 										<div
 											class="flex size-10 items-center justify-center rounded-lg border border-light-blue/30 bg-dark-blue/80 text-dark-light-blue"
