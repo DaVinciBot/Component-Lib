@@ -220,11 +220,11 @@
 		>
 			<div class="max-h-[calc(100vh-2rem)] overflow-y-auto p-4 sm:p-6">
 				<header class="flex items-start justify-between gap-4 border-b border-light-blue/20 pb-4">
-					<div>
+					<div class="max-w-[calc(100%-60px)]">
 						<p class="m-0 text-xs tracking-[0.38em] text-dark-light-blue uppercase">
 							{slot ? formatDate(slot.start) : ''}
 						</p>
-						<h2 class="m-0 mt-2 text-2xl font-semibold text-light-blue">
+						<h2 class="m-0 mt-2 text-2xl font-semibold text-light-blue overflow-hidden text-ellipsis">
 							{slot?.name}
 						</h2>
 						{#if slot?.cardStatus === 'hidden'}
@@ -239,7 +239,7 @@
 					</div>
 					<button
 						type="button"
-						class="flex size-9 items-center justify-center rounded-full border border-light-blue/30 text-light-blue transition hover:border-light-blue/60"
+						class="flex size-9 cursor-pointer items-center justify-center rounded-full border border-light-blue/30 text-light-blue transition hover:border-light-blue/60"
 						onclick={onClose}
 						aria-label="Fermer"
 					>
