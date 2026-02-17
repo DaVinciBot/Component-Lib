@@ -146,7 +146,7 @@
 	class="flex h-full flex-col rounded-[26px] border border-light-blue/40 bg-dark-blue/90 p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
 >
 	<header
-		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(3,6,50,0.9)] to-[rgba(1,1,30,0.82)] px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
+		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-dark-blue/70 px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
 		<div class="grid grid-cols-3 gap-1">
 			<div
@@ -397,10 +397,10 @@
 								</span>
 								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>
-							<div class="flex flex-1 flex-col gap-2">
+							<div class="flex flex-1 flex-col gap-2 mb-5">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
-										class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+										class="flex h-14 w-full items-center justify-center rounded-[8px] border-1 border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
 									>
 										Aucune formation
 									</div>
@@ -430,10 +430,10 @@
 								</span>
 								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>
-							<div class="flex flex-1 flex-col gap-2">
+							<div class="flex flex-1 flex-col gap-2 mb-4">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
-										class="flex h-14 w-full items-center rounded-[14px] border-2 border-dashed border-dark-light-blue-faded/50 bg-dark-blue/40 px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+										class="flex h-14 w-full items-center justify-center rounded-[8px] border-1 border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
 									>
 										Aucune formation
 									</div>
