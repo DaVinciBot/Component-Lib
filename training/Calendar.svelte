@@ -149,9 +149,7 @@
 		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-dark-blue/70 px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
 		<div class="grid grid-cols-3 gap-1">
-			<div
-				class="wrap left-center inset-y-0 col-span-2 gap-2 flex flex-row items-center"
-			>
+			<div class="wrap left-center inset-y-0 col-span-2 flex flex-row items-center gap-2">
 				<CtaButton
 					type="button"
 					variant="secondary"
@@ -203,7 +201,7 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				class="flex items-center justify-end col-span-1 rounded-full border-light-blue/0 text-[0.7rem] uppercase"
+				class="col-span-1 flex items-center justify-end rounded-full border-light-blue/0 text-[0.7rem] uppercase"
 				fullWidth={false}
 				size="sm"
 				onclick={goToday}
@@ -257,7 +255,7 @@
 				type="button"
 				variant="secondary"
 				size="sm"
-				class="flex size-7 items-center justify-center pr-1 pl-1 border-light-blue/0"
+				class="flex size-7 items-center justify-center border-light-blue/0 pr-1 pl-1"
 				onclick={goPrev}
 				aria-label="Semaine précédente"
 			>
@@ -279,7 +277,7 @@
 				type="button"
 				variant="secondary"
 				size="sm"
-				class="flex size-7 items-center justify-center pr-1 pl-1 border-light-blue/0"
+				class="flex size-7 items-center justify-center border-light-blue/0 pr-1 pl-1"
 				onclick={goNext}
 				aria-label="Semaine suivante"
 			>
@@ -299,7 +297,7 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				class="flex size-7 items-center pr-1 pl-1 uppercase border-light-blue/0"
+				class="flex size-7 items-center border-light-blue/0 pr-1 pl-1 uppercase"
 				size="sm"
 				onclick={goToday}
 				><CalendarSync class="size-4.5" />
@@ -309,7 +307,7 @@
 
 	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
 		<div
-			class="grid grid-cols-[repeat(7,1fr)] border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase rounded-t-xl"
+			class="grid grid-cols-[repeat(7,1fr)] rounded-t-xl border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase"
 		>
 			{#each calendarDays() as day, index}
 				<button
@@ -325,7 +323,7 @@
 			{/each}
 		</div>
 		<div
-			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto border-x border-b border-light-blue/30 bg-blue-gray/20 rounded-b-xl"
+			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto rounded-b-xl border-x border-b border-light-blue/30 bg-blue-gray/20"
 		>
 			{#if errorMessage}
 				<div class="flex min-h-full items-center justify-center p-6">
@@ -397,7 +395,7 @@
 								</span>
 								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>
-							<div class="flex flex-1 flex-col gap-2 mb-5">
+							<div class="mb-5 flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
 										class="flex h-14 w-full items-center justify-center rounded-[8px] border-1 border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
@@ -430,7 +428,7 @@
 								</span>
 								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>
-							<div class="flex flex-1 flex-col gap-2 mb-4">
+							<div class="mb-4 flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
 										class="flex h-14 w-full items-center justify-center rounded-[8px] border-1 border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
@@ -467,14 +465,17 @@
 	</div>
 
 	<div class="flex flex-wrap gap-2 pt-2 pl-0.5 text-xs tracking-wide sm:gap-3 sm:pt-4 sm:text-sm">
-		<div class="text-light-blue">Légende</div>
-		<div class="text-light-blue border-1 border-light-blue px-2 py-0 rounded-2xl">Libre</div>
-		<div class="text-registered border-1 border-registered px-2 py-0 rounded-2xl">Inscrit·e</div>
-		<div class="text-waiting border-1 border-waiting px-2 py-0 rounded-2xl">Sur liste d'attente</div>
-		<div class="text-blue-peps border-1 border-blue-peps px-2 py-0 rounded-2xl">Ma formation</div>
+		<div class="rounded-2xl border border-light-blue px-2 py-0 text-light-blue">Libre</div>
+		<div class="rounded-2xl border border-registered px-2 py-0 text-registered">Inscrit·e</div>
+		<div class="rounded-2xl border border-waiting px-2 py-0 text-waiting">Sur liste d'attente</div>
+		<div class="rounded-2xl border border-blue-peps px-2 py-0 text-blue-peps">Ma formation</div>
 		{#if canManageTraining}
-			<div class="text-complete border-1 border-complete px-2 py-0 rounded-2xl">Complète</div>
-			<div class="text-dark-blue-gray opacity-55 border-1 border-b-dark-blue-gray px-2 py-0 rounded-2xl">Masquée</div>
+			<div class="rounded-2xl border border-complete px-2 py-0 text-complete">Complète</div>
+			<div
+				class="rounded-2xl border border-dark-blue-gray px-2 py-0 text-dark-blue-gray opacity-55"
+			>
+				Masquée
+			</div>
 		{/if}
 	</div>
 </section>
