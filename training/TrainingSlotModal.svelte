@@ -326,16 +326,16 @@
 										class={`flex items-center gap-3 rounded-xl border-0`}
 									>
 										<div
-											class="flex size-10 items-center justify-center rounded-lg border border-light-blue/30 bg-dark-blue/80 text-dark-light-blue"
+											class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70 text-light-blue"
 										>
 											{#if mode.key === 'on-site'}
-												<House />
+												<House class="size-5.5" />
 											{:else}
-												<LaptopMinimal />
+												<LaptopMinimal class="size-5.5" />
 											{/if}
 										</div>
 										<div>
-											<p class="m-0 text-[0.6rem] tracking-[0.32em] uppercase">
+											<p class="m-0 text-[0.6rem] tracking-[0.32em] uppercase text-dark-light-blue">
 												{mode.label}
 											</p>
 											{#if isRegistrationMode(registration, mode.key)}
@@ -343,9 +343,9 @@
 													{isWaitlisted() ? "Sur liste d'attente" : 'Inscrit·e'}
 												</p>
 											{:else if mode.isFull}
-												<p class="m-0 text-[0.9rem] text-waiting">Liste d'attente ouverte</p>
+												<p class="m-0 text-sm font-semibold text-waiting">Liste d'attente ouverte</p>
 											{:else}
-												<p class="m-0 font-semibold">
+												<p class="m-0 text-sm font-semibold text-light-blue">
 													{`${mode.remaining} ${mode.remaining > 1 ? 'places restantes' : 'place restante'}`}
 												</p>
 											{/if}
@@ -396,10 +396,10 @@
 												</div>
 											{/if}
 											<div class="min-w-0 flex-1">
-												<p class="m-0 truncate text-sm font-semibold text-light-blue">
+												<p class="m-0 truncate text-sm/4 font-semibold text-light-blue">
 													{reg.member_username ?? 'Membre'}
 												</p>
-												<p class="m-0 text-[0.7rem] text-light-blue/70">
+												<p class="m-0 text-[0.7rem]/3 text-light-blue/70">
 													{reg.remote ? 'Distanciel' : 'Présentiel'}
 												</p>
 											</div>
@@ -418,7 +418,7 @@
 								<MessageSquare class="size-4" />
 								<span>Description</span>
 							</div>
-							<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
+							<p class="mt-3 text-sm/5 text-light-blue/90">
 								{@html slot?.description ?? ''}
 							</p>
 						</div>
@@ -432,7 +432,7 @@
 								<TextAlignStart class="size-4" />
 								<span>Prérequis</span>
 							</div>
-							<p class="mt-3 text-sm leading-relaxed text-light-blue/90">
+							<p class="mt-3 text-sm/5 text-light-blue/90">
 								{@html slot?.prerequisites ?? ''}
 							</p>
 						</div>
