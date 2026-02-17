@@ -272,7 +272,7 @@
 					<path d="M7.5 2.5 4 6l3.5 3.5" />
 				</svg>
 			</CtaButton>
-			<span class="text-dark-light-blue uppercase">{weekLabel()}</span>
+			<span class="text-dark-light-blue uppercase text-[0.8rem]">{weekLabel()}</span>
 			<CtaButton
 				type="button"
 				variant="secondary"
