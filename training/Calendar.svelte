@@ -143,10 +143,10 @@
 </script>
 
 <section
-	class="flex h-full flex-col rounded-[26px] border border-light-blue/40 bg-dark-blue/90 p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
+	class="flex h-full flex-col rounded-[26px] border border-light-blue/15 bg-blue-gray/15 p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
 >
 	<header
-		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-dark-blue/70 px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
+		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-blue-gray/10 px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
 		<div class="grid grid-cols-3 gap-1">
 			<div class="wrap left-center inset-y-0 col-span-2 flex flex-row items-center gap-2">
@@ -224,7 +224,7 @@
 		</div>
 	</header>
 	<header
-		class="hidden flex-wrap items-center justify-between gap-4 rounded-xl border border-light-blue/30 bg-dark-blue/70 px-4 py-3 text-sm text-light-blue lg:flex"
+		class="hidden flex-wrap items-center justify-between gap-4 rounded-xl border border-light-blue/30 bg-blue-gray/10 px-4 py-3 text-sm text-light-blue lg:flex"
 	>
 		<div class="flex flex-wrap items-center gap-6">
 			<label
@@ -272,7 +272,7 @@
 					<path d="M7.5 2.5 4 6l3.5 3.5" />
 				</svg>
 			</CtaButton>
-			<span class="text-dark-light-blue uppercase text-[0.8rem]">{weekLabel()}</span>
+			<span class="text-[0.8rem] text-dark-light-blue uppercase">{weekLabel()}</span>
 			<CtaButton
 				type="button"
 				variant="secondary"
@@ -307,7 +307,7 @@
 
 	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
 		<div
-			class="grid grid-cols-[repeat(7,1fr)] rounded-t-xl border border-light-blue/30 bg-dark-blue-gray/20 text-sm tracking-[0.2em] text-light-blue uppercase"
+			class="grid grid-cols-[repeat(7,1fr)] rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
 		>
 			{#each calendarDays() as day, index}
 				<button
@@ -323,7 +323,7 @@
 			{/each}
 		</div>
 		<div
-			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto rounded-b-xl border-x border-b border-light-blue/30 bg-blue-gray/20"
+			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto rounded-b-xl border-x border-b border-light-blue/30 bg-blue-gray/10"
 		>
 			{#if errorMessage}
 				<div class="flex min-h-full items-center justify-center p-6">
