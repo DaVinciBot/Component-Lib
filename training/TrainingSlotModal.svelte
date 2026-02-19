@@ -12,6 +12,7 @@
 		type AvailabilityMode
 	} from '$lib/components/training/helpers/slotModal';
 	import TrainingRegistrationPopup from '$lib/components/training/TrainingRegistrationPopup.svelte';
+	import Badge from '$lib/components/utils/Badge.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import {
 		cancelRegistration,
@@ -76,6 +77,16 @@
 	const isWaitlisted = $derived(() => registration?.status === 'waitlisted');
 	const isDone = $derived(() => slot?.status === 'done');
 	const confirmLabel = $derived(() => (confirmLoading ? 'Inscription...' : "S'inscrire"));
+	const badgeClass = $derived(() =>
+		isWaitlisted()
+			? 'border-waiting/40 bg-waiting/15 text-waiting'
+			: registration
+				? 'border-registered/40 bg-registered/15 text-registered'
+				: ''
+	);
+	const badgeText = $derived(() =>
+		isWaitlisted() ? "Liste d'attente" : registration ? 'Inscrit·e' : ''
+	);
 	const showExcuseToggle = $derived(() => slot?.excusable && registration?.status === 'registered');
 	const excuseToggleLabel = $derived(() =>
 		registration?.to_excuse ? "Je n'ai plus besoin d'excuse" : "J'ai besoin d'une excuse"
@@ -224,11 +235,14 @@
 						<p class="m-0 text-xs tracking-[0.38em] text-dark-light-blue uppercase">
 							{slot ? formatDate(slot.start) : ''}
 						</p>
-						<h2
-							class="m-0 mt-2 overflow-hidden text-2xl font-semibold text-ellipsis text-light-blue"
-						>
-							{slot?.name}
-						</h2>
+						<div class="m-0 mt-2 flex items-center gap-2">
+							<h2 class="overflow-hidden text-2xl font-semibold text-ellipsis text-light-blue">
+								{slot?.name}
+							</h2>
+							{#if badgeText()}
+								<Badge text={badgeText()} className={`h-min ${badgeClass()}`} />
+							{/if}
+						</div>
 						{#if slot?.cardStatus === 'hidden'}
 							<p class="m-0 mt-1 text-sm text-waiting">
 								Cette session est {slot?.status === 'canceled'

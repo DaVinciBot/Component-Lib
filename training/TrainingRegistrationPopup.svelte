@@ -48,7 +48,7 @@
 		<section
 			class="relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-160 overflow-y-auto rounded-[10px] border border-light-blue/30 bg-linear-to-b from-[rgba(20,22,52,0.98)] to-[rgba(16,18,44,0.96)] px-5 py-5 text-light-blue shadow-[0_26px_60px_rgba(3,5,20,0.55)]"
 		>
-			<h2 class="m-0 text-sm font-semibold text-light-blue">
+			<h2 class="m-0 overflow-hidden text-sm font-semibold text-ellipsis text-light-blue">
 				Confirmation de l'inscription à la formation {trainingName}
 			</h2>
 			{#if showExcuse}
