@@ -224,7 +224,9 @@
 						<p class="m-0 text-xs tracking-[0.38em] text-dark-light-blue uppercase">
 							{slot ? formatDate(slot.start) : ''}
 						</p>
-						<h2 class="m-0 mt-2 text-2xl font-semibold text-light-blue overflow-hidden text-ellipsis">
+						<h2
+							class="m-0 mt-2 overflow-hidden text-2xl font-semibold text-ellipsis text-light-blue"
+						>
 							{slot?.name}
 						</h2>
 						{#if slot?.cardStatus === 'hidden'}
@@ -322,9 +324,7 @@
 							</div>
 							<div class="mt-4 grid gap-3 md:grid-cols-2">
 								{#each availability() as mode}
-									<div
-										class={`flex items-center gap-3 rounded-xl border-0`}
-									>
+									<div class={`flex items-center gap-3 rounded-xl border-0`}>
 										<div
 											class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70 text-light-blue"
 										>
@@ -335,7 +335,7 @@
 											{/if}
 										</div>
 										<div>
-											<p class="m-0 text-[0.6rem] tracking-[0.32em] uppercase text-dark-light-blue">
+											<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
 												{mode.label}
 											</p>
 											{#if isRegistrationMode(registration, mode.key)}
@@ -343,7 +343,9 @@
 													{isWaitlisted() ? "Sur liste d'attente" : 'Inscrit·e'}
 												</p>
 											{:else if mode.isFull}
-												<p class="m-0 text-sm font-semibold text-waiting">Liste d'attente ouverte</p>
+												<p class="m-0 text-sm font-semibold text-waiting">
+													Liste d'attente ouverte
+												</p>
 											{:else}
 												<p class="m-0 text-sm font-semibold text-light-blue">
 													{`${mode.remaining} ${mode.remaining > 1 ? 'places restantes' : 'place restante'}`}

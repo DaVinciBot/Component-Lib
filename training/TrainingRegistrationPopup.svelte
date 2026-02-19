@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
+	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 
 	type TrainingRegistrationPopupProps = {
 		open?: boolean;
@@ -53,26 +54,24 @@
 			{#if showExcuse}
 				<label class="mt-5 flex items-center gap-2.5 text-sm text-light-blue sm:gap-3">
 					<Checkbox bind:checked={toExcuse} className="size-4" />
-					<span>J'ai besoin de me faire excuser</span>
+					<span class="cursor-pointer">J'ai besoin de me faire excuser</span>
 				</label>
 			{/if}
-			<div class="mt-5 flex flex-wrap justify-end gap-3">
-				<button
-					type="button"
-					class="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_30px_rgba(200,20,20,0.35)] transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-red-600/60 disabled:shadow-none"
+			<div class="mt-5 flex flex-row justify-end gap-3">
+				<CtaButton
+					variant="secondary"
+					size="sm"
+					fullWidth={false}
 					onclick={onCancel}
-					disabled={confirmDisabled}
+					disabled={confirmDisabled}>Annuler</CtaButton
 				>
-					Annuler
-				</button>
-				<button
-					type="button"
-					class="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_30px_rgba(20,180,90,0.35)] transition hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-green-600/60 disabled:shadow-none"
+				<CtaButton
+					variant="primary"
+					size="sm"
+					fullWidth={false}
 					onclick={handleConfirm}
-					disabled={confirmDisabled}
+					disabled={confirmDisabled}>{confirmLabel}</CtaButton
 				>
-					{confirmLabel}
-				</button>
 			</div>
 		</section>
 	</div>

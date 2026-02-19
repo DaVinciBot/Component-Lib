@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { CircleCheck, CircleX, Users } from '@lucide/svelte';
 	import type { RegistrationListItem } from '$lib/services/training';
+	import { CircleCheck, CircleX, Users } from '@lucide/svelte';
 
 	export let registrations: RegistrationListItem[] = [];
 	export let isSaving: (memberId: string) => boolean;
