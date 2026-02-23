@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
+	import { loadUserdata } from '$lib/utils';
 
 	import SucessModal from '../modals/InfoModal.svelte';
 
@@ -75,6 +76,7 @@
 			});
 			if (error) throw error;
 			if (data) {
+				await loadUserdata();
 				// If OpenID SSO parameters are present
 				if (auth_type === AuthType.oauth) {
 					await handleOAuth();
@@ -104,6 +106,7 @@
 			});
 			if (error) throw error;
 			if (data) {
+				await loadUserdata();
 				goto(redirect_uri);
 			}
 		} catch (error) {

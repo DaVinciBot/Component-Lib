@@ -3,6 +3,7 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { loadUserdata, hideOnClickOutside } from '$lib/utils';
 	import { userdata } from '$lib/store';
+	import { PERMISSIONS, hasPermission } from '$lib/permissions';
 
 	export let user = {
 		name: 'Urbain',
@@ -83,7 +84,7 @@
 			>
 		</li>
 	</ul>
-	{#if ['membre', 'admin', 'cdp', 'bureau'].includes(user?.role)}
+	{#if hasPermission(user, PERMISSIONS.VIEW_ADMIN)}
 		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 			<li>
 				<a
