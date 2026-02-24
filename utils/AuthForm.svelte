@@ -6,6 +6,9 @@
 
 	import SucessModal from '../modals/InfoModal.svelte';
 
+	/** Session-storage key used to pin the PKCE state value for CSRF protection. */
+	const PKCE_STATE_KEY = 'pkce_state';
+
 	const AuthType = {
 		login: 'Login',
 		register: 'Inscription',
@@ -28,6 +31,12 @@
 		auth_type = AuthType[auth_type.toLowerCase()] || AuthType.login;
 	}
 
+	// Auto-detect PKCE / OpenID mode from URL parameters so the page works
+	// even when auth_type is not explicitly set to "oauth".
+	if (typeof window !== 'undefined' && isOpenID()) {
+		auth_type = AuthType.oauth;
+	}
+
 	let loading = false;
 	let email = '';
 	let password = '';
@@ -35,10 +44,21 @@
 
 	onMount(async () => {
 		redirect_uri = parseRedirectURI(redirect_uri);
+
+		// Pin the incoming PKCE state to sessionStorage so we can verify it
+		// has not been swapped before completing the authorization.
+		if (auth_type === AuthType.oauth) {
+			const params = getOpenIDParams();
+			if (params.state) {
+				sessionStorage.setItem(PKCE_STATE_KEY, params.state);
+			}
+		}
+
 		const {
 			data: { session },
 			error
 		} = await supabase.auth.getSession();
+
 		if (session && auth_type === AuthType.login) {
 			// If the user is already logged in, redirect to the specified redirect_uri
 			goto(redirect_uri);
@@ -77,7 +97,7 @@
 			if (error) throw error;
 			if (data) {
 				await loadUserdata();
-				// If OpenID SSO parameters are present
+				// If OpenID / PKCE SSO parameters are present, complete the authorization
 				if (auth_type === AuthType.oauth) {
 					await handleOAuth();
 				} else {
@@ -118,27 +138,51 @@
 		}
 	};
 
+	/**
+	 * Complete the PKCE Authorization Code flow acting as the authorization
+	 * server.  After a successful login we call the `oidc-authorize` edge
+	 * function which:
+	 *   1. Verifies the client_id and redirect_uri.
+	 *   2. Creates a short-lived authorization code and stores the
+	 *      code_challenge alongside it.
+	 *   3. Returns the redirect URL: <redirect_uri>?code=…&state=…
+	 *
+	 * The client then exchanges (code + code_verifier) → tokens, which
+	 * the edge function verifies via SHA-256(code_verifier) === code_challenge.
+	 */
 	async function handleOAuth() {
 		const openIdParams = getOpenIDParams();
-		// If OpenID SSO parameters are present, redirect to the original redirect_uri with auth code
+
+		// CSRF check – ensure the state has not been replaced since page load.
+		const pinnedState = sessionStorage.getItem(PKCE_STATE_KEY);
+		if (pinnedState && pinnedState !== openIdParams.state) {
+			console.error('PKCE state mismatch – possible CSRF attempt.');
+			alert('Une erreur de sécurité est survenue (state invalide). Veuillez recommencer.');
+			return;
+		}
+
 		const { data, error } = await supabase.functions.invoke('oidc-authorize', {
 			body: {
-				redirect_uri: openIdParams.redirect_uri,
 				client_id: openIdParams.client_id,
+				redirect_uri: openIdParams.redirect_uri,
 				response_type: openIdParams.response_type,
 				state: openIdParams.state,
 				scope: openIdParams.scope,
+				nonce: openIdParams.nonce,
 				code_challenge: openIdParams.code_challenge,
 				code_challenge_method: openIdParams.code_challenge_method
 			}
 		});
+
 		if (error) {
 			console.error('Error invoking OIDC authorize function:', error);
 			alert('Une erreur est survenue lors de la connexion avec OAuth.');
 			return;
 		}
-		if (data) {
-			// Redirect to the OpenID SSO authorization URL
+
+		if (data?.redirect_uri) {
+			// Clean up stored state before leaving.
+			sessionStorage.removeItem(PKCE_STATE_KEY);
 			window.location.href = data.redirect_uri;
 		}
 	}
@@ -195,6 +239,7 @@
 		}
 	}
 
+	/** Returns true when all mandatory PKCE Authorization Code params are present. */
 	function isOpenID() {
 		const urlParams = new URLSearchParams(window.location.search);
 		return (
@@ -208,17 +253,22 @@
 		);
 	}
 
+	/**
+	 * Extracts all PKCE / OIDC parameters from the current URL.
+	 * `nonce` is optional per the spec but forwarded when present so the
+	 * edge function can embed it in the issued ID token.
+	 */
 	function getOpenIDParams() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const openIdParams = {};
 
-		// Extract OpenID SSO parameters
 		const ssoParams = [
 			'client_id',
 			'redirect_uri',
 			'response_type',
 			'state',
 			'scope',
+			'nonce',
 			'code_challenge',
 			'code_challenge_method'
 		];
@@ -231,22 +281,6 @@
 		});
 
 		return openIdParams;
-	}
-
-	function buildRedirectUrlWithParams(baseUrl) {
-		const openIdParams = getOpenIDParams();
-
-		// If we have OpenID parameters, we need to redirect to the original redirect_uri with auth code
-		const redirectParams = new URLSearchParams();
-
-		// Add the authorization code (this would typically come from your auth flow)
-		// For now, we'll use a placeholder - you'll need to get the actual code from Supabase
-
-		for (const [key, value] of Object.entries(openIdParams)) {
-			redirectParams.append(key, value);
-		}
-		const url = `${baseUrl}?${redirectParams.toString()}`;
-		return url;
 	}
 </script>
 
