@@ -1,16 +1,20 @@
 <script>
 	// @ts-nocheck
 	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
 	import { writable } from 'svelte/store';
 	import { hashCode, saveSettings, loadSettings, hideOnClickOutside } from '$lib/utils';
-	import { supabase } from '$lib/supabaseClient';
+	import { supabase as _supabase } from '$lib/supabaseClient';
 	import { tableRefresh } from '$lib/store';
 
 	// Props
+	export let supabase = null; // Pass the SSR-aware client from layout data; falls back to browser singleton
 	export let actions = [];
 	export let headers = ['Nom', 'Email', 'Rôle', 'Actions'];
 	export let filters = [];
 	export let dbInfo = {}; // { table: 'users', key: 'id, email, role', ordering: 'id:desc' }
+
+	$: _client = supabase ?? _supabase;
 	export let searchable = 'username';
 
 	export let type = 'élément';
@@ -62,8 +66,10 @@
 	}
 
 	async function loadPage(page, filter = '', step = size) {
-		if (!can_load) return [];
-		let query = supabase.from(dbInfo.table).select(dbInfo.key, { count: 'exact', head: false });
+		if (!can_load || !browser) return [];
+		const client = _client;
+		if (!client) return [];
+		let query = client.from(dbInfo.table).select(dbInfo.key, { count: 'exact', head: false });
 
 		if (filter) {
 			const parts = filter.split('&').filter(Boolean);

@@ -109,12 +109,12 @@
 			class="absolute bottom-0 left-0 z-10 justify-center hidden w-full p-4 space-x-4 bg-gray-800 lg:flex"
 		></div>
 	</aside>
+</section>
+
+<svelte:head>
 	<script
 		type="module"
 		src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
 	></script>
 	<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-</section>
-
-<style>
-</style>
+</svelte:head>
