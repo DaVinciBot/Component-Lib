@@ -7,6 +7,7 @@
 		getWeekNumber,
 		getWeekStart,
 		groupSlotsByDay,
+		toDateKey,
 		weekdays
 	} from '$lib/components/training/helpers/calendar';
 	import { calendarFilters } from '$lib/components/training/stores/trainingCalendarFilters';
@@ -91,7 +92,16 @@
 	const weekStart = $derived(() => getWeekStart(viewDate));
 	const weekLabel = $derived(() => `Semaine ${getWeekNumber(viewDate)}`);
 
-	const calendarDays = $derived(() => getCalendarDays(weekStart()));
+	const allSlotsByDay = $derived(() => groupSlotsByDay(slots));
+	const saturdayKey = $derived(() =>
+		toDateKey(new Date(weekStart().getTime() + 5 * 24 * 60 * 60 * 1000))
+	);
+	const showSaturday = $derived(() => (allSlotsByDay().get(saturdayKey()) ?? []).length > 0);
+	const calendarDays = $derived(() => {
+		const days = getCalendarDays(weekStart());
+		return showSaturday() ? days : days.slice(0, 5);
+	});
+	const calendarDaysCount = $derived(() => calendarDays().length);
 
 	const filteredSlots = $derived(() =>
 		filterSlotsByFormat(slots, { inPerson: isInPerson, online: isOnline })
@@ -307,13 +317,14 @@
 
 	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
 		<div
-			class="grid grid-cols-[repeat(6,1fr)] rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
+			class="grid rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
+			style={`grid-template-columns: repeat(${calendarDaysCount()}, minmax(0, 1fr));`}
 		>
 			{#each calendarDays() as day, index}
 				<button
 					type="button"
 					class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
-						index !== 5 ? 'border-r' : ''
+						index !== calendarDaysCount() - 1 ? 'border-r' : ''
 					} ${day.isToday ? 'text-primary-400' : ''}`}
 					onclick={() => handleDaySelect(day.date)}
 				>
@@ -337,10 +348,15 @@
 					</div>
 				</div>
 			{:else}
-				<div class="grid min-h-full grid-cols-6">
+				<div
+					class="grid min-h-full"
+					style={`grid-template-columns: repeat(${calendarDaysCount()}, minmax(0, 1fr));`}
+				>
 					{#each calendarDays() as day, index}
 						<div
-							class={`h-full overflow-hidden border-light-blue/30 ${index !== 5 ? 'border-r' : ''}`}
+							class={`h-full overflow-hidden border-light-blue/30 ${
+								index !== calendarDaysCount() - 1 ? 'border-r' : ''
+							}`}
 						>
 							<div class="flex h-full flex-col gap-3 p-3">
 								{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
