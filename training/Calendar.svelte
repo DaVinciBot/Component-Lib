@@ -398,7 +398,7 @@
 							<div class="mb-5 flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
-										class="flex h-14 w-full items-center justify-center rounded-[8px] border-1 border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+										class="flex h-14 w-full items-center justify-center rounded-lg border border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
 									>
 										Aucune formation
 									</div>
@@ -431,7 +431,7 @@
 							<div class="mb-4 flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
-										class="flex h-14 w-full items-center justify-center rounded-[8px] border-1 border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+										class="flex h-14 w-full items-center justify-center rounded-lg border border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
 									>
 										Aucune formation
 									</div>
@@ -468,7 +468,7 @@
 		<div class="rounded-2xl border border-light-blue px-2 py-0 text-light-blue">Libre</div>
 		<div class="rounded-2xl border border-registered px-2 py-0 text-registered">Inscrit·e</div>
 		<div class="rounded-2xl border border-waiting px-2 py-0 text-waiting">Sur liste d'attente</div>
-		<div class="rounded-2xl border border-blue-peps px-2 py-0 text-blue-peps">Ma formation</div>
+		<div class="rounded-2xl border border-primary-500 px-2 py-0 text-primary-500">Ma formation</div>
 		{#if canManageTraining}
 			<div class="rounded-2xl border border-complete px-2 py-0 text-complete">Complète</div>
 			<div

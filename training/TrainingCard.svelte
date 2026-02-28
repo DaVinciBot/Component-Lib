@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { formatParisTimeRange } from '$lib/helpers/parisTime';
 	import type { TrainingSlotListItem } from '$lib/services/training';
-	import { MapPin,Clock,UserRound } from '@lucide/svelte'
+	import { Clock, MapPin, UserRound } from '@lucide/svelte';
 
 	export type TrainingCardStatus = 'complete' | 'free' | 'hidden' | 'registered' | 'waiting' | 'my';
 
@@ -35,12 +35,10 @@
 
 {#if variant === 'compact'}
 	<article
-		class={`training-card--${status} w-full cursor-pointer rounded-[8px] border-l-8 border-1 border-l-[var(--card-color)] border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 py-1 ${className}`.trim()}
+		class={`training-card--${status} w-full cursor-pointer rounded-lg border border-l-8 border-light-blue/30 border-l-(--card-color) bg-[rgba(1,1,50,0.96)] px-2 py-1 ${className}`.trim()}
 	>
 		<div class="flex min-h-14 items-center justify-between gap-3">
-			<h3
-				class="line-clamp-2 min-w-0 flex-1 shrink grow-2 basis-auto text-[0.95rem] font-semibold"
-			>
+			<h3 class="line-clamp-2 min-w-0 flex-1 shrink grow-2 basis-auto text-[0.95rem] font-semibold">
 				{slot.name}
 			</h3>
 			<div class="flex shrink-2 grow basis-auto flex-col items-end text-right">
@@ -63,9 +61,11 @@
 	</article>
 {:else}
 	<article
-		class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[8px] border-l-8 border-1 border-l-[var(--card-color)] border-light-blue/30 bg-[rgba(1,1,50,0.96)] py-[8px] px-[12px] ${className}`.trim()}
+		class={`training-card--${status} shadow-[0_10px_24px_rgba(0,0,0,0.35)]} w-full cursor-pointer rounded-[8px] border-1 border-l-8 border-light-blue/30 border-l-[var(--card-color)] bg-[rgba(1,1,50,0.96)] px-[12px] py-[8px] ${className}`.trim()}
 	>
-		<h3 class={`training-card__title overflow-hidden text-ellipsis text-start m-0 mb-1 text-[1.0rem] font-bold`.trim()}>
+		<h3
+			class={`training-card__title m-0 mb-1 overflow-hidden text-start text-[1.0rem] font-bold text-ellipsis`.trim()}
+		>
 			{slot.name}
 		</h3>
 		<div class="flex flex-col gap-1 text-left font-semibold">
@@ -119,6 +119,6 @@
 	}
 
 	.training-card--my {
-		--card-color: var(--color-blue-peps);
+		--card-color: var(--color-primary-500);
 	}
 </style>
