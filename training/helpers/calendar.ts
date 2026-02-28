@@ -4,15 +4,7 @@ import {
 	getParisMidnightUtcFromParts
 } from '$lib/helpers/parisTime';
 
-export const weekdays: string[] = [
-	'Lundi',
-	'Mardi',
-	'Mercredi',
-	'Jeudi',
-	'Vendredi',
-	'Samedi',
-	'Dimanche'
-];
+export const weekdays: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
 export type CalendarSlotLike = {
 	start: Date | string;
@@ -53,7 +45,7 @@ export function getWeekNumber(date: Date) {
 }
 
 export function getCalendarDays(weekStart: Date) {
-	return Array.from({ length: 7 }, (_, index) => {
+	return Array.from({ length: 6 }, (_, index) => {
 		const date = new Date(weekStart.getTime() + index * 24 * 60 * 60 * 1000);
 		const key = toDateKey(date);
 		return {

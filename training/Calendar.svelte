@@ -307,13 +307,13 @@
 
 	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
 		<div
-			class="grid grid-cols-[repeat(7,1fr)] rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
+			class="grid grid-cols-[repeat(6,1fr)] rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
 		>
 			{#each calendarDays() as day, index}
 				<button
 					type="button"
 					class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
-						index !== 6 ? 'border-r' : ''
+						index !== 5 ? 'border-r' : ''
 					} ${day.isToday ? 'text-primary-400' : ''}`}
 					onclick={() => handleDaySelect(day.date)}
 				>
@@ -337,10 +337,10 @@
 					</div>
 				</div>
 			{:else}
-				<div class="grid min-h-full grid-cols-7">
+				<div class="grid min-h-full grid-cols-6">
 					{#each calendarDays() as day, index}
 						<div
-							class={`h-full overflow-hidden border-light-blue/30 ${index !== 6 ? 'border-r' : ''}`}
+							class={`h-full overflow-hidden border-light-blue/30 ${index !== 5 ? 'border-r' : ''}`}
 						>
 							<div class="flex h-full flex-col gap-3 p-3">
 								{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
