@@ -27,6 +27,7 @@
 	import { supabase } from '$lib/supabaseClient';
 	import {
 		Armchair,
+		ArrowRight,
 		Calendar,
 		Clock,
 		House,
@@ -376,11 +377,24 @@
 
 					{#if canViewParticipants()}
 						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
-							<div
-								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
-							>
-								<Users class="size-4" />
-								<span>Participant·e·s</span>
+							<div class="flex items-center justify-between gap-3">
+								<div
+									class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+								>
+									<Users class="size-4" />
+									<span>Participant·e·s</span>
+								</div>
+								<CtaButton
+									type="button"
+									size="xs"
+									variant="secondary"
+									onclick={() => slot && goto(`/formation/presence?slot=${slot.slot_id}`)}
+									class="manage_button hidden items-center gap-2 whitespace-nowrap min-[430px]:inline-flex"
+									fullWidth={false}
+								>
+									<span>Gérer</span>
+									<ArrowRight size={16} />
+								</CtaButton>
 							</div>
 							{#if participantsLoading}
 								<p class="mt-3 text-sm text-light-blue/70">Chargement des inscrit·e·s...</p>
@@ -425,6 +439,19 @@
 									{/each}
 								</div>
 							{/if}
+							<div class="mt-3 flex justify-end min-[430px]:hidden">
+								<CtaButton
+									type="button"
+									size="xs"
+									variant="secondary"
+									onclick={() => slot && goto(`/formation/presence?slot=${slot.slot_id}`)}
+									class="manage_button inline-flex items-center gap-2 whitespace-nowrap"
+									fullWidth={false}
+								>
+									<span>Gérer</span>
+									<ArrowRight size={16} />
+								</CtaButton>
+							</div>
 						</div>
 					{/if}
 
@@ -502,17 +529,6 @@
 							</CtaButton>
 						{/each}
 					</div>
-				{:else if slot?.cardStatus === 'my'}
-					<div class="mt-4 grid gap-3 md:grid-cols-2">
-						<CtaButton
-							type="button"
-							size="sm"
-							variant="secondary"
-							onclick={() => slot && goto(`/formation/presence?slot=${slot.slot_id}`)}
-							class="w-auto justify-self-end md:col-start-2"
-							>Gérer les présences
-						</CtaButton>
-					</div>
 				{/if}
 			</div>
 		</section>
@@ -528,3 +544,12 @@
 	onConfirm={handleConfirmRegistration}
 	onCancel={closeConfirmation}
 />
+
+<style>
+	:global(.manage_button) {
+		padding-block: 1 !important;
+		padding-inline: 3 !important;
+		border-width: 2px !important;
+		border-radius: 0.5rem !important;
+	}
+</style>
