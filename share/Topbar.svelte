@@ -1,12 +1,12 @@
 <script>
-	import { userdata } from '$lib/store';
-	import { loadUserdata, hideOnClickOutside } from '$lib/utils';
-	import { onMount, onDestroy } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { userdata } from '$lib/store';
+	import { hideOnClickOutside, loadUserdata } from '$lib/utils';
+	import { onDestroy, onMount } from 'svelte';
 
-	import DvbLogo from './Logo/DVBLogo.svelte';
 	import SideBar from '$lib/components/admin/SideBar.svelte';
 	import CTAButton from '../utils/CTAButton.svelte';
+	import DvbLogo from './Logo/DVBLogo.svelte';
 
 	let user;
 	let skip = false;
@@ -283,9 +283,9 @@
 			</div>
 			<div class="gap-5">
 				{#if user}
-					<CTAButton href="/admin" secondary={true} size="sm">Espace membre</CTAButton>
+					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
-					<CTAButton href="/auth/login?redirect=/admin" secondary={true} size="sm"
+					<CTAButton href="/auth/login?redirect=/admin" variant="secondary" size="sm"
 						>Se connecter</CTAButton
 					>
 				{/if}
