@@ -22,7 +22,7 @@
 		</div>
 		<div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 			<CTAButton type="button" variant="primary" size="sm" onclick={onAddSlot}>
-				Nouveau créneaux
+				Nouvelle session
 			</CTAButton>
 			<CTAButton type="button" variant="secondary" size="sm" onclick={onAddTraining}>
 				Nouvelle formation
@@ -36,7 +36,7 @@
 			<p class="mt-1 text-xs text-light-blue/70">catalogue actif</p>
 		</div>
 		<div class="rounded-2xl border border-light-blue/20 bg-dark-blue/80 p-4">
-			<p class="text-xs tracking-[0.25em] text-light-blue/60 uppercase">Slots à venir</p>
+			<p class="text-xs tracking-[0.25em] text-light-blue/60 uppercase">Sessions à venir</p>
 			<p class="mt-2 text-3xl font-bold text-white">{upcomingCount}</p>
 			<p class="mt-1 text-xs text-light-blue/70">dans les {slotRangeDays} prochains jours</p>
 		</div>

@@ -14,7 +14,7 @@
 >
 	<div class="flex items-center justify-between gap-3">
 		<div>
-			<h2 class="text-lg font-semibold text-white">Mes slots</h2>
+			<h2 class="text-lg font-semibold text-white">Mes sessions</h2>
 			<p class="text-xs text-light-blue/70">{slots.length} session(s)</p>
 		</div>
 	</div>
