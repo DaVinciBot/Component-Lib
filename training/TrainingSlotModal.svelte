@@ -24,6 +24,7 @@
 		type RegistrationListItem,
 		type RegistrationSummary
 	} from '$lib/services/training';
+	import { supabase } from '$lib/supabaseClient';
 	import {
 		Armchair,
 		Calendar,
@@ -39,6 +40,7 @@
 		Video,
 		X
 	} from '@lucide/svelte';
+	import type { SupabaseClient } from '@supabase/supabase-js';
 
 	type TrainingSlotModalProps = {
 		slot: CalendarSlot | null;
@@ -46,6 +48,7 @@
 		onClose?: () => void;
 		onRegistrationChange?: () => void;
 		canManageTraining?: boolean;
+		currentUserId?: string | null;
 	};
 
 	let {
@@ -53,7 +56,8 @@
 		open = false,
 		onClose = () => {},
 		onRegistrationChange,
-		canManageTraining = false
+		canManageTraining = false,
+		currentUserId = null
 	}: TrainingSlotModalProps = $props();
 	let registration = $state<RegistrationSummary | null>(null);
 	let registrationRequestId = 0;
@@ -66,6 +70,8 @@
 	let confirmLoading = $state(false);
 	let excuseUpdating = $state(false);
 
+	const supabaseClient: SupabaseClient = supabase as SupabaseClient;
+
 	const isOpen = $derived(() => open && slot !== null);
 	const hasDescription = $derived(() => hasContent(slot?.description));
 	const hasPrerequisites = $derived(() => hasContent(slot?.prerequisites));
@@ -77,12 +83,8 @@
 	const isWaitlisted = $derived(() => registration?.status === 'waitlisted');
 	const isDone = $derived(() => slot?.status === 'done');
 	const confirmLabel = $derived(() => (confirmLoading ? 'Inscription...' : "S'inscrire"));
-	const badgeClass = $derived(() =>
-		isWaitlisted()
-			? 'border-waiting/40 bg-waiting/15 text-waiting'
-			: registration
-				? 'border-registered/40 bg-registered/15 text-registered'
-				: ''
+	const badgeColor = $derived(() =>
+		isWaitlisted() ? 'waiting' : registration ? 'registered' : ''
 	);
 	const badgeText = $derived(() =>
 		isWaitlisted() ? "Liste d'attente" : registration ? 'Inscrit·e' : ''
@@ -109,7 +111,7 @@
 		if (!slot) return;
 		const currentRequest = ++registrationRequestId;
 		try {
-			const data = await getMyRegistrationForSlot(slot.slot_id);
+			const data = await getMyRegistrationForSlot(supabaseClient, slot.slot_id, currentUserId);
 			if (currentRequest !== registrationRequestId) return;
 			registration = data;
 		} catch (err) {
@@ -125,8 +127,8 @@
 		participantsError = null;
 		try {
 			const data = canManageTraining
-				? await getSlotRegistrations(slot.slot_id)
-				: await getTrainerSlotRegistrations(slot.slot_id);
+				? await getSlotRegistrations(supabaseClient, slot.slot_id)
+				: await getTrainerSlotRegistrations(supabaseClient, slot.slot_id);
 			if (currentRequest !== participantsRequestId) return;
 			participants = data;
 		} catch (err) {
@@ -154,7 +156,7 @@
 		if (!slot || !confirmMode) return;
 		confirmLoading = true;
 		try {
-			await registerToSlot(slot.slot_id, confirmMode === 'remote', toExcuse);
+			await registerToSlot(supabaseClient, slot.slot_id, confirmMode === 'remote', toExcuse);
 			await refreshRegistration();
 			onRegistrationChange?.();
 		} catch (err) {
@@ -168,7 +170,7 @@
 	async function handleCancelRegistration() {
 		if (!slot) return;
 		try {
-			await cancelRegistration(slot.slot_id);
+			await cancelRegistration(supabaseClient, slot.slot_id);
 			await refreshRegistration();
 			onRegistrationChange?.();
 		} catch (err) {
@@ -181,7 +183,7 @@
 		excuseUpdating = true;
 		try {
 			const nextValue = !registration.to_excuse;
-			await updateMyRegistrationExcuse(slot.slot_id, nextValue);
+			await updateMyRegistrationExcuse(supabaseClient, slot.slot_id, nextValue, currentUserId);
 			await refreshRegistration();
 			onRegistrationChange?.();
 		} catch (err) {
@@ -240,7 +242,7 @@
 								{slot?.name}
 							</h2>
 							{#if badgeText()}
-								<Badge text={badgeText()} className={`h-min ${badgeClass()}`} />
+								<Badge text={badgeText()} color={badgeColor()} className="h-min" />
 							{/if}
 						</div>
 						{#if slot?.cardStatus === 'hidden'}

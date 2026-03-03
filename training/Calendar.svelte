@@ -34,6 +34,7 @@
 		onWeekChange?: (weekStart: Date) => void;
 		onRegistrationChange?: () => void;
 		canManageTraining?: boolean;
+		currentUserId?: string | null;
 		isLoading?: boolean;
 		errorMessage?: string | null;
 		onRetry?: () => void;
@@ -47,6 +48,7 @@
 		onWeekChange,
 		onRegistrationChange,
 		canManageTraining = false,
+		currentUserId = null,
 		isLoading = false,
 		errorMessage = null,
 		onRetry
@@ -502,6 +504,7 @@
 	onClose={handleModalClose}
 	{onRegistrationChange}
 	{canManageTraining}
+	{currentUserId}
 />
 
 <style>
