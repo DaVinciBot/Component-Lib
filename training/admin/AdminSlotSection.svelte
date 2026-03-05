@@ -38,13 +38,13 @@
 				refreshTopic={slotTableTopic}
 				filters={slotFilters}
 				searchable="training.name"
-				emptyMessage="Aucun slot"
+				emptyMessage="Aucune session"
 				size={10}
 			/>
 		</div>
 		<div class="md:hidden">
 			{#if slots.length === 0}
-				<p class="px-4 py-6 text-center text-sm text-light-blue/70">Aucun slot</p>
+				<p class="px-4 py-6 text-center text-sm text-light-blue/70">Aucune session</p>
 			{:else}
 				<div class="grid gap-3 p-4">
 					{#each slots as slot}
