@@ -19,23 +19,6 @@
 	let autocompleteCompletions: Record<string, any[]> = $state({});
 	let autocompleteImages: Record<string, string | null> = $state({});
 	let autocompleteRequestIds: Record<string, number> = $state({});
-
-	$effect.pre(() => {
-		for (let field of fields) {
-			if (field.type === 'checkbox' && field.checked === undefined) {
-				field.checked = false;
-			}
-			if (field.type === 'select' && field.value) {
-				field.options = field.options.map((option: { value: any }) => {
-					if (option.value === field.value) field.autoselect = true;
-					return {
-						...option,
-						selected: option.value === field.value
-					};
-				});
-			}
-		}
-	});
 </script>
 
 <div
