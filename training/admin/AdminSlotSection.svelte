@@ -47,7 +47,7 @@
 				<p class="px-4 py-6 text-center text-sm text-light-blue/70">Aucune session</p>
 			{:else}
 				<div class="grid gap-3 p-4">
-					{#each slots as slot}
+					{#each slots as slot (slot.slot_id)}
 						<article class="rounded-2xl border border-light-blue/10 bg-dark-blue/90 p-4">
 							<div class="flex items-start justify-between gap-4">
 								<div>

@@ -34,19 +34,19 @@
 
 <section>
 	<aside
-		class="fixed top-0 left-0 z-10 w-64 h-screen transition-transform md:translate-x-0 border-r pt-14 border-gray-700
+		class="fixed top-0 left-0 z-10 h-screen w-64 border-r border-gray-700 pt-14 transition-transform md:translate-x-0
 			{!open ? '-translate-x-full' : 'translate-x-0'}"
 		aria-label="Sidenav"
 		id="drawer-navigation"
 	>
-		<div class="h-full px-3 py-5 overflow-y-auto {bgClass}">
+		<div class="h-full overflow-y-auto px-3 py-5 {bgClass}">
 			<ul class="space-y-2">
-				{#each menu as item}
+				{#each menu as item (item.title)}
 					{#if item.sub}
 						<li>
 							<button
 								type="button"
-								class="flex items-center w-full p-2 text-base font-medium text-white transition duration-75 rounded-lg group {activeClass}"
+								class="group flex w-full items-center rounded-lg p-2 text-base font-medium text-white transition duration-75 {activeClass}"
 								onclick={() => {
 									if (buttons_state[item.title] === undefined) {
 										buttons_state[item.title] = false;
@@ -58,10 +58,10 @@
 									<ion-icon name={item.icon} class="text-2xl"></ion-icon>
 								{/if}
 
-								<span class="flex-1 ml-3 text-left whitespace-nowrap">{item.title}</span>
+								<span class="ml-3 flex-1 text-left whitespace-nowrap">{item.title}</span>
 								<svg
 									aria-hidden="true"
-									class="w-6 h-6"
+									class="h-6 w-6"
 									fill="currentColor"
 									viewBox="0 0 20 20"
 									xmlns="http://www.w3.org/2000/svg"
@@ -73,12 +73,12 @@
 									></path>
 								</svg>
 							</button>
-							<ul class="{buttons_state[item.title] ? '' : 'hidden'} py-2 space-y-2">
-								{#each item.sub as sub_item}
+							<ul class="{buttons_state[item.title] ? '' : 'hidden'} space-y-2 py-2">
+								{#each item.sub as sub_item (sub_item.title)}
 									<li>
 										<a
 											href={sub_item.uri}
-											class="flex items-center w-full p-2 text-base font-medium text-white transition duration-75 rounded-lg pl-11 group hover:bg-gray-700"
+											class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium text-white transition duration-75 hover:bg-gray-700"
 											onclick={() => {
 												if (typeof close === 'function') close();
 											}}>{sub_item.title}</a
@@ -91,7 +91,7 @@
 						<li>
 							<a
 								href={item.uri}
-								class="flex items-center p-2 text-base font-medium rounded-lg text-white hover:bg-gray-700 group {item.active
+								class="group flex items-center rounded-lg p-2 text-base font-medium text-white hover:bg-gray-700 {item.active
 									? 'bg-gray-700'
 									: ''}"
 								onclick={() => {
@@ -109,7 +109,7 @@
 			</ul>
 		</div>
 		<div
-			class="absolute bottom-0 left-0 z-10 justify-center hidden w-full p-4 space-x-4 bg-gray-800 lg:flex"
+			class="absolute bottom-0 left-0 z-10 hidden w-full justify-center space-x-4 bg-gray-800 p-4 lg:flex"
 		></div>
 	</aside>
 	<script

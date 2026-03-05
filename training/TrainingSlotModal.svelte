@@ -100,7 +100,7 @@
 
 	const availability = $derived(() => buildAvailability(slot));
 
-	const actionButtons = $derived(() =>
+	const actionButtons = $derived((): ActionButton[] =>
 		buildActionButtons({ slot, registration, availability: availability() })
 	);
 
@@ -340,8 +340,8 @@
 								<span>Places</span>
 							</div>
 							<div class="mt-4 grid gap-3 md:grid-cols-2">
-								{#each availability() as mode}
-									<div class={`flex items-center gap-3 rounded-xl border-0`}>
+								{#each availability() as mode (mode.key)}
+									<div class="flex items-center gap-3 rounded-xl border-0">
 										<div
 											class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70 text-light-blue"
 										>
@@ -404,7 +404,7 @@
 								<p class="mt-3 text-sm text-light-blue/70">Aucun·e inscrit·e pour le moment.</p>
 							{:else}
 								<div class="mt-3 grid gap-2 sm:grid-cols-2">
-									{#each participants as reg}
+									{#each participants as reg (reg.member_id)}
 										<div
 											class={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
 												reg.status === 'waitlisted'
@@ -492,7 +492,7 @@
 								<span>Lien distanciel</span>
 							</div>
 							<a
-								href={slot?.video_conference_link ?? '#'}
+								href={slot?.video_conference_link}
 								target="_blank"
 								rel="noopener noreferrer"
 								class="mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-light-blue transition hover:text-blue-peps"
@@ -517,7 +517,7 @@
 								{excuseUpdating ? 'Mise à jour...' : excuseToggleLabel()}
 							</CtaButton>
 						{/if}
-						{#each actionButtons() as action}
+						{#each actionButtons() as action (action.key)}
 							<CtaButton
 								type="button"
 								size="sm"

@@ -4,7 +4,7 @@
 	import type { TrainingListItem } from '$lib/services/training';
 
 	export let trainings: TrainingListItem[] = [];
-	export let categoryOptions: { value: string; text: string }[] = [];
+	export let categoryOptions: { value: string; text: string; selected?: boolean }[] = [];
 	export let trainingDbInfo: any;
 	export let trainingActions: any[] = [];
 	export let trainingFilters: any[] = [];
@@ -46,7 +46,7 @@
 				<p class="px-4 py-6 text-center text-sm text-light-blue/70">Aucune formation</p>
 			{:else}
 				<div class="grid gap-3 p-4">
-					{#each trainings as training}
+					{#each trainings as training (training.training_id)}
 						<article class="rounded-2xl border border-light-blue/10 bg-dark-blue/90 p-4">
 							<div class="flex items-start justify-between gap-4">
 								<div>

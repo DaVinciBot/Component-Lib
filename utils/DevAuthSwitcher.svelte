@@ -185,7 +185,7 @@
 				{#if accounts.length === 0}
 					<p class="text-xs text-gray-500">No saved accounts.</p>
 				{:else}
-					{#each accounts as account}
+					{#each accounts as account (account.email)}
 						<div
 							class="flex items-center justify-between rounded-lg border border-gray-700 px-3 py-2"
 						>

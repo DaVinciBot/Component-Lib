@@ -322,7 +322,7 @@
 			class="grid rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
 			style={`grid-template-columns: repeat(${calendarDaysCount()}, minmax(0, 1fr));`}
 		>
-			{#each calendarDays() as day, index}
+			{#each calendarDays() as day, index (index)}
 				<button
 					type="button"
 					class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
@@ -354,7 +354,7 @@
 					class="grid min-h-full"
 					style={`grid-template-columns: repeat(${calendarDaysCount()}, minmax(0, 1fr));`}
 				>
-					{#each calendarDays() as day, index}
+					{#each calendarDays() as day, index (index)}
 						<div
 							class={`h-full overflow-hidden border-light-blue/30 ${
 								index !== calendarDaysCount() - 1 ? 'border-r' : ''
@@ -399,7 +399,7 @@
 			</div>
 		{:else}
 			<div class="flex flex-col gap-4">
-				{#each calendarDays() as day, index}
+				{#each calendarDays() as day, index (index)}
 					{#if day.isToday}
 						<div class="flex scroll-mt-4 flex-col gap-2" bind:this={todayRow}>
 							<button

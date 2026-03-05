@@ -19,7 +19,7 @@
 		</div>
 	</div>
 	<div class="mt-5 grid gap-3">
-		{#each slots as slot}
+		{#each slots as slot (slot.slot_id)}
 			<button
 				type="button"
 				class={`flex w-full cursor-pointer flex-col gap-2 rounded-2xl border p-3 text-left transition sm:p-4 ${

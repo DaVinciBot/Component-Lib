@@ -340,7 +340,7 @@
 								class={`absolute z-10 hidden w-72 rounded-lg bg-gray-700 p-3 shadow ${hasWideFilter ? 'md:w-lg' : 'md:w-36'}`}
 							>
 								<div class={hasWideFilter ? 'grid grid-cols-1 gap-4 md:grid-cols-2' : ''}>
-									{#each filters as filter, i}
+									{#each filters as filter, i (i)}
 										{#if filter.category != 'hidden'}
 											{#if !hasWideFilter && i > 0}
 												<hr class="my-3 border-gray-600" />
@@ -353,7 +353,7 @@
 														: 'space-y-2 text-sm'}
 													aria-labelledby={'filterDropdownButton-' + hash}
 												>
-													{#each filter.options as option}
+													{#each filter.options as option (option.name)}
 														<li class="flex items-center">
 															<Checkbox
 																id={option.name}
@@ -420,7 +420,7 @@
 				<table class="w-full text-left text-sm text-gray-400">
 					<thead class="bg-gray-700 text-xs text-gray-400 uppercase">
 						<tr>
-							{#each headers as item}
+							{#each headers as item (item)}
 								{#if item === 'Actions'}
 									<th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>
 								{:else}
@@ -430,7 +430,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each items as row, i}
+						{#each items as row, i (i)}
 							<tr
 								class="border-b border-gray-700 {clickable ? 'cursor-pointer' : ''} max-w-52"
 								onclick={clickable
@@ -440,7 +440,7 @@
 										}
 									: null}
 							>
-								{#each row as cell, j}
+								{#each row as cell, j (j)}
 									{#if j === 0}
 										<th
 											scope="row"
@@ -500,6 +500,7 @@
 											type="button"
 											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
 											onclick={(e) => actions.find((a) => a.type === 'view')?.handler(e)}
+											aria-label="View"
 										>
 											<svg
 												class="h-5 w-5"
@@ -564,7 +565,7 @@
 							</button>
 						</li>
 						{#if pages.length <= 5}
-							{#each pages as p}
+							{#each pages as p (p)}
 								{#if p === current_page + 1}
 									<li>
 										<button

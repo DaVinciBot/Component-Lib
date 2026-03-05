@@ -9,7 +9,7 @@
 </script>
 
 <div class="mt-4 grid gap-4 min-[1040px]:hidden">
-	{#each registrations as reg}
+	{#each registrations as reg (reg.member_id)}
 		<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/10 p-4">
 			<div class="flex items-start justify-between gap-3">
 				<div class="flex items-center gap-3">

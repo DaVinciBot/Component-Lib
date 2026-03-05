@@ -2,33 +2,35 @@
 	import Icon from '../share/Icon.svelte';
 
 	/** @type {{steps?: any}} */
-	let { steps = [
-		{
-			done: true,
-			icon: 'link'
-		},
-		{
-			done: true,
-			icon: 'shipping'
-		},
-		{
-			done: false,
-			icon: 'done'
-		}
-	] } = $props();
+	let {
+		steps = [
+			{
+				done: true,
+				icon: 'link'
+			},
+			{
+				done: true,
+				icon: 'shipping'
+			},
+			{
+				done: false,
+				icon: 'done'
+			}
+		]
+	} = $props();
 </script>
 
-<ol class="flex justify-center w-full">
-	{#each steps as step, i}
+<ol class="flex w-full justify-center">
+	{#each steps as step, i (i)}
 		<li
 			class="flex items-center {i < steps.length - 1
 				? step.done
-					? "text-primary-500 w-full after:content-[''] after:w-full after:h-1 after:border-b after:border-primary-400 after:border-4 after:inline-block"
-					: " w-full after:content-[''] after:w-full after:h-1 after:border-b after:border-gray-700 after:border-4 after:inline-block"
+					? "w-full text-primary-500 after:inline-block after:h-1 after:w-full after:border-4 after:border-b after:border-primary-400 after:content-['']"
+					: " w-full after:inline-block after:h-1 after:w-full after:border-4 after:border-b after:border-gray-700 after:content-['']"
 				: ''}"
 		>
 			<span
-				class="flex items-center justify-center w-10 h-10 rounded-full lg:h-12 lg:w-12 shrink-0
+				class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full lg:h-12 lg:w-12
 					{step.icon === 'cancel' ? 'bg-red-500' : step.done ? 'bg-primary-500' : 'bg-gray-700'}"
 			>
 				<Icon name={step.icon} size="6" fill={'gray-100'} />
