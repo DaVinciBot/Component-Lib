@@ -22,6 +22,9 @@
 
 	$effect.pre(() => {
 		for (let field of fields) {
+			if (field.type === 'checkbox' && field.checked === undefined) {
+				field.checked = false;
+			}
 			if (field.type === 'select' && field.value) {
 				field.options = field.options.map((option: { value: any }) => {
 					if (option.value === field.value) field.autoselect = true;
@@ -105,7 +108,7 @@
 												value="NULL">----------</option
 											>
 										{/if}
-										{#each field.options as option}
+										{#each field.options as option (option.value)}
 											<option
 												value={option.value}
 												data-utils={option.data || ''}
@@ -194,7 +197,7 @@
 										<div
 											class="mb-2 flex w-full flex-col items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 										>
-											{#each field.value as doc, i}
+											{#each field.value as doc (doc.id)}
 												<div class="flex w-full items-center gap-2 border-gray-600 py-1">
 													<svg
 														aria-hidden="true"
@@ -218,7 +221,9 @@
 														aria-label="Remove {doc.name}"
 														class="hover: ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 														onclick={async (e: MouseEvent) => {
-															field.value = field.value.filter((el: any) => el.name != doc.name);
+															field.value = field.value.filter(
+																(el: { name: string }) => el.name != doc.name
+															);
 															if (field.onRemove) await field.onRemove(e, doc.name);
 														}}
 													>
@@ -420,7 +425,7 @@
 											<div
 												class="almarai-regular absolute top-full left-0 z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
 											>
-												{#each completion as c}
+												{#each completion as c (c.id)}
 													<button
 														type="button"
 														class="almarai-regular flex w-full items-center rounded-lg border-b border-gray-700 {c.image
@@ -484,14 +489,14 @@
 										<Checkbox
 											id={field.id || field.name.toLowerCase()}
 											name={field.id || field.name.toLowerCase()}
-											value={field.value || ''}
+											value={field.value ?? ''}
 											required={field.required}
 											className="size-4"
 											disabled={field.readonly || false}
-											checked={field.checked || false}
+											checked={field.checked ?? false}
 											onchange={(event) => {
-												const target = event.target as HTMLInputElement;
-												field.checked = target && target.checked === true;
+												const target = event.currentTarget as HTMLInputElement | null;
+												field.checked = target?.checked === true;
 												fields = [...fields];
 											}}
 										/>
