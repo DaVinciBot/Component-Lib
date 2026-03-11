@@ -117,6 +117,8 @@
 						option.selected = option.value === bodyItem.value;
 					});
 					field.value = bodyItem.value;
+				} else if (['permissions_grouped', 'project_roles'].includes(field.type)) {
+					field.value = bodyItem.data;
 				} else {
 					field.value = bodyItem.value;
 				}
@@ -659,6 +661,143 @@
 										</div>
 									{/if}
 								</div>
+							{:else if field.type === 'permissions_grouped'}
+								<div class="mb-4 space-y-4">
+									{#if field.packages && field.packages.length > 0}
+										<div
+											class="flex flex-wrap gap-2 mb-4 p-3 bg-gray-900 border border-gray-600 rounded-lg"
+										>
+											<p class="w-full text-xs text-gray-400 font-semibold mb-1">
+												Packs pré-définis :
+											</p>
+											{#each field.packages as pack}
+												<button
+													type="button"
+													class="px-2 py-1 text-xs text-white bg-gray-700 hover:bg-primary-600 hover:text-white transition-colors border border-gray-500 rounded-md"
+													on:click={() => (field.value = pack.perms)}
+												>
+													{pack.label}
+												</button>
+											{/each}
+											<div class="w-full mt-1 border-t border-gray-700 pt-2 flex justify-end">
+												<button
+													type="button"
+													class="px-2 py-1 text-xs text-red-400 hover:text-red-300 underline"
+													on:click={() => (field.value = [])}
+												>
+													Tout décocher
+												</button>
+											</div>
+										</div>
+									{/if}
+									<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+										{#each Object.entries(field.categories) as [catName, perms]}
+											<div class="bg-gray-800 p-3 rounded-lg border border-gray-700">
+												<h4
+													class="text-white text-sm font-semibold mb-3 border-b border-gray-700 pb-1"
+												>
+													{catName}
+												</h4>
+												<div class="flex flex-col gap-2">
+													{#each perms as perm}
+														<label class="inline-flex items-center group cursor-pointer">
+															<input
+																type="checkbox"
+																name={field.id || 'permissions'}
+																value={perm.value}
+																checked={field.value && field.value.includes(perm.value)}
+																on:change={(e) => {
+																	if (!field.value) field.value = [];
+																	if (e.target.checked) {
+																		if (!field.value.includes(perm.value))
+																			field.value = [...field.value, perm.value];
+																	} else {
+																		field.value = field.value.filter((v) => v !== perm.value);
+																	}
+																}}
+																class="form-checkbox h-4 w-4 text-primary-600 bg-gray-900 border-gray-500 rounded focus:ring-primary-600 focus:ring-2 transition duration-200 cursor-pointer"
+															/>
+															<span
+																class="ml-2 text-sm text-gray-300 group-hover:text-white transition-colors"
+																>{perm.label}</span
+															>
+														</label>
+													{/each}
+												</div>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{:else if field.type === 'project_roles'}
+								<div class="mb-4 space-y-2">
+									{#each field.value || [] as item, idx}
+										<div class="flex items-center gap-2">
+											<select
+												class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+												bind:value={item.project_id}
+											>
+												<option value={null}>Sélectionner un projet</option>
+												{#each field.projects as p}
+													<option
+														value={p.value}
+														disabled={(field.value || []).some(
+															(v, i) => i !== idx && v.project_id == p.value
+														)}>{p.text}</option
+													>
+												{/each}
+											</select>
+											<select
+												class="border text-sm rounded-lg block w-32 p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+												bind:value={item.role}
+											>
+												{#each field.roles as r}
+													<option value={r.value}>{r.text}</option>
+												{/each}
+											</select>
+											<button
+												type="button"
+												class="p-2 text-red-500 hover:text-red-400"
+												on:click={() => {
+													field.value = field.value.filter((_, i) => i !== idx);
+												}}
+											>
+												<svg
+													aria-hidden="true"
+													class="w-5 h-5 mr-1.5 -ml-1"
+													fill="currentColor"
+													viewBox="0 0 20 20"
+													><path
+														fill-rule="evenodd"
+														d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+														clip-rule="evenodd"
+													></path></svg
+												>
+											</button>
+										</div>
+									{/each}
+									<button
+										type="button"
+										class="w-full mt-2 p-2 text-sm text-primary-500 items-center flex justify-center gap-2 border border-dashed border-gray-600 rounded-lg hover:bg-gray-700"
+										on:click={() => {
+											if (!field.value) field.value = [];
+											field.value = [...field.value, { project_id: null, role: 'membre' }];
+										}}
+									>
+										<svg
+											class="h-3.5 w-3.5 mr-2"
+											fill="currentColor"
+											viewBox="0 0 20 20"
+											xmlns="http://www.w3.org/2000/svg"
+											aria-hidden="true"
+											><path
+												clip-rule="evenodd"
+												fill-rule="evenodd"
+												d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+											></path></svg
+										>Ajouter un projet
+									</button>
+									<input type="hidden" name={field.id} value={JSON.stringify(field.value)} />
+								</div>
 							{:else if field.type === 'checkbox'}
 								<input
 									type="checkbox"
@@ -850,6 +989,20 @@
 									{/each}
 								</ol>
 							</dd>
+						{:else if item.value.type == 'badges'}
+							<dd class="mb-4">
+								<div class="flex flex-wrap gap-1 mt-1">
+									{#each item.value.list as badge}
+										<span
+											class="px-2 py-1 text-xs font-medium rounded-md shadow-sm {badge.color
+												? badge.color
+												: 'bg-gray-700 text-gray-200 border border-gray-600'}"
+										>
+											{badge.text}
+										</span>
+									{/each}
+								</div>
+							</dd>
 						{:else if item.value.type == 'items'}
 							<dd class="mb-4 ml-2 font-light text-gray-400">
 								<table class="w-full border-separate">
@@ -857,16 +1010,16 @@
 										<td>Nom</td>
 										<td>Quantité</td>
 										<td>Prix</td>
-										{#if values.body.find((el) => el.label == 'Status')?.type == 'pendingCDP'}
-											<td class="w-2.5"></td>
+										{#if item.value.editable}
+											<td class="w-16"></td>
 										{/if}
 									</thead>
 									<tbody>
-										{#each item.value.list as item}
-											<tr data-utils={item.id}>
+										{#each item.value.list as listItem}
+											<tr data-utils={listItem.id}>
 												<td class="p-2 hover:fill-gray-200 fill-gray-400"
-													><a href={item.link} target="_blank">
-														{#if item.link}
+													><a href={listItem.link} target="_blank">
+														{#if listItem.link}
 															<svg
 																class="inline w-4 h-4 ml-1 transition-all"
 																xmlns="http://www.w3.org/2000/svg"
@@ -893,31 +1046,55 @@
 																	/>
 																</g>
 															</svg>
-														{/if}{item.name}</a
+														{/if}{listItem.name}</a
 													></td
 												>
-												<td>{item.quantity}</td>
-												<td>{item.price}</td>
-												{#if values.body.find((el) => el.label == 'Status')?.type == 'pendingCDP'}
-													<td>
+												<td>{listItem.quantity}</td>
+												<td>{listItem.price}</td>
+												{#if item.value.editable}
+													<td class="flex justify-end p-2 gap-2">
 														<button
 															type="button"
-															class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+															class="inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-2 text-center"
+															on:click={(e) => {
+																if (item.value.onEdit) {
+																	item.value.onEdit(listItem);
+																}
+															}}
+														>
+															<svg
+																class="w-4 h-4"
+																fill="currentColor"
+																viewBox="0 0 20 20"
+																xmlns="http://www.w3.org/2000/svg"
+															>
+																<path
+																	d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+																></path>
+															</svg>
+														</button>
+														<button
+															type="button"
+															class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-2 py-2 text-center"
 															on:click={async () => {
-																const { data, error } = await supabase
-																	.from('items')
-																	.delete()
-																	.match({ id: item.id })
-																	.select()
-																	.single();
-																if (error || !data) return;
-																const tr = document.querySelector(`tr[data-utils="${item.id}"]`);
-																tr && tr.remove();
+																if (item.value.onDelete) {
+																	item.value.onDelete(listItem);
+																} else {
+																	const { data, error } = await supabase
+																		.from('items')
+																		.delete()
+																		.match({ id: listItem.id })
+																		.select()
+																		.single();
+																	if (error || !data) return;
+																	const tr = document.querySelector(`tr[data-utils="${listItem.id}"]`);
+																	tr && tr.remove();
+																}
 															}}
 														>
 															<svg
 																aria-hidden="true"
-																class="w-5 h-5 -mx-2.5"
+																class="w-4 h-4"
 																fill="currentColor"
 																viewBox="0 0 20 20"
 															>
