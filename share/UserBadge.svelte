@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { userdata } from '$lib/store';
 	import { supabase } from '$lib/supabaseClient';
-	import { hideOnClickOutside, loadUserdata } from '$lib/utils';
+	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
 	/** @type {{user?: any, fixed?: boolean}} */
@@ -43,7 +43,6 @@
 		window.addEventListener('resize', resizeHandler);
 
 		if (skip) return;
-		await loadUserdata();
 	});
 
 	onDestroy(() => {

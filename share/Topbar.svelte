@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import { userdata } from '$lib/store';
-	import { hideOnClickOutside, loadUserdata } from '$lib/utils';
+	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
 	import SideBar from '$lib/components/admin/SideBar.svelte';
@@ -9,7 +9,6 @@
 	import DvbLogo from './Logo/DVBLogo.svelte';
 
 	let user = $state();
-	let skip = false;
 	let sidebarOpen = $state(false);
 	let onMobile = $state(false);
 	let resizeHandler: (() => void) | null = null;
@@ -79,7 +78,6 @@
 	}
 
 	onMount(async () => {
-		if (!skip) await loadUserdata();
 		onMobile = window.innerWidth < 768;
 
 		// detach, dedupe and initialize dropdowns
