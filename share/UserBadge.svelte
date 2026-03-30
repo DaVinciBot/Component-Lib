@@ -1,9 +1,9 @@
 <script>
-	import { onMount } from 'svelte';
-	import { supabase } from '$lib/supabaseClient';
-	import { loadUserdata, hideOnClickOutside } from '$lib/utils';
-	import { userdata } from '$lib/store';
 	import { hasAnyPermission } from '$lib/permissions';
+	import { userdata } from '$lib/store';
+	import { supabase } from '$lib/supabaseClient';
+	import { hideOnClickOutside } from '$lib/utils';
+	import { onMount } from 'svelte';
 
 	export let user = {
 		name: 'Urbain',
@@ -40,7 +40,6 @@
 		};
 
 		if (skip) return;
-		await loadUserdata();
 	});
 
 	const LogOut = () => {

@@ -1,7 +1,7 @@
 <script>
 	import { afterNavigate } from '$app/navigation';
 	import { userdata } from '$lib/store';
-	import { hideOnClickOutside, loadUserdata } from '$lib/utils';
+	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
 	import SideBar from '$lib/components/admin/SideBar.svelte';
@@ -65,7 +65,6 @@
 	}
 
 	onMount(async () => {
-		if (!skip) await loadUserdata();
 		onMobile = window.innerWidth < 768;
 
 		initDropdown(projectsDropdownEl, 'ProjectsButton');
