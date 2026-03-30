@@ -1,6 +1,6 @@
 <script>
-	import Topbar from '$lib/components/share/Topbar.svelte';
 	import Footer from '$lib/components/share/Footer.svelte';
+	import Topbar from '$lib/components/share/Topbar.svelte';
 
 	export let title = '';
 	export let intro = '';

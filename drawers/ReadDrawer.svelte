@@ -1087,7 +1087,9 @@
 																		.select()
 																		.single();
 																	if (error || !data) return;
-																	const tr = document.querySelector(`tr[data-utils="${listItem.id}"]`);
+																	const tr = document.querySelector(
+																		`tr[data-utils="${listItem.id}"]`
+																	);
 																	tr && tr.remove();
 																}
 															}}

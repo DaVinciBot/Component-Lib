@@ -35,8 +35,9 @@
 		text-decoration: underline;
 	}
 	:global(.md-article code) {
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-			'Courier New', monospace;
+		font-family:
+			ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+			monospace;
 	}
 	:global(.md-article hr) {
 		border-color: rgba(255, 255, 255, 0.15);
