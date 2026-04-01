@@ -118,10 +118,10 @@
 	});
 </script>
 
-<div class={`fixed ${positionClass} z-50`}>
+<div class={`fixed ${positionClass} z-[9999] pointer-events-auto`}>
 	<button
 		class="rounded-full border border-gray-700 bg-gray-900/80 px-4 py-2 text-xs font-semibold tracking-wide text-gray-200 uppercase shadow-lg backdrop-blur"
-		onclick={() => (open = !open)}
+		on:click={() => (open = !open)}
 		type="button"
 	>
 		Dev Auth
@@ -140,7 +140,7 @@
 				<button
 					class="rounded-lg border border-gray-700 px-3 py-1 text-xs text-gray-200 hover:bg-gray-700"
 					disabled={busy}
-					onclick={logout}
+					on:click={logout}
 					type="button"
 				>
 					Deconnexion
@@ -163,7 +163,7 @@
 				/>
 				<button
 					class="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-100 hover:bg-gray-700"
-					onclick={addAccount}
+					on:click={addAccount}
 					type="button"
 				>
 					Ajouter
@@ -192,14 +192,14 @@
 								<button
 									class="rounded-md border border-gray-600 px-2 py-1 text-xs text-gray-200 hover:bg-gray-700"
 									disabled={busy}
-									onclick={() => loginWith(account)}
+									on:click={() => loginWith(account)}
 									type="button"
 								>
 									Connexion
 								</button>
 								<button
 									class="rounded-md border border-gray-600 px-2 py-1 text-xs text-gray-300 hover:bg-gray-700"
-									onclick={() => removeAccount(account)}
+									on:click={() => removeAccount(account)}
 									type="button"
 								>
 									Supprimer
