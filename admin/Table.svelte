@@ -1,11 +1,11 @@
 <script>
 	// @ts-nocheck
-	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { writable } from 'svelte/store';
-	import { hashCode, saveSettings, loadSettings, hideOnClickOutside } from '$lib/utils';
-	import { supabase as _supabase } from '$lib/supabaseClient';
 	import { tableRefresh } from '$lib/store';
+	import { supabase as _supabase } from '$lib/supabaseClient';
+	import { hashCode, hideOnClickOutside, loadSettings, saveSettings } from '$lib/utils';
+	import { onDestroy, onMount } from 'svelte';
+	import { writable } from 'svelte/store';
 
 	// Props
 	export let supabase = null; // Pass the SSR-aware client from layout data; falls back to browser singleton
@@ -47,9 +47,56 @@
 	const filtersStore = writable(filters);
 	$: hasWideFilter = filters?.some((f) => f?.wide);
 
+	const isHiddenFilter = (filter) => filter?.category === 'hidden';
+	const getSettingsFilters = (filters) =>
+		(filters || [])
+			.filter((filter) => !isHiddenFilter(filter))
+			.map((filter) => ({
+				...filter,
+				options: (filter.options || []).map((option) => ({
+					...option,
+					active: Boolean(option.active)
+				}))
+			}));
+
+	const mergeSavedFilters = (current = [], saved = []) => {
+		const savedByKey = new Map(saved.map((filter) => [filter?.value ?? filter?.category, filter]));
+
+		return (current || []).map((filter) => {
+			if (isHiddenFilter(filter)) return filter;
+			const key = filter?.value ?? filter?.category;
+			const savedFilter = savedByKey.get(key);
+			if (!savedFilter || !Array.isArray(filter?.options)) return filter;
+
+			const savedOptions = new Map(
+				(savedFilter.options || []).map((option) => [String(option?.value ?? option?.name), option])
+			);
+
+			return {
+				...filter,
+				options: filter.options.map((option) => {
+					const savedOption = savedOptions.get(String(option?.value ?? option?.name));
+					if (savedOption && typeof savedOption.active === 'boolean') {
+						return { ...option, active: savedOption.active };
+					}
+					return option;
+				})
+			};
+		});
+	};
+
+	const normalizeFilterValues = (value) => {
+		if (Array.isArray(value)) return value;
+		if (typeof value === 'string') {
+			if (value.includes('\",\"')) return value.split('\",\"');
+			if (value.includes(',')) return value.split(',');
+		}
+		return [value];
+	};
+
 	$: {
 		filtersStore.set(filters);
-		if (can_update_settings) saveSettings(hash, filters);
+		if (can_update_settings) saveSettings(hash, getSettingsFilters(filters));
 	}
 
 	function getFiltersString(filters) {
@@ -58,7 +105,13 @@
 		tmp.forEach((f) => (f.options = f.options?.filter((o) => o.active)));
 		tmp.forEach((f) => {
 			if (f.options?.length) {
-				out += `${f.value}:in:("${f.options.map((o) => o.value).join('","')}")&`;
+				const values = f.options.flatMap((o) => normalizeFilterValues(o.value));
+				const cleaned = values
+					.filter((value) => value !== undefined && value !== null && value !== '')
+					.map((value) => String(value));
+				if (cleaned.length) {
+					out += `${f.value}:in:("${cleaned.join('","')}")&`;
+				}
 			}
 		});
 		if (search) out += `${searchable}:ilike:%${search}%&`;
@@ -111,7 +164,7 @@
 	onMount(async () => {
 		mounted = true;
 		const saved = loadSettings(hash);
-		if (saved.length > 0) filters = saved;
+		if (saved.length > 0) filters = mergeSavedFilters(filters, saved);
 		await reload({ resetPage: true });
 
 		const dropdown = document.querySelector('#filterDropdown-' + hash);
