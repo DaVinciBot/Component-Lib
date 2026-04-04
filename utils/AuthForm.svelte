@@ -1,8 +1,6 @@
 <script>
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { supabase } from '$lib/supabaseClient';
-	import { loadUserdata } from '$lib/utils';
+	import { onMount } from 'svelte';
 
 	import SucessModal from '../modals/InfoModal.svelte';
 
@@ -54,10 +52,12 @@
 			}
 		}
 
-		const {
-			data: { session },
-			error
-		} = await supabase.auth.getSession();
+		const sessionResponse = await fetch('/auth/session');
+		const sessionPayload = sessionResponse.ok
+			? await sessionResponse.json()
+			: { session: null, user: null };
+		const session = sessionPayload.session;
+		const sessionUser = sessionPayload.user;
 
 		if (session && auth_type === AuthType.login) {
 			// If the user is already logged in, redirect to the specified redirect_uri
@@ -66,44 +66,28 @@
 		if (session && auth_type === AuthType.oauth) {
 			await handleOAuth();
 		}
-		if (error && auth_type === AuthType.reset) {
-			console.log(session);
-		}
-		if (error && auth_type == AuthType.register) {
-			console.error(error);
-			alert(
-				"Votre lien d'invitation a expiré, veuillez contacter Urbain Lantrès pour avoir un autre lien"
-			);
-		}
 
-		supabase.auth.onAuthStateChange(async (event, session) => {
-			if (event === 'PASSWORD_RECOVERY' && session) {
-				email = session?.user?.email || '';
-			} else if (event === 'SIGNED_OUT') {
-				// Handle sign out if needed
-			}
-		});
-
-		email = session?.user?.email || '';
+		email = sessionUser?.email || '';
 	});
 
 	const handleLogin = async () => {
 		try {
 			loading = true;
-			const { data, error } = await supabase.auth.signInWithPassword({
-				email: email,
-				password: password
+			const response = await fetch('/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, password })
 			});
-			if (error) throw error;
-			if (data) {
-				await loadUserdata();
-				// If OpenID / PKCE SSO parameters are present, complete the authorization
-				if (auth_type === AuthType.oauth) {
-					await handleOAuth();
-				} else {
-					// Otherwise, just redirect to the specified redirect_uri
-					goto(redirect_uri);
-				}
+			if (!response.ok) {
+				const payload = await response.json().catch(() => ({}));
+				throw new Error(payload?.error || 'Connexion impossible.');
+			}
+			// If OpenID / PKCE SSO parameters are present, complete the authorization
+			if (auth_type === AuthType.oauth) {
+				await handleOAuth();
+			} else {
+				// Otherwise, just redirect to the specified redirect_uri
+				goto(redirect_uri);
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -121,14 +105,16 @@
 				alert('Les mots de passe ne correspondent pas.');
 				return;
 			}
-			const { data, error } = await supabase.auth.updateUser({
-				password: password
+			const response = await fetch('/auth/password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ password })
 			});
-			if (error) throw error;
-			if (data) {
-				await loadUserdata();
-				goto(redirect_uri);
+			if (!response.ok) {
+				const payload = await response.json().catch(() => ({}));
+				throw new Error(payload?.error || 'Impossible de mettre a jour le mot de passe.');
 			}
+			goto(redirect_uri);
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message);
@@ -161,8 +147,10 @@
 			return;
 		}
 
-		const { data, error } = await supabase.functions.invoke('oidc-authorize', {
-			body: {
+		const response = await fetch('/auth/oidc/authorize', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
 				client_id: openIdParams.client_id,
 				redirect_uri: openIdParams.redirect_uri,
 				response_type: openIdParams.response_type,
@@ -171,15 +159,15 @@
 				nonce: openIdParams.nonce,
 				code_challenge: openIdParams.code_challenge,
 				code_challenge_method: openIdParams.code_challenge_method
-			}
+			})
 		});
-
-		if (error) {
-			console.error('Error invoking OIDC authorize function:', error);
+		if (!response.ok) {
+			const payload = await response.json().catch(() => ({}));
+			console.error('Error invoking OIDC authorize function:', payload);
 			alert('Une erreur est survenue lors de la connexion avec OAuth.');
 			return;
 		}
-
+		const data = await response.json();
 		if (data?.redirect_uri) {
 			// Clean up stored state before leaving.
 			sessionStorage.removeItem(PKCE_STATE_KEY);
@@ -191,11 +179,16 @@
 		try {
 			loading = true;
 
-			const { data, error } = await supabase.auth.updateUser({
-				password: password
+			const response = await fetch('/auth/password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ password })
 			});
-			if (error) throw error;
-			if (data) {
+			if (!response.ok) {
+				const payload = await response.json().catch(() => ({}));
+				throw new Error(payload?.error || "Impossible d'enregistrer le mot de passe.");
+			}
+			if (response.ok) {
 				// show success message
 				new SucessModal({
 					target: document.body,

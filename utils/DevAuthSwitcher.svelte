@@ -1,7 +1,5 @@
 <script>
 	import { userdata } from '$lib/store';
-	import { supabase } from '$lib/supabaseClient';
-	import { loadUserdata } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
 	const STORAGE_KEY = 'dev_auth_accounts';
@@ -36,10 +34,13 @@
 	}
 
 	async function refreshSession() {
-		const {
-			data: { session }
-		} = await supabase.auth.getSession();
-		currentEmail = session?.user?.email || '';
+		const res = await fetch('/auth/session');
+		if (!res.ok) {
+			currentEmail = '';
+			return;
+		}
+		const payload = await res.json();
+		currentEmail = payload?.user?.email || '';
 	}
 
 	async function addAccount() {
@@ -59,13 +60,16 @@
 		error = '';
 		busy = true;
 		try {
-			await supabase.auth.signOut();
-			const { error: signInError } = await supabase.auth.signInWithPassword({
-				email: account.email,
-				password: account.password
+			await fetch('/auth/logout', { method: 'POST' });
+			const response = await fetch('/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email: account.email, password: account.password })
 			});
-			if (signInError) throw signInError;
-			await loadUserdata();
+			if (!response.ok) {
+				const payload = await response.json().catch(() => ({}));
+				throw new Error(payload?.error || 'Unable to sign in.');
+			}
 			await refreshSession();
 		} catch (err) {
 			if (err instanceof Error) {
@@ -82,8 +86,7 @@
 		error = '';
 		busy = true;
 		try {
-			await supabase.auth.signOut();
-			await loadUserdata();
+			await fetch('/auth/logout', { method: 'POST' });
 			await refreshSession();
 		} catch (err) {
 			if (err instanceof Error) {
@@ -107,10 +110,6 @@
 	onMount(() => {
 		loadAccounts();
 		refreshSession();
-		const { data } = supabase.auth.onAuthStateChange(() => {
-			refreshSession();
-		});
-		return () => data.subscription.unsubscribe();
 	});
 
 	onDestroy(() => {

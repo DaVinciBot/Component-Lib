@@ -1,7 +1,6 @@
 <script>
 	import { hasAnyPermission } from '$lib/permissions';
 	import { userdata } from '$lib/store';
-	import { supabase } from '$lib/supabaseClient';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
 
@@ -42,10 +41,9 @@
 		if (skip) return;
 	});
 
-	const LogOut = () => {
-		supabase.auth.signOut().then(() => {
-			window.location.href = `/`;
-		});
+	const LogOut = async () => {
+		await fetch('/auth/logout', { method: 'POST' });
+		window.location.href = `/`;
 	};
 </script>
 
