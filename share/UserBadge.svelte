@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { userdata } from '$lib/store';
-	import { supabase } from '$lib/supabaseClient';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
@@ -49,10 +48,9 @@
 		if (resizeHandler) window.removeEventListener('resize', resizeHandler);
 	});
 
-	const LogOut = () => {
-		supabase.auth.signOut().then(() => {
-			window.location.href = `/`;
-		});
+	const LogOut = async () => {
+		await fetch('/auth/logout', { method: 'POST' });
+		window.location.href = `/`;
 	};
 </script>
 
