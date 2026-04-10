@@ -151,7 +151,6 @@
 	}
 
 	// TODO: order by date and time
-	// TODO: responsive design, style improvements
 </script>
 
 <section
