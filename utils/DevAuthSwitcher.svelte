@@ -21,7 +21,7 @@
 		try {
 			const raw = localStorage.getItem(STORAGE_KEY);
 			accounts = raw ? JSON.parse(raw) : [];
-		} catch (err) {
+		} catch {
 			accounts = [];
 		}
 	}
@@ -30,7 +30,7 @@
 		accounts = nextAccounts;
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(nextAccounts));
-		} catch (err) {
+		} catch {
 			// ignore
 		}
 	}

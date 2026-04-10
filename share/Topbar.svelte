@@ -22,7 +22,7 @@
 		loginRedirect?: string;
 	};
 
-	let { loginRedirect = '/' }: TopbarProps = $props();
+	let { loginRedirect = '/admin' }: TopbarProps = $props();
 
 	userdata.subscribe((value) => {
 		if (value) {
@@ -306,7 +306,7 @@
 					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
 					<CTAButton
-						href={`/auth/login?redirect=${encodeURIComponent(loginRedirect)}`}
+						href={`/auth/login?redirect=${loginRedirect}`}
 						variant="secondary"
 						size="sm">Se connecter</CTAButton
 					>
