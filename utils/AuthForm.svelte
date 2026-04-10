@@ -19,6 +19,7 @@
 	 * {'login' | 'register' | 'reset'}
 	 */
 	export let auth_type = AuthType.login;
+	export let access_token = '';
 
 	if (
 		auth_type !== AuthType.login &&
@@ -68,6 +69,9 @@
 		}
 
 		email = sessionUser?.email || '';
+		if (!email && access_token) {
+			email = decodeEmail(access_token);
+		}
 	});
 
 	const handleLogin = async () => {
@@ -108,7 +112,7 @@
 			const response = await fetch('/auth/password', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ password })
+				body: JSON.stringify({ password, access_token: access_token || undefined })
 			});
 			if (!response.ok) {
 				const payload = await response.json().catch(() => ({}));
@@ -182,7 +186,7 @@
 			const response = await fetch('/auth/password', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ password })
+				body: JSON.stringify({ password, access_token: access_token || undefined })
 			});
 			if (!response.ok) {
 				const payload = await response.json().catch(() => ({}));
@@ -274,6 +278,19 @@
 		});
 
 		return openIdParams;
+	}
+
+	function decodeEmail(token) {
+		try {
+			const payload = token.split('.')[1];
+			if (!payload) return '';
+			const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+			const decoded = atob(base64);
+			const data = JSON.parse(decoded);
+			return data?.email || '';
+		} catch {
+			return '';
+		}
 	}
 </script>
 
