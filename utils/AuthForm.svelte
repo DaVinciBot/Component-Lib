@@ -20,6 +20,7 @@
 	 */
 	export let auth_type = AuthType.login;
 	export let access_token = '';
+	export let refresh_token = '';
 
 	if (
 		auth_type !== AuthType.login &&
@@ -112,7 +113,11 @@
 			const response = await fetch('/auth/password', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ password, access_token: access_token || undefined })
+				body: JSON.stringify({
+					password,
+					access_token: access_token || undefined,
+					refresh_token: refresh_token || undefined
+				})
 			});
 			if (!response.ok) {
 				const payload = await response.json().catch(() => ({}));
@@ -186,7 +191,11 @@
 			const response = await fetch('/auth/password', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ password, access_token: access_token || undefined })
+				body: JSON.stringify({
+					password,
+					access_token: access_token || undefined,
+					refresh_token: refresh_token || undefined
+				})
 			});
 			if (!response.ok) {
 				const payload = await response.json().catch(() => ({}));
