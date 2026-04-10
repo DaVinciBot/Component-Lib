@@ -11,7 +11,7 @@
 	let user;
 	let skip = false;
 
-	export let loginRedirect = '/';
+	export let loginRedirect = '/admin';
 	let sidebarOpen = false;
 	let onMobile = false;
 
@@ -287,7 +287,7 @@
 					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
 					<CTAButton
-						href={`/auth/login?redirect=${encodeURIComponent(loginRedirect)}`}
+						href={`/auth/login?redirect=${loginRedirect}`}
 						variant="secondary"
 						size="sm">Se connecter</CTAButton
 					>
