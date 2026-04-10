@@ -19,7 +19,7 @@
 			const raw = localStorage.getItem(STORAGE_KEY);
 			const parsed = raw ? JSON.parse(raw) : [];
 			accounts = Array.isArray(parsed) ? parsed : [];
-		} catch (err) {
+		} catch {
 			accounts = [];
 		}
 	}
@@ -28,7 +28,7 @@
 		accounts = nextAccounts;
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(nextAccounts));
-		} catch (err) {
+		} catch {
 			// ignore
 		}
 	}
@@ -117,7 +117,7 @@
 	});
 </script>
 
-<div class={`fixed ${positionClass} z-[9999] pointer-events-auto`}>
+<div class={`fixed ${positionClass} z-9999 pointer-events-auto`}>
 	<button
 		class="rounded-full border border-gray-700 bg-gray-900/80 px-4 py-2 text-xs font-semibold tracking-wide text-gray-200 uppercase shadow-lg backdrop-blur"
 		on:click={() => (open = !open)}
