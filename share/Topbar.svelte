@@ -24,9 +24,7 @@
 	let infosDropdownEl;
 
 	userdata.subscribe((value) => {
-		if (value) {
-			user = value;
-		}
+		user = value || null;
 	});
 
 	function setupDropdown(dropdownEl, activatorEl) {
@@ -286,10 +284,8 @@
 				{#if user}
 					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
-					<CTAButton
-						href={`/auth/login?redirect=${loginRedirect}`}
-						variant="secondary"
-						size="sm">Se connecter</CTAButton
+					<CTAButton href={`/auth/login?redirect=${loginRedirect}`} variant="secondary" size="sm"
+						>Se connecter</CTAButton
 					>
 				{/if}
 			</div>

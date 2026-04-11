@@ -1,5 +1,6 @@
 <script>
 	import { userdata } from '$lib/store';
+	import { supabase } from '$lib/supabaseClient';
 	import { onDestroy, onMount } from 'svelte';
 
 	const STORAGE_KEY = 'dev_auth_accounts';
@@ -60,7 +61,13 @@
 		error = '';
 		busy = true;
 		try {
+			try {
+				await supabase.auth.signOut();
+			} catch {
+				// ignore
+			}
 			await fetch('/auth/logout', { method: 'POST' });
+			userdata.set(null);
 			const response = await fetch('/auth/login', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -86,7 +93,13 @@
 		error = '';
 		busy = true;
 		try {
+			try {
+				await supabase.auth.signOut();
+			} catch {
+				// ignore
+			}
 			await fetch('/auth/logout', { method: 'POST' });
+			userdata.set(null);
 			await refreshSession();
 		} catch (err) {
 			if (err instanceof Error) {
