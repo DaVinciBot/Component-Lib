@@ -1,5 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
+	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
 
 	import SucessModal from '../modals/InfoModal.svelte';
@@ -209,7 +210,7 @@
 						message:
 							'Vous avez bien été inscrit. Vous allez être redirigé vers la page de connexion.',
 						onClose: () => {
-							goto(`https://davincibot.fr/auth/login`);
+							goto(`${base}/login`);
 						}
 					}
 				});
