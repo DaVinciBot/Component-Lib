@@ -3,9 +3,10 @@
 	import { get_current_component } from 'svelte/internal';
 
 	export let title = 'Ajouter des utilisateurs';
-	export let roleOptions = [];
+	export let permissionCategories = {};
+	export let permissionPackages = [];
 	export let projectOptions = [];
-	export let initialRole = '';
+	export let initialPermissions = [];
 	export let initialProject = '';
 	export let onSubmit = async (_) => {};
 	export let onClose = null;
@@ -19,7 +20,7 @@
 	];
 
 	let activeTab = 'simple';
-	let selectedRole = initialRole || 'membre';
+	let selectedPermissions = Array.isArray(initialPermissions) ? [...initialPermissions] : [];
 	let selectedProject = initialProject;
 	let simpleUser = { name: '', email: '', project: initialProject || '' };
 	let bulkUsers = [{ name: '', email: '', project: initialProject || '' }];
@@ -213,9 +214,10 @@
 		e.preventDefault();
 		errorMessage = '';
 
-		let trimmedRole = (selectedRole || 'membre').trim();
-		if (!trimmedRole) trimmedRole = 'membre';
 		const trimmedProject = (selectedProject || '').trim();
+		const finalPermissions = Array.isArray(selectedPermissions)
+			? selectedPermissions.filter(Boolean)
+			: [];
 		let sourceUsers = [];
 		if (activeTab === 'simple') {
 			sourceUsers = [simpleUser];
@@ -257,7 +259,7 @@
 		isSubmitting = true;
 		try {
 			await onSubmit({
-				role: trimmedRole,
+				permissions: finalPermissions,
 				project: trimmedProject,
 				users: finalUsers
 			});
@@ -301,17 +303,91 @@
 			<form class="space-y-6" on:submit={submit}>
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div class="col-span-2 sm:col-span-1">
-						<label class="block mb-2 text-sm font-medium text-white" for="bulk-role">Rôle</label>
-						<select
-							id="bulk-role"
-							class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
-							bind:value={selectedRole}
-						>
-							<option value="">Sélectionner un rôle</option>
-							{#each roleOptions as option}
-								<option value={option.value}>{option.text}</option>
-							{/each}
-						</select>
+						<label class="block mb-2 text-sm font-medium text-white" for="permissions-details">
+							Permissions
+						</label>
+						<details id="permissions-details" class="border border-gray-600 rounded-lg bg-gray-700">
+							<summary
+								class="flex w-full items-center justify-between cursor-pointer select-none p-2.5"
+							>
+								<span class="text-sm font-medium text-white">Sélectionner des permissions</span>
+								<span class="text-xs text-gray-400"
+									>{selectedPermissions.length} sélectionnée(s)</span
+								>
+							</summary>
+							<div class="mt-3 max-h-64 overflow-y-auto pr-1">
+								<div class="flex items-center justify-end mb-3">
+									<button
+										type="button"
+										class="text-xs text-red-300 hover:text-red-200 underline"
+										on:click={() => (selectedPermissions = [])}
+									>
+										Tout décocher
+									</button>
+								</div>
+								{#if permissionPackages && permissionPackages.length > 0}
+									<div
+										class="flex flex-wrap gap-2 mb-4 p-3 mx-2.5 bg-gray-800 border border-gray-600 rounded-lg"
+									>
+										<p class="w-full text-xs text-gray-400 font-semibold mb-1">
+											Packs prédéfinis :
+										</p>
+										{#each permissionPackages as pack}
+											<button
+												type="button"
+												class="px-2 py-1 text-xs text-white bg-gray-700 hover:bg-primary-600 hover:text-white transition-colors border border-gray-500 rounded-md"
+												on:click={() => (selectedPermissions = [...pack.perms])}
+											>
+												{pack.label}
+											</button>
+										{/each}
+									</div>
+								{/if}
+
+								{#if Object.keys(permissionCategories || {}).length > 0}
+									<div class="grid grid-cols-1 gap-4 mb-2.5">
+										{#each Object.entries(permissionCategories) as [catName, perms]}
+											<div class="bg-gray-800 mx-2.5 p-3 rounded-lg border border-gray-700">
+												<h4
+													class="text-white text-sm font-semibold mb-3 border-b border-gray-700 pb-1"
+												>
+													{catName}
+												</h4>
+												<div class="flex flex-col gap-2">
+													{#each perms as perm}
+														<label class="inline-flex items-center group cursor-pointer">
+															<input
+																type="checkbox"
+																value={perm.value}
+																checked={selectedPermissions.includes(perm.value)}
+																on:change={(e) => {
+																	if (e.target.checked) {
+																		if (!selectedPermissions.includes(perm.value)) {
+																			selectedPermissions = [...selectedPermissions, perm.value];
+																		}
+																	} else {
+																		selectedPermissions = selectedPermissions.filter(
+																			(v) => v !== perm.value
+																		);
+																	}
+																}}
+																class="form-checkbox h-4 w-4 text-primary-600 bg-gray-900 border-gray-500 rounded focus:ring-primary-600 focus:ring-2 transition duration-200 cursor-pointer"
+															/>
+															<span
+																class="ml-2 text-sm text-gray-300 group-hover:text-white transition-colors"
+																>{perm.label}</span
+															>
+														</label>
+													{/each}
+												</div>
+											</div>
+										{/each}
+									</div>
+								{:else}
+									<p class="text-sm text-gray-400">Aucune permission disponible.</p>
+								{/if}
+							</div>
+						</details>
 					</div>
 
 					<div class="col-span-2 sm:col-span-1">
