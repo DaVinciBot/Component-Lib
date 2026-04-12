@@ -214,7 +214,7 @@
 		e.preventDefault();
 		errorMessage = '';
 
-		const trimmedProject = (selectedProject || '').trim();
+		const trimmedProject = (selectedProject ?? '').toString().trim();
 		const finalPermissions = Array.isArray(selectedPermissions)
 			? selectedPermissions.filter(Boolean)
 			: [];
@@ -247,10 +247,10 @@
 
 		const finalUsers = preparedUsers.map((u) => ({
 			...u,
-			project: u.project || trimmedProject
+			project: u.project !== '' ? u.project : trimmedProject
 		}));
 
-		const missingProject = finalUsers.some((u) => !u.project);
+		const missingProject = finalUsers.some((u) => u.project === '');
 		if (missingProject) {
 			errorMessage = 'Assignez un projet à chaque utilisateur ou choisissez un projet par défaut.';
 			return;
