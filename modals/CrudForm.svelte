@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
 
-	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, onSubmit?: any, onClose?: (event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) => any}} */
+	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, submitLabel?: string, submitLoadingLabel?: string, submitting?: boolean, onSubmit?: any, onClose?: (event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) => any}} */
 	let {
 		type = 'Utilisateur',
 		type_accord = 'un',
@@ -9,6 +9,9 @@
 		fields = $bindable([]),
 		id = 'CrudModal',
 		title = `${action} ${type_accord} ${type}`,
+		submitLabel = title,
+		submitLoadingLabel = 'Chargement...',
+		submitting = false,
 		onSubmit = async (e: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) => {
 			console.log('Submit');
 		},
@@ -507,11 +510,17 @@
 					</div>
 					<button
 						type="submit"
-						class="inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 focus:ring-4 focus:ring-primary-800 focus:outline-none"
-						onclick={(e) => onSubmit(e)}
+						class={`inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:ring-primary-800 focus:outline-none ${
+							submitting ? 'cursor-not-allowed opacity-60' : 'hover:bg-primary-700'
+						}`}
+						disabled={submitting}
+						onclick={(e) => {
+							if (submitting) return;
+							onSubmit(e);
+						}}
 					>
 						<svg
-							class="mr-1 -ml-1 h-6 w-6"
+							class={`mr-1 -ml-1 h-6 w-6 ${submitting ? 'animate-spin' : ''}`}
 							fill="currentColor"
 							viewBox="0 0 20 20"
 							xmlns="http://www.w3.org/2000/svg"
@@ -521,7 +530,7 @@
 								clip-rule="evenodd"
 							></path></svg
 						>
-						{title}
+						{submitting ? submitLoadingLabel : submitLabel}
 					</button>
 				</form>
 			</div>
