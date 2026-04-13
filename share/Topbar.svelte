@@ -335,7 +335,7 @@
 				},
 				{ title: 'Partenaires', icon: 'people', uri: '/sponsors' },
 				{ title: 'Contact', icon: 'mail', uri: '/contact' },
-				{ title: 'Formation', icon: 'book', uri: '/formation' }
+				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' }
 			]}
 			on:click={closeSidebar}
 		/>
