@@ -299,16 +299,18 @@
 					<li>
 						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
 					</li>
+
+					<li>
+						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
+					</li>
 				</ul>
 			</div>
 			<div class="gap-5">
 				{#if user}
 					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
-					<CTAButton
-						href={`/auth/login?redirect=${loginRedirect}`}
-						variant="secondary"
-						size="sm">Se connecter</CTAButton
+					<CTAButton href={`/auth/login?redirect=${loginRedirect}`} variant="secondary" size="sm"
+						>Se connecter</CTAButton
 					>
 				{/if}
 			</div>
@@ -346,7 +348,8 @@
 					]
 				},
 				{ title: 'Partenaires', icon: 'people', uri: '/sponsors' },
-				{ title: 'Contact', icon: 'mail', uri: '/contact' }
+				{ title: 'Contact', icon: 'mail', uri: '/contact' },
+				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' }
 			]}
 			on:click={closeSidebar}
 		/>
