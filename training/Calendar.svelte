@@ -165,7 +165,7 @@
 					type="button"
 					variant="secondary"
 					size="xs"
-					class="flex h-1 w-5 items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
+					class="flex items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
 					fullWidth={false}
 					onclick={goPrev}
 					aria-label="Semaine précédente"
@@ -190,7 +190,7 @@
 					type="button"
 					variant="secondary"
 					size="xs"
-					class="flex h-1 w-5 items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
+					class="flex items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
 					fullWidth={false}
 					onclick={goNext}
 					aria-label="Semaine suivante"
