@@ -1,11 +1,15 @@
 <script>
 	// Duration in seconds for a full loop
-	/** @type {{time?: number, children?: import('svelte').Snippet}} */
-	let { time = 50, children } = $props();
+	/** @type {{time?: number, pauseOnHover?: boolean, small?: boolean, children?: import('svelte').Snippet}} */
+	let { time = 50, pauseOnHover = true, small = false, children } = $props();
 </script>
 
 <div class="w-full h-full">
-	<div class="relative w-full h-full py-5 overflow-hidden carrousel">
+	<div class="relative w-full h-full overflow-hidden carrousel"
+		class:py-5={!small}
+		class:py-2={small}
+		class:pause-on-hover={pauseOnHover}
+	>
 		<!--
 			The inner track duplicates the slot content to create an infinite marquee.
 			CSS handles width via max-content, avoiding JS measurements that can be flaky in Firefox.
@@ -37,6 +41,10 @@
 		position: relative;
 		/* optional background color to match gradient edges; adjust to your theme */
 		background-color: transparent;
+	}
+
+	.pause-on-hover:hover .carousel-inner {
+		animation-play-state: paused;
 	}
 
 	.carrousel::after {

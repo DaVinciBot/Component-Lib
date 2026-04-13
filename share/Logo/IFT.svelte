@@ -1,10 +1,17 @@
 <script>
+	/**@type {{small?: boolean}}*/
+	let { small = false } = $props();
 </script>
 
-<a href="https://ift.devinci.fr/" class="h-full aspect-square">
+<a
+	href="https://ift.devinci.fr/"
+	class="h-full aspect-square"
+	target="_blank"
+	rel="noopener noreferrer"
+>
 	<svg
-		class="h-full"
-		height="100"
+		class={small ? '' : 'h-full'}
+		height={small ? 50 : 100}
 		viewBox="0 0 410 410"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"

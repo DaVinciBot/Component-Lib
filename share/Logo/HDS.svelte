@@ -1,9 +1,11 @@
 <script>
+	/**@type {{small?: boolean}}*/
+	let { small = false } = $props();
 </script>
 
-<a href="https://www.hauts-de-seine.fr/">
+<a href="https://www.hauts-de-seine.fr/" target="_blank" rel="noopener noreferrer">
 	<svg
-		class="w-full h-full"
+		class={small ? 'w-full' : 'w-full h-full'}
 		height="50"
 		viewBox="0 0 233 48"
 		fill="none"
