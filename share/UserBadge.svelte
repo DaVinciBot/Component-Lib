@@ -1,16 +1,19 @@
 <script>
-	import { onMount } from 'svelte';
-	import { supabase } from '$lib/supabaseClient';
-	import { loadUserdata, hideOnClickOutside } from '$lib/utils';
+	import { hasAnyPermission } from '$lib/permissions';
 	import { userdata } from '$lib/store';
-
+	import { supabase } from '$lib/supabaseClient';
+	import { hideOnClickOutside } from '$lib/utils';
+	import { onMount } from 'svelte';
 
 	/** @type {{user?: any, fixed?: boolean}} */
-	let { user = $bindable({
-		name: 'Urbain',
-		email: 'davincibot@devinci.fr',
-		avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
-	}), fixed = true } = $props();
+	let {
+		user = $bindable({
+			name: 'Urbain',
+			email: 'davincibot@devinci.fr',
+			avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
+		}),
+		fixed = true
+	} = $props();
 
 	let skip = false;
 
@@ -18,6 +21,8 @@
 		if (value) {
 			user = value;
 			skip = true;
+		} else {
+			user = null;
 		}
 	});
 
@@ -39,13 +44,17 @@
 		};
 
 		if (skip) return;
-		await loadUserdata();
 	});
 
-	const LogOut = () => {
-		supabase.auth.signOut().then(() => {
-			window.location.href = `/`;
-		});
+	const LogOut = async () => {
+		try {
+			await supabase.auth.signOut();
+		} catch {
+			// ignore
+		}
+		await fetch('/auth/logout', { method: 'POST' });
+		userdata.set(null);
+		window.location.href = `/`;
 	};
 </script>
 
@@ -83,7 +92,7 @@
 			>
 		</li>
 	</ul>
-	{#if ['membre', 'admin', 'cdp', 'bureau'].includes(user?.role)}
+	{#if hasAnyPermission(user?.permissions, ['view_admin'])}
 		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 			<li>
 				<a
