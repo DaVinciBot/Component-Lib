@@ -276,11 +276,11 @@
 					</li>
 
 					<li>
-						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
+						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
 					</li>
 
 					<li>
-						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
+						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
 					</li>
 				</ul>
 			</div>
@@ -334,8 +334,8 @@
 					]
 				},
 				{ title: 'Partenaires', icon: 'people', uri: '/sponsors' },
-				{ title: 'Contact', icon: 'mail', uri: '/contact' },
-				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' }
+				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' },
+				{ title: 'Contact', icon: 'mail', uri: '/contact' }
 			]}
 			on:click={closeSidebar}
 		/>
