@@ -60,8 +60,11 @@
 	let isModalOpen = $state(false);
 	let filtersReady = $state(false);
 	let todayRow: HTMLDivElement | null = $state(null);
+	let autoAdvanceToNextWeek = $state<'initial' | 'today' | null>('initial');
+	let hasSeenCalendarLoading = $state(false);
 
-	let viewDate = $state(getParisDateUtc(new Date()) ?? new Date());
+	let viewDate = $derived(getParisDateUtc(new Date()) ?? new Date());
+	const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 	$effect(() => {
 		viewDate = getParisDateUtc(initialDate) ?? new Date();
@@ -73,6 +76,27 @@
 			if (current.inPerson === isInPerson && current.online === isOnline) return current;
 			return { inPerson: isInPerson, online: isOnline };
 		});
+	});
+
+	$effect(() => {
+		if (isLoading) {
+			hasSeenCalendarLoading = true;
+			return;
+		}
+		if (!hasSeenCalendarLoading) return;
+		if (!autoAdvanceToNextWeek) return;
+		if (errorMessage) {
+			autoAdvanceToNextWeek = null;
+			return;
+		}
+
+		if (!shouldAutoAdvanceWeek(viewDate)) {
+			autoAdvanceToNextWeek = null;
+			return;
+		}
+
+		autoAdvanceToNextWeek = null;
+		setViewDate(new Date(getWeekStart(viewDate).getTime() + 7 * ONE_DAY_MS));
 	});
 
 	onMount(() => {
@@ -116,15 +140,34 @@
 		onWeekChange?.(getWeekStart(date));
 	}
 
+	function shouldAutoAdvanceWeek(date: Date) {
+		const today = getParisDateUtc(new Date()) ?? new Date();
+		const todayWeekStart = getWeekStart(today);
+		const viewedWeekStart = getWeekStart(date);
+		if (todayWeekStart.getTime() !== viewedWeekStart.getTime()) return false;
+
+		const todayKey = toDateKey(today);
+		for (const slot of slots) {
+			const slotDate = new Date(slot.start);
+			if (Number.isNaN(slotDate.getTime())) continue;
+			if (toDateKey(slotDate) >= todayKey) return false;
+		}
+
+		return true;
+	}
+
 	function goPrev() {
-		setViewDate(new Date(viewDate.getTime() - 7 * 24 * 60 * 60 * 1000));
+		autoAdvanceToNextWeek = null;
+		setViewDate(new Date(viewDate.getTime() - 7 * ONE_DAY_MS));
 	}
 
 	function goNext() {
-		setViewDate(new Date(viewDate.getTime() + 7 * 24 * 60 * 60 * 1000));
+		autoAdvanceToNextWeek = null;
+		setViewDate(new Date(viewDate.getTime() + 7 * ONE_DAY_MS));
 	}
 
 	function goToday() {
+		autoAdvanceToNextWeek = 'today';
 		setViewDate(getParisDateUtc(new Date()) ?? new Date());
 		void scrollToToday();
 	}
