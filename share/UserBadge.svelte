@@ -90,7 +90,8 @@
 			>
 		</li>
 	</ul>
-	{#if hasAnyPermission(user?.permissions, ['view_admin'])}
+	{#if hasAnyPermission( user?.permissions, ['orders.cru.self', 'orders.read.all', 'training.slot.read', 'members.profile.read.all', 'finance.read', 'blog.draft.write'] )}
+		<!-- TODO: review -->
 		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 			<li>
 				<a

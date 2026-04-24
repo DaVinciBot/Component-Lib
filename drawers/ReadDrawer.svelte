@@ -918,12 +918,12 @@
 									{#each item.value.list as value, idx}
 										{@const isPositive = [
 											'review-treso-approved',
-											'order-processed',
-											'order-received',
+											'order-pending-delivery',
 											'order-completed'
 										].includes(value.type)}
 										{@const isNegative = [
-											'order-canceled',
+											'order-canceled-user',
+											'order-canceled-ops',
 											'review-cdp-refused',
 											'review-treso-refused'
 										].includes(value.type)}

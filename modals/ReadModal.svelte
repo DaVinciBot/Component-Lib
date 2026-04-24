@@ -1,7 +1,7 @@
 <script>
-	import { get_current_component } from 'svelte/internal';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
+	import { get_current_component } from 'svelte/internal';
 	const current_component = get_current_component();
 
 	import { supabase } from '$lib/supabaseClient';
@@ -252,7 +252,7 @@
 										<td>Nom</td>
 										<td>Quantité</td>
 										<td>Prix</td>
-										{#if values.body.find((el) => el.label == 'Status').type == 'pendingCDP'}
+										{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
 											<td class="w-2.5"></td>
 										{/if}
 									</thead>
@@ -262,7 +262,7 @@
 												<td class="p-2"><a href={item.link} target="_blank">{item.name}</a></td>
 												<td>{item.quantity}</td>
 												<td>{item.price}</td>
-												{#if values.body.find((el) => el.label == 'Status').type == 'pendingCDP'}
+												{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
 													<td>
 														<button
 															type="button"
