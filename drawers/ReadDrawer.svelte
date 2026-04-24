@@ -812,12 +812,12 @@
 									{#each item.value.list as value, idx}
 										{@const isPositive = [
 											'review-treso-approved',
-											'order-processed',
-											'order-received',
+											'order-pending-delivery',
 											'order-completed'
 										].includes(value.type)}
 										{@const isNegative = [
-											'order-canceled',
+											'order-canceled-user',
+											'order-canceled-ops',
 											'review-cdp-refused',
 											'review-treso-refused'
 										].includes(value.type)}
@@ -893,7 +893,7 @@
 											<td>Nom</td>
 											<td>Quantité</td>
 											<td>Prix</td>
-											{#if values.body.find((el: any) => el.label == 'Status')?.type == 'pendingCDP'}
+											{#if values.body.find((el: any) => el.label == 'Status')?.type == 'pending_cdp'}
 												<td class="w-2.5"></td>
 											{/if}
 										</tr>
@@ -935,7 +935,7 @@
 												>
 												<td>{it.quantity}</td>
 												<td>{it.price}</td>
-												{#if values.body.find((el: any) => el.label == 'Status')?.type == 'pendingCDP'}
+												{#if values.body.find((el: any) => el.label == 'Status')?.type == 'pending_cdp'}
 													<td>
 														<button
 															type="button"

@@ -106,17 +106,17 @@
 	{id}
 	tabindex="-1"
 	aria-hidden="true"
-	class="fixed top-0 left-0 right-0 z-50 items-center justify-center w-full h-full overflow-x-hidden overflow-y-auto md:inset-0 backdrop-blur-sm"
+	class="fixed top-0 right-0 left-0 z-50 h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto backdrop-blur-sm md:inset-0"
 	data-toggle="true"
 >
-	<div class="relative flex w-full h-full p-4 m-auto">
+	<div class="relative m-auto flex h-full w-full p-4">
 		<!-- Modal content -->
 		<div
-			class="relative p-4 m-auto bg-gray-800 rounded-lg sm:p-5 min-w-96 max-w-[80%] md:max-w-[75%] lg:max-w-[70%] xl:max-w-[65%] 2xl:max-w-[55%] modal"
+			class="modal relative m-auto max-w-[80%] min-w-96 rounded-lg bg-gray-800 p-4 sm:p-5 md:max-w-[75%] lg:max-w-[70%] xl:max-w-[65%] 2xl:max-w-[55%]"
 			id="popup-{id}"
 		>
 			<!-- Modal header -->
-			<div class="flex justify-between mb-4 rounded-t sm:mb-5">
+			<div class="mb-4 flex justify-between rounded-t sm:mb-5">
 				<div class="flex w-full text-lg text-white md:text-xl">
 					<h3 class="mr-2 font-semibold">{values.header.title}</h3>
 					{#if values.header.sub}
@@ -129,14 +129,14 @@
 				<div>
 					<button
 						type="button"
-						class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
+						class="inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 						data-modal-toggle={id}
 						on:click={__onClose}
 						data-toggle="true"
 					>
 						<svg
 							aria-hidden="true"
-							class="w-5 h-5"
+							class="h-5 w-5"
 							fill="currentColor"
 							viewBox="0 0 20 20"
 							xmlns="http://www.w3.org/2000/svg"
@@ -157,10 +157,10 @@
 					<div class="mb-2">
 						<div class="header">
 							<h3 class="text-lg font-semibold text-white">Pièces jointes</h3>
-							<div class="flex justify-between w-full mt-2 mb-2">
+							<div class="mt-2 mb-2 flex w-full justify-between">
 								<button
 									class="
-									text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
+									inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 									on:click={() => {
 										if (current_file_index > 0) {
 											current_file_index--;
@@ -172,7 +172,7 @@
 									}}
 								>
 									<svg
-										class="w-5 h-5"
+										class="h-5 w-5"
 										aria-hidden="true"
 										fill="white"
 										viewBox="0 0 20 20"
@@ -184,12 +184,12 @@
 										></path></svg
 									>
 								</button>
-								<p class="items-center self-center text-sm text-center text-gray-400">
+								<p class="items-center self-center text-center text-sm text-gray-400">
 									{current_file || 'Chargement'} - {current_file_index + 1}/{files.length}
 								</p>
 								<button
 									class="
-								text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
+								inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 									on:click={() => {
 										if (current_file_index < files.length - 1) {
 											current_file_index++;
@@ -201,7 +201,7 @@
 									}}
 								>
 									<svg
-										class="w-5 h-5 rotate-180"
+										class="h-5 w-5 rotate-180"
 										aria-hidden="true"
 										fill="white"
 										viewBox="0 0 20 20"
@@ -215,11 +215,11 @@
 								</button>
 							</div>
 						</div>
-						<div class="flex h-auto overflow-x-hidden w-[22rem] md:w-96 aspect-[1/1.414] gap-2">
+						<div class="flex aspect-[1/1.414] h-auto w-[22rem] gap-2 overflow-x-hidden md:w-96">
 							<div class="flex rounded-lg" bind:this={scroll_body}>
 								{#each files_array as { mime, url }, i}
 									{@const name = decodeURI(url?.split('/')[10].split('?')[0])}
-									<div class="flex flex-col w-[22rem] md:w-96">
+									<div class="flex w-[22rem] flex-col md:w-96">
 										<!-- <p class="text-white">{url?.split('/')[10].split('?')[0]}</p> -->
 										{#if mime == 'application/pdf' && !isMobile}
 											<iframe src={url} frameborder="0" class="h-full" title={name}></iframe>
@@ -242,7 +242,7 @@
 
 				<dl>
 					{#each values.body as { label, value }}
-						<dt class="mb-2 font-semibold leading-none text-white">{label}</dt>
+						<dt class="mb-2 leading-none font-semibold text-white">{label}</dt>
 						{#if typeof value === 'object'}
 							<dd class="mb-4 ml-2 font-light text-gray-400 sm:mb-5">
 								<table class="w-full border-separate">
@@ -251,7 +251,7 @@
 											<td>Nom</td>
 											<td>Quantité</td>
 											<td>Prix</td>
-											{#if values.body.find((el) => el.label == 'Status').type == 'pendingCDP'}
+											{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
 												<td class="w-2.5"></td>
 											{/if}
 										</tr>
@@ -262,11 +262,11 @@
 												<td class="p-2"><a href={item.link} target="_blank">{item.name}</a></td>
 												<td>{item.quantity}</td>
 												<td>{item.price}</td>
-												{#if values.body.find((el) => el.label == 'Status').type == 'pendingCDP'}
+												{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
 													<td>
 														<button
 															type="button"
-															class="inline-flex items-center text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-red-500 hover:bg-red-600 focus:ring-red-900"
+															class="inline-flex items-center rounded-lg bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-600 focus:ring-4 focus:ring-red-900 focus:outline-none"
 															on:click={async () => {
 																// remove item from database
 																const { data, error } = await supabase
@@ -288,7 +288,7 @@
 														>
 															<svg
 																aria-hidden="true"
-																class="w-5 h-5 -mx-2.5"
+																class="-mx-2.5 h-5 w-5"
 																fill="currentColor"
 																viewBox="0 0 20 20"
 																xmlns="http://www.w3.org/2000/svg"
@@ -308,7 +308,7 @@
 							</dd>
 						{:else}
 							<dd
-								class="mb-4 font-light text-gray-400 transition-colors sm:mb-5 hover:text-gray-300"
+								class="mb-4 font-light text-gray-400 transition-colors hover:text-gray-300 sm:mb-5"
 							>
 								{value}
 							</dd>
@@ -320,7 +320,7 @@
 				{#each actions as { title, type, handler }}
 					{#if type == 'selector'}
 						<select
-							class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+							class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 							on:change={handler}
 						>
 							<option value="" disabled selected>Choisir une option</option>
@@ -332,12 +332,12 @@
 					{#if type == 'edit'}
 						<button
 							type="button"
-							class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+							class="inline-flex items-center rounded-lg bg-primary-600 bg-primary-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 focus:ring-primary-800 focus:outline-none"
 							on:click={handler}
 						>
 							<svg
 								aria-hidden="true"
-								class="w-5 h-5 mr-1 -ml-1"
+								class="mr-1 -ml-1 h-5 w-5"
 								fill="currentColor"
 								viewBox="0 0 20 20"
 								xmlns="http://www.w3.org/2000/svg"
@@ -355,12 +355,12 @@
 					{#if type == 'validate'}
 						<button
 							type="button"
-							class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+							class="inline-flex items-center rounded-lg bg-primary-600 bg-primary-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 focus:ring-primary-800 focus:outline-none"
 							on:click={handler}
 						>
 							<svg
 								aria-hidden="true"
-								class="w-5 h-5 mr-1.5 -ml-1"
+								class="mr-1.5 -ml-1 h-5 w-5"
 								fill="currentColor"
 								viewBox="0 0 20 20"
 								xmlns="http://www.w3.org/2000/svg"
@@ -376,12 +376,12 @@
 					{#if type == 'delete'}
 						<button
 							type="button"
-							class="inline-flex items-center text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-red-500 hover:bg-red-600 focus:ring-red-900"
+							class="inline-flex items-center rounded-lg bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-600 focus:ring-4 focus:ring-red-900 focus:outline-none"
 							on:click={handler}
 						>
 							<svg
 								aria-hidden="true"
-								class="w-5 h-5 mr-1.5 -ml-1"
+								class="mr-1.5 -ml-1 h-5 w-5"
 								fill="currentColor"
 								viewBox="0 0 20 20"
 								xmlns="http://www.w3.org/2000/svg"
