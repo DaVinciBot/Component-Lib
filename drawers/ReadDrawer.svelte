@@ -1,12 +1,11 @@
 <script>
 	// @ts-nocheck
 
-	import { get_current_component } from 'svelte/internal';
-	import { hideOnClickOutside } from '$lib/utils';
-	import { onMount, onDestroy } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
-	import Stepper from '../admin/Stepper.svelte';
 	import { updateText } from '$lib/utils';
+	import { onDestroy, onMount } from 'svelte';
+	import { get_current_component } from 'svelte/internal';
+	import Stepper from '../admin/Stepper.svelte';
 
 	import Icon from '../share/Icon.svelte';
 
@@ -742,7 +741,7 @@
 														value={p.value}
 														disabled={(field.value || []).some(
 															(v, i) => i !== idx && v.project_id == p.value
-														)}>{p.text}</option
+														)}>{p.name}</option
 													>
 												{/each}
 											</select>

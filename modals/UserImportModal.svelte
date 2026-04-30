@@ -87,7 +87,7 @@
 		const tokens = rawStatuses.split(/[;,]/).map(normalizeValue).filter(Boolean);
 		const joinedStatuses = normalizeValue(rawStatuses);
 		for (const option of projectOptions) {
-			const normalizedOption = normalizeValue(option.text);
+			const normalizedOption = normalizeValue(option.name);
 			if (!normalizedOption) continue;
 			if (tokens.includes(normalizedOption) || joinedStatuses.includes(normalizedOption)) {
 				return option.value;
@@ -401,7 +401,7 @@
 						>
 							<option value="">Sélectionner un projet</option>
 							{#each projectOptions as option}
-								<option value={option.value}>{option.text}</option>
+								<option value={option.value}>{option.name}</option>
 							{/each}
 						</select>
 					</div>
@@ -467,7 +467,7 @@
 								>
 									<option value="">Sélectionner un projet</option>
 									{#each projectOptions as option}
-										<option value={option.value}>{option.text}</option>
+										<option value={option.value}>{option.name}</option>
 									{/each}
 								</select>
 							</div>
@@ -532,7 +532,7 @@
 										>
 											<option value="">Sélectionner un projet</option>
 											{#each projectOptions as option}
-												<option value={option.value}>{option.text}</option>
+												<option value={option.value}>{option.name}</option>
 											{/each}
 										</select>
 									</div>
@@ -644,7 +644,7 @@
 											>
 												<option value="">Sélectionner un projet</option>
 												{#each projectOptions as option}
-													<option value={option.value}>{option.text}</option>
+													<option value={option.value}>{option.name}</option>
 												{/each}
 											</select>
 										</div>
