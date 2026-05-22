@@ -1,66 +1,70 @@
-<!-- @migration-task Error while migrating Svelte code: `<td>` is invalid inside `<thead>` -->
-<script>
+<script lang="ts">
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { get_current_component } from 'svelte/internal';
-	const current_component = get_current_component();
 
 	import { supabase } from '$lib/supabaseClient';
 
 	import Stepper from '../admin/Stepper.svelte';
 
-	export let values = {
-		header: {
-			title: 'Pas de détails',
-			sub: '-',
-			stepper: []
+	type ReadModalProps {
+		values?: any;
+		files?: any;
+		actions?: any;
+		id?: string;
+		onClose?: any;
+	}
+
+	let {
+		values = {
+			header: {
+				title: 'Pas de détails',
+				sub: '-',
+				stepper: []
+			},
+			body: [
+				{
+					label: 'Objets',
+					value: [
+						{
+							name: 'Vis',
+							quantity: 10,
+							price: 10
+						},
+						{
+							name: 'Ecrou',
+							quantity: 10,
+							price: 10
+						}
+					]
+				},
+				{
+					label: 'Date',
+					value: '2024-05-17'
+				},
+				{
+					label: 'Prédictions',
+					value: 'Victoire de SKT, 2-1' // ou bien 'Match non joué'
+				},
+				{
+					label: 'Utilisateur',
+					value: 'Mascode'
+				}
+			]
 		},
-		body: [
-			{
-				label: 'Objets',
-				value: [
-					{
-						name: 'Vis',
-						quantity: 10,
-						price: 10
-					},
-					{
-						name: 'Ecrou',
-						quantity: 10,
-						price: 10
-					}
-				]
-			},
-			{
-				label: 'Date',
-				value: '2024-05-17'
-			},
-			{
-				label: 'Prédictions',
-				value: 'Victoire de SKT, 2-1' // ou bien 'Match non joué'
-			},
-			{
-				label: 'Utilisateur',
-				value: 'Mascode'
-			}
-		]
-	};
-	export let files = [];
-	export let actions = [];
-	export let id = 'readModal';
+		files = [],
+		actions = [],
+		id = 'readModal',
+		onClose = (e) => {}
+	}: ReadModalProps = $props();
 
-	let current_file = '';
-	let current_file_index = 0;
-	let scroll_body = null;
+	let current_file = $state('');
+	let current_file_index = $state(0);
+	let scroll_body = $state(null);
 
-	let isMobile = false;
-
-	export let onClose = (e) => {};
-	let files_array = [{ mime: 'application/pdf', url: null }];
+	let isMobile = $state(false);
+	let files_array = $state([{ mime: 'application/pdf', url: null }]);
 
 	let __onClose = (e) => {
-		// remove componant from tree
-		current_component.$destroy();
 		onClose(e);
 	};
 
@@ -134,7 +138,7 @@
 						type="button"
 						class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
 						data-modal-toggle={id}
-						on:click={__onClose}
+						onclick={__onClose}
 						data-toggle="true"
 					>
 						<svg
@@ -164,7 +168,7 @@
 								<button
 									class="
 									text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
-									on:click={() => {
+									onclick={() => {
 										if (current_file_index > 0) {
 											current_file_index--;
 											current_file = files_array[current_file_index].name;
@@ -193,7 +197,7 @@
 								<button
 									class="
 								text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
-									on:click={() => {
+									onclick={() => {
 										if (current_file_index < files.length - 1) {
 											current_file_index++;
 											current_file = files_array[current_file_index].name;
@@ -250,12 +254,14 @@
 							<dd class="mb-4 ml-2 font-light text-gray-400 sm:mb-5">
 								<table class="w-full border-separate">
 									<thead class="font-bold">
-										<td>Nom</td>
-										<td>Quantité</td>
-										<td>Prix</td>
-										{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
-											<td class="w-2.5"></td>
-										{/if}
+										<tr>
+											<th scope="col">Nom</th>
+											<th scope="col">Quantité</th>
+											<th scope="col">Prix</th>
+											{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
+												<th scope="col" class="w-2.5"></th>
+											{/if}
+										</tr>
 									</thead>
 									<tbody>
 										{#each value as item}
@@ -268,7 +274,7 @@
 														<button
 															type="button"
 															class="inline-flex items-center text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-red-500 hover:bg-red-600 focus:ring-red-900"
-															on:click={async () => {
+															onclick={async () => {
 																// remove item from database
 																const { data, error } = await supabase
 																	.from('items')
@@ -322,7 +328,7 @@
 					{#if type == 'selector'}
 						<select
 							class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
-							on:change={handler}
+							onchange={handler}
 						>
 							<option value="" disabled selected>Choisir une option</option>
 							{#each title as { name, value }}
@@ -334,7 +340,7 @@
 						<button
 							type="button"
 							class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-							on:click={handler}
+							onclick={handler}
 						>
 							<svg
 								aria-hidden="true"
@@ -357,7 +363,7 @@
 						<button
 							type="button"
 							class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-							on:click={handler}
+							onclick={handler}
 						>
 							<svg
 								aria-hidden="true"
@@ -378,7 +384,7 @@
 						<button
 							type="button"
 							class="inline-flex items-center text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-red-500 hover:bg-red-600 focus:ring-red-900"
-							on:click={handler}
+							onclick={handler}
 						>
 							<svg
 								aria-hidden="true"

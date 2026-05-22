@@ -1,11 +1,14 @@
 <script>
 	import { preventDefault } from 'svelte/legacy';
 
-	import { onMount, mount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { supabase } from '$lib/supabaseClient';
+	import { onMount } from 'svelte';
+	import { mountClosable } from '$lib/utils';
 
 	import SucessModal from '../modals/InfoModal.svelte';
+
+	/** Session-storage key used to pin the PKCE state value for CSRF protection. */
+	const PKCE_STATE_KEY = 'pkce_state';
 
 	const AuthType = {
 		login: 'Login',
@@ -14,9 +17,13 @@
 		oauth: 'Login avec OAuth'
 	};
 
-	
-	/** @type {{redirect_uri?: string, auth_type?: any}} */
-	let { redirect_uri = $bindable('/'), auth_type = $bindable(AuthType.login) } = $props();
+	/** @type {{redirect_uri?: string, auth_type?: any, access_token?: string, refresh_token?: string}} */
+	let {
+		redirect_uri = $bindable('/'),
+		auth_type = $bindable(AuthType.login),
+		access_token = '',
+		refresh_token = ''
+	} = $props();
 
 	if (
 		auth_type !== AuthType.login &&
@@ -27,6 +34,12 @@
 		auth_type = AuthType[auth_type.toLowerCase()] || AuthType.login;
 	}
 
+	// Auto-detect PKCE / OpenID mode from URL parameters so the page works
+	// even when auth_type is not explicitly set to "oauth".
+	if (typeof window !== 'undefined' && isOpenID()) {
+		auth_type = AuthType.oauth;
+	}
+
 	let loading = $state(false);
 	let email = $state('');
 	let password = $state('');
@@ -34,10 +47,23 @@
 
 	onMount(async () => {
 		redirect_uri = parseRedirectURI(redirect_uri);
-		const {
-			data: { session },
-			error
-		} = await supabase.auth.getSession();
+
+		// Pin the incoming PKCE state to sessionStorage so we can verify it
+		// has not been swapped before completing the authorization.
+		if (auth_type === AuthType.oauth) {
+			const params = getOpenIDParams();
+			if (params.state) {
+				sessionStorage.setItem(PKCE_STATE_KEY, params.state);
+			}
+		}
+
+		const sessionResponse = await fetch('/auth/session');
+		const sessionPayload = sessionResponse.ok
+			? await sessionResponse.json()
+			: { session: null, user: null };
+		const session = sessionPayload.session;
+		const sessionUser = sessionPayload.user;
+
 		if (session && auth_type === AuthType.login) {
 			// If the user is already logged in, redirect to the specified redirect_uri
 			goto(redirect_uri);
@@ -45,43 +71,56 @@
 		if (session && auth_type === AuthType.oauth) {
 			await handleOAuth();
 		}
-		if (error && auth_type === AuthType.reset) {
-			console.log(session);
-		}
-		if (error && auth_type == AuthType.register) {
-			console.error(error);
-			alert(
-				"Votre lien d'invitation a expiré, veuillez contacter Urbain Lantrès pour avoir un autre lien"
-			);
-		}
 
-		supabase.auth.onAuthStateChange(async (event, session) => {
-			if (event === 'PASSWORD_RECOVERY' && session) {
-				email = session?.user?.email || '';
-			} else if (event === 'SIGNED_OUT') {
-				// Handle sign out if needed
-			}
-		});
-
-		email = session?.user?.email || '';
+		email = sessionUser?.email || '';
+		if (!email && access_token) {
+			email = decodeEmail(access_token);
+		}
 	});
+
+	// TODO: This function shares a lot of code with the handler in the edge function.
+	// We should unify them to avoid drift and ensure consistent behavior (e.g. around error handling).
+
+	// TODO: We should also unify the handlers for login / register / reset since they share a lot of common code (form handling, error handling, etc.) and only differ in the API endpoint and payload.
+
+	// TODO: We should also handle and display errors more gracefully in the UI instead of just using alert().
+
+	// TODO: We should also add client-side validation for the form inputs (e.g. email format, password strength, etc.) before sending the request to the server.
+
+	// TODO: We should also consider adding support for showing server-side validation errors (e.g. "email already in use" for registration) in the UI instead of just using alert().
+
+	// TODO: mieux gérer les différents types d'erreurs (network errors, server errors, validation errors, etc.) pour afficher des messages plus précis à l'utilisateur.
+
+	// FIXME: handle the case where the access token is expired and we need to use the refresh token to get a new one before completing the OAuth flow.
+
+	// FIXME: handle the case where the user tries to access the login page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just redirecting them).
+
+	// FIXME: handle the case where the user tries to access the registration page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just showing the registration form).
+
+	// FIXME: handle the case where the user tries to access the password reset page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just showing the password reset form).
+
+	// FIXME: handle the case where the user tries to access the OAuth login page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just redirecting them).
+
+	// TODO: Vérifier le flux de sécurité des tokens etc.
 
 	const handleLogin = async () => {
 		try {
 			loading = true;
-			const { data, error } = await supabase.auth.signInWithPassword({
-				email: email,
-				password: password
+			const response = await fetch('/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, password })
 			});
-			if (error) throw error;
-			if (data) {
-				// If OpenID SSO parameters are present
-				if (auth_type === AuthType.oauth) {
-					await handleOAuth();
-				} else {
-					// Otherwise, just redirect to the specified redirect_uri
-					goto(redirect_uri);
-				}
+			if (!response.ok) {
+				const payload = await response.json().catch(() => ({}));
+				throw new Error(payload?.error || 'Connexion impossible.');
+			}
+			// If OpenID / PKCE SSO parameters are present, complete the authorization
+			if (auth_type === AuthType.oauth) {
+				await handleOAuth();
+			} else {
+				// Otherwise, just redirect to the specified redirect_uri
+				goto(redirect_uri);
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -99,13 +138,20 @@
 				alert('Les mots de passe ne correspondent pas.');
 				return;
 			}
-			const { data, error } = await supabase.auth.updateUser({
-				password: password
+			const response = await fetch('/auth/password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					password,
+					access_token: access_token || undefined,
+					refresh_token: refresh_token || undefined
+				})
 			});
-			if (error) throw error;
-			if (data) {
-				goto(redirect_uri);
+			if (!response.ok) {
+				const payload = await response.json().catch(() => ({}));
+				throw new Error(payload?.error || 'Impossible de mettre a jour le mot de passe.');
 			}
+			goto(redirect_uri);
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message);
@@ -115,27 +161,53 @@
 		}
 	};
 
+	/**
+	 * Complete the PKCE Authorization Code flow acting as the authorization
+	 * server.  After a successful login we call the `oidc-authorize` edge
+	 * function which:
+	 *   1. Verifies the client_id and redirect_uri.
+	 *   2. Creates a short-lived authorization code and stores the
+	 *      code_challenge alongside it.
+	 *   3. Returns the redirect URL: <redirect_uri>?code=…&state=…
+	 *
+	 * The client then exchanges (code + code_verifier) → tokens, which
+	 * the edge function verifies via SHA-256(code_verifier) === code_challenge.
+	 */
 	async function handleOAuth() {
 		const openIdParams = getOpenIDParams();
-		// If OpenID SSO parameters are present, redirect to the original redirect_uri with auth code
-		const { data, error } = await supabase.functions.invoke('oidc-authorize', {
-			body: {
-				redirect_uri: openIdParams.redirect_uri,
+
+		// CSRF check – ensure the state has not been replaced since page load.
+		const pinnedState = sessionStorage.getItem(PKCE_STATE_KEY);
+		if (pinnedState && pinnedState !== openIdParams.state) {
+			console.error('PKCE state mismatch – possible CSRF attempt.');
+			alert('Une erreur de sécurité est survenue (state invalide). Veuillez recommencer.');
+			return;
+		}
+
+		const response = await fetch('/auth/oidc/authorize', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
 				client_id: openIdParams.client_id,
+				redirect_uri: openIdParams.redirect_uri,
 				response_type: openIdParams.response_type,
 				state: openIdParams.state,
 				scope: openIdParams.scope,
+				nonce: openIdParams.nonce,
 				code_challenge: openIdParams.code_challenge,
 				code_challenge_method: openIdParams.code_challenge_method
-			}
+			})
 		});
-		if (error) {
-			console.error('Error invoking OIDC authorize function:', error);
+		if (!response.ok) {
+			const payload = await response.json().catch(() => ({}));
+			console.error('Error invoking OIDC authorize function:', payload);
 			alert('Une erreur est survenue lors de la connexion avec OAuth.');
 			return;
 		}
-		if (data) {
-			// Redirect to the OpenID SSO authorization URL
+		const data = await response.json();
+		if (data?.redirect_uri) {
+			// Clean up stored state before leaving.
+			sessionStorage.removeItem(PKCE_STATE_KEY);
 			window.location.href = data.redirect_uri;
 		}
 	}
@@ -144,22 +216,31 @@
 		try {
 			loading = true;
 
-			const { data, error } = await supabase.auth.updateUser({
-				password: password
+			const response = await fetch('/auth/password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					password,
+					access_token: access_token || undefined,
+					refresh_token: refresh_token || undefined
+				})
 			});
-			if (error) throw error;
-			if (data) {
+			if (!response.ok) {
+				const payload = await response.json().catch(() => ({}));
+				throw new Error(payload?.error || "Impossible d'enregistrer le mot de passe.");
+			}
+			if (response.ok) {
 				// show success message
-				mount(SucessModal, {
-                					target: document.body,
-                					props: {
-                						message:
-                							'Vous avez bien été inscrit. Vous allez être redirigé vers la page de connexion.',
-                						onClose: () => {
-                							goto(`https://davincibot.fr/auth/login`);
-                						}
-                					}
-                				});
+				mountClosable(SucessModal, {
+					target: document.body,
+					props: {
+						message:
+							'Vous avez bien été inscrit. Vous allez être redirigé vers la page de connexion.',
+						onClose: () => {
+							goto(`https://davincibot.fr/auth/login`);
+						}
+					}
+				});
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -192,6 +273,7 @@
 		}
 	}
 
+	/** Returns true when all mandatory PKCE Authorization Code params are present. */
 	function isOpenID() {
 		const urlParams = new URLSearchParams(window.location.search);
 		return (
@@ -205,17 +287,22 @@
 		);
 	}
 
+	/**
+	 * Extracts all PKCE / OIDC parameters from the current URL.
+	 * `nonce` is optional per the spec but forwarded when present so the
+	 * edge function can embed it in the issued ID token.
+	 */
 	function getOpenIDParams() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const openIdParams = {};
 
-		// Extract OpenID SSO parameters
 		const ssoParams = [
 			'client_id',
 			'redirect_uri',
 			'response_type',
 			'state',
 			'scope',
+			'nonce',
 			'code_challenge',
 			'code_challenge_method'
 		];
@@ -230,20 +317,17 @@
 		return openIdParams;
 	}
 
-	function buildRedirectUrlWithParams(baseUrl) {
-		const openIdParams = getOpenIDParams();
-
-		// If we have OpenID parameters, we need to redirect to the original redirect_uri with auth code
-		const redirectParams = new URLSearchParams();
-
-		// Add the authorization code (this would typically come from your auth flow)
-		// For now, we'll use a placeholder - you'll need to get the actual code from Supabase
-
-		for (const [key, value] of Object.entries(openIdParams)) {
-			redirectParams.append(key, value);
+	function decodeEmail(token) {
+		try {
+			const payload = token.split('.')[1];
+			if (!payload) return '';
+			const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+			const decoded = atob(base64);
+			const data = JSON.parse(decoded);
+			return data?.email || '';
+		} catch {
+			return '';
 		}
-		const url = `${baseUrl}?${redirectParams.toString()}`;
-		return url;
 	}
 </script>
 

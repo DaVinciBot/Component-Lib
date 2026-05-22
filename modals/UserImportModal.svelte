@@ -1,6 +1,5 @@
 <script>
 	// @ts-nocheck
-	import { get_current_component } from 'svelte/internal';
 
 	/** @type {{title?: string, permissionCategories?: any, permissionPackages?: any, projectOptions?: any, initialPermissions?: any, initialProject?: string, onSubmit?: any, onClose?: any}} */
 	let {
@@ -13,8 +12,6 @@
 		onSubmit = async (_) => {},
 		onClose = null
 	} = $props();
-
-	const current = get_current_component();
 
 	const tabs = [
 		{ id: 'simple', label: 'Simple' },
@@ -37,7 +34,6 @@
 
 	function close() {
 		if (typeof onClose === 'function') onClose();
-		current.$destroy();
 	}
 
 	function addBulkUser() {
