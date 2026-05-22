@@ -1,11 +1,17 @@
 <script>
 	// Duration in seconds for a full loop
 	/** @type {{time?: number, pauseOnHover?: boolean, small?: boolean, children?: import('svelte').Snippet}} */
-	let { time = 50, pauseOnHover = true, small = false, children } = $props();
+	let {
+		time = 50,
+		pauseOnHover = true,
+		small = false,
+		children
+	} = $props();
 </script>
 
 <div class="w-full h-full">
-	<div class="relative w-full h-full overflow-hidden carrousel"
+	<div
+		class="relative w-full h-full overflow-hidden carrousel"
 		class:py-5={!small}
 		class:py-2={small}
 		class:pause-on-hover={pauseOnHover}

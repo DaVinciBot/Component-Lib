@@ -1,8 +1,8 @@
 <script>
-	import SponsorsCarousel from '$lib/components/others/SponsorsCarousel.svelte';
+	import SponsorsCarousel from '../others/SponsorsCarousel.svelte';
+	import FooterEl from './FooterEl.svelte';
 	import DVBLogo from './Logo/DVBLogo.svelte';
 
-	import FooterEl from './FooterEl.svelte';
 	let items = [
 		[
 			{ text: "L'association", href: '/a-propos' },

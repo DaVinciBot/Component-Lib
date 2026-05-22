@@ -8,11 +8,11 @@
 	import CTAButton from '../utils/CTAButton.svelte';
 	import DvbLogo from './Logo/DVBLogo.svelte';
 
-	/**@type {{loginRedirect?: string}}*/
-	let { loginRedirect = '/admin' } = $props();
-
 	let user = $state();
 	let skip = false;
+
+	/** @type {{loginRedirect?: string}} */
+	let { loginRedirect = '/admin' } = $props();
 	let sidebarOpen = $state(false);
 	let onMobile = $state(false);
 
@@ -21,8 +21,8 @@
 		infos: false
 	});
 
-	let projectsDropdownEl;
-	let infosDropdownEl;
+	let projectsDropdownEl = $state();
+	let infosDropdownEl = $state();
 
 	userdata.subscribe((value) => {
 		user = value || null;
@@ -85,15 +85,6 @@
 	const _afterUnsub = afterNavigate(() => {
 		dropdown.projects = false;
 		dropdown.infos = false;
-
-		// remove any dropdown elements that were detached to document.body
-		try {
-			document.querySelectorAll('body > .dropdown').forEach((el) => {
-				if (el && el.parentNode) el.parentNode.removeChild(el);
-			});
-		} catch (e) {
-			// ignore
-		}
 	});
 
 	onDestroy(() => {
@@ -286,11 +277,11 @@
 					</li>
 
 					<li>
-						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
+						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
 					</li>
 
 					<li>
-						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
+						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
 					</li>
 				</ul>
 			</div>
@@ -344,8 +335,8 @@
 					]
 				},
 				{ title: 'Partenaires', icon: 'people', uri: '/sponsors' },
-				{ title: 'Contact', icon: 'mail', uri: '/contact' },
-				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' }
+				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' },
+				{ title: 'Contact', icon: 'mail', uri: '/contact' }
 			]}
 			on:click={closeSidebar}
 		/>

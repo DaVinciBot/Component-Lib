@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import AislerLogo from '$lib/components/share/Logo/Aisler.svelte';
 	import AlstomLogo from '$lib/components/share/Logo/Alstom.svelte';
 	import FaulhaberLogo from '$lib/components/share/Logo/Faulhaber.svelte';
@@ -7,22 +9,26 @@
 	import IFTLogo from '$lib/components/share/Logo/IFT.svelte';
 	import IgusLogo from '$lib/components/share/Logo/Igus.svelte';
 	import KJLogo from '$lib/components/share/Logo/KJ.svelte';
-	import Kurokesu from '$lib/components/share/Logo/Kurokesu.svelte';
 	import MouserLogo from '$lib/components/share/Logo/Mouser.svelte';
 	import RSLogo from '$lib/components/share/Logo/RS.svelte';
+
+	import Kurokesu from '../share/Logo/Kurokesu.svelte';
 	import Carousel from './Carousel.svelte';
 
-	/**@type {{time?: number, pauseOnHover?: boolean, small?: boolean}} */
-	let { time = 60, pauseOnHover = true, small = false } = $props();
+	/** @type {{time?: number, pauseOnHover?: boolean, small?: boolean}} */
+	let { time = 60, pauseOnHover = true, small = $bindable(false) } = $props();
 
-	let isMobile = false;
-	let add_padding = false;
+	let isMobile = $state(false);
+	let add_padding = $state(false);
 	if (typeof window !== 'undefined') {
 		isMobile = window.innerWidth <= 768;
 	}
-
-	small = $derived(isMobile);
-	add_padding = $derived(isMobile);
+	run(() => {
+		if (isMobile && small) {
+			small = false;
+			add_padding = true;
+		}
+	});
 </script>
 
 <Carousel {time} {pauseOnHover} {small}>

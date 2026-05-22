@@ -1,12 +1,9 @@
 <script>
 	import { run } from 'svelte/legacy';
-
 	// @ts-nocheck
 
-	import { readonly } from 'svelte/store';
-
-
-
+	import { get_current_component } from 'svelte/internal';
+	const current_component = get_current_component();
 
 	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, onSubmit?: any, onClose?: any}} */
 	let {
@@ -17,10 +14,11 @@
 		id = 'CrudModal',
 		title = `${action} ${type_accord} ${type}`,
 		onSubmit = async () => {
-		console.log('Submit');
-	},
+			console.log('Submit');
+		},
 		onClose = (e) => {
-	}
+			current_component.$destroy();
+		}
 	} = $props();
 
 	run(() => {

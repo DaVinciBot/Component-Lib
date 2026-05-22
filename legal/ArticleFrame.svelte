@@ -1,6 +1,6 @@
 <script>
-	import Topbar from '$lib/components/share/Topbar.svelte';
 	import Footer from '$lib/components/share/Footer.svelte';
+	import Topbar from '$lib/components/share/Topbar.svelte';
 
 	/** @type {{title?: string, intro?: string, updatedAt?: string, badge?: string, sections?: any, redirectToLegalHome?: boolean, children?: import('svelte').Snippet}} */
 	let {

@@ -1,5 +1,5 @@
 <script>
-	/**@type {{small?: boolean}}*/
+	/** @type {{small?: boolean}} */
 	let { small = false } = $props();
 </script>
 

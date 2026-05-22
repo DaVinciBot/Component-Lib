@@ -3,13 +3,15 @@
 
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
+	import { get_current_component } from 'svelte/internal';
 
+	const current_component = get_current_component();
 
 	let id = `${type}Popup-${Math.random().toString(36).substring(7)}`;
 
-
 	let __onClose = (e) => {
 		// remove componant from tree
+		current_component.$destroy();
 		onClose(e);
 	};
 
@@ -18,15 +20,15 @@
 		message = 'La commande a été passée avec succès.',
 		type = 'success',
 		onClose = (e) => {
-		window.location.reload();
-	},
+			window.location.reload();
+		},
 		action = $bindable([
-		{
-			text: 'Suivant',
-			callback: __onClose,
-			is_main: true
-		}
-	])
+			{
+				text: 'Suivant',
+				callback: __onClose,
+				is_main: true
+			}
+		])
 	} = $props();
 
 	run(() => {
@@ -36,6 +38,7 @@
 				...el,
 				callback: () => {
 					el.callback();
+					current_component.$destroy();
 				}
 			};
 		});
