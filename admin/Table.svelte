@@ -484,17 +484,7 @@
 										</td>
 									{/if}
 								{/each}
-								{#if actions.length == 1 && actions[0].type === 'view'}
-									<td class="flex items-center justify-end px-2 py-2 sm:px-4 sm:py-3">
-										<button
-											type="button"
-											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
-											onclick={(e) => actions[0].handler(e)}
-										>
-											{actions[0].title}
-										</button>
-									</td>
-								{:else if actions.length > 1}
+								{#if actions.length >= 1}
 									<td class="flex items-center justify-end px-2 py-2 sm:px-4 sm:py-3">
 										<button
 											type="button"

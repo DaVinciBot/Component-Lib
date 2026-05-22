@@ -6,13 +6,13 @@
 
 	import Stepper from '../admin/Stepper.svelte';
 
-	type ReadModalProps {
+	type ReadModalProps = {
 		values?: any;
 		files?: any;
 		actions?: any;
 		id?: string;
 		onClose?: any;
-	}
+	};
 
 	let {
 		values = {
