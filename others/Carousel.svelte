@@ -1,12 +1,7 @@
 <script>
 	// Duration in seconds for a full loop
 	/** @type {{time?: number, pauseOnHover?: boolean, small?: boolean, children?: import('svelte').Snippet}} */
-	let {
-		time = 50,
-		pauseOnHover = true,
-		small = false,
-		children
-	} = $props();
+	let { time = 50, pauseOnHover = true, small = false, children } = $props();
 </script>
 
 <div class="w-full h-full">

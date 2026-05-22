@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { hasAnyPermission } from '$lib/permissions';
 	import { userdata } from '$lib/store';
 	import { supabase } from '$lib/supabaseClient';
@@ -60,7 +60,7 @@
 
 <button
 	type="button"
-	class="flex mx-3 text-sm bg-gray-800 rounded-full focus:ring-3 focus:ring-gray-700 md:mr-0"
+	class="mx-3 flex rounded-full bg-gray-800 text-sm focus:ring-3 focus:ring-gray-700 md:mr-0"
 	id="user-menu-button"
 	aria-expanded="false"
 	onclick={(e) => {
@@ -71,24 +71,24 @@
 	}}
 >
 	<span class="sr-only">Open user menu</span>
-	<img class="w-8 h-8 rounded-full" src={user.avatar} alt="user avatar" />
+	<img class="h-8 w-8 rounded-full" src={user.avatar} alt="user avatar" />
 </button>
 <!-- Dropdown menu -->
 <div
 	class="{fixed
 		? 'fixed'
-		: 'absolute'} z-50 hidden w-56 my-4 text-base list-none bg-gray-900 divide-y divide-gray-700 shadow bg-opacity-20 rounded-xl backdrop-blur-lg border border-gray-700 overflow-hidden"
+		: 'absolute'} bg-opacity-20 z-50 my-4 hidden w-56 list-none divide-y divide-gray-700 overflow-hidden rounded-xl border border-gray-700 bg-gray-900 text-base shadow backdrop-blur-lg"
 	id="dropdown"
 >
 	<div class="px-4 py-3">
 		<span class="block text-sm font-semibold text-white">{user.name}</span>
-		<span class="block text-sm text-white truncate">{user.email}</span>
+		<span class="block truncate text-sm text-white">{user.email}</span>
 	</div>
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
 			<a
 				href="/admin/profile"
-				class="block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white bg-opacity-80">Profil</a
+				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Profil</a
 			>
 		</li>
 	</ul>
@@ -98,7 +98,7 @@
 			<li>
 				<a
 					href="/admin/"
-					class="block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white bg-opacity-80"
+					class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
 					>Pannel Admin</a
 				>
 			</li>
@@ -108,7 +108,7 @@
 		<li>
 			<a
 				href="#"
-				class="block px-4 py-2 text-sm hover:bg-red-700 hover:text-white bg-opacity-80 hover:bg-opacity-50"
+				class="bg-opacity-80 hover:bg-opacity-50 block px-4 py-2 text-sm hover:bg-red-700 hover:text-white"
 				onclick={LogOut}>Déconnexion</a
 			>
 		</li>

@@ -30,24 +30,24 @@
 </script>
 
 <footer
-	class="grid grid-cols-2 px-6 pt-5 text-center gap-y-8 gap-x-2 md:gap-10 md:grid-cols-5 lg:px-32 md:px-16 bg-dark-blue backdrop-blur-lg"
+	class="grid grid-cols-2 gap-x-2 gap-y-8 bg-dark-blue px-6 pt-5 text-center backdrop-blur-lg md:grid-cols-5 md:gap-10 md:px-16 lg:px-32"
 	id="footer"
 >
 	<!--Changer les ref des liens en dessous-->
 
-	<div class="flex justify-center h-full col-span-2 order-0 md:justify-start md:col-span-1">
+	<div class="order-0 col-span-2 flex h-full justify-center md:col-span-1 md:justify-start">
 		<DVBLogo />
 	</div>
 	{#each items as item, i}
 		<FooterEl items={item} title={title[i]} />
 	{/each}
 
-	<div class="flex flex-col order-3 col-span-2 gap-4 py-5 w-80 md:pt-0">
-		<h1 class="font-bold text-left uppercase">Suivez Nous</h1>
+	<div class="order-3 col-span-2 flex w-80 flex-col gap-4 py-5 md:pt-0">
+		<h1 class="text-left font-bold uppercase">Suivez Nous</h1>
 		<div class="flex flex-row justify-between">
 			<a href="https://www.linkedin.com/company/davincibot/" target="_blank">
 				<svg
-					class="h-10 md:h-12 fill-dark-light-blue"
+					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -58,7 +58,7 @@
 			</a>
 			<a href="https://www.instagram.com/davincibot_pulv/" target="_blank">
 				<svg
-					class="h-10 md:h-12 fill-dark-light-blue"
+					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -69,7 +69,7 @@
 			</a>
 			<a href="https://github.com/DaVinciBot" target="_blank">
 				<svg
-					class="h-10 md:h-12 fill-dark-light-blue"
+					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -94,7 +94,7 @@
 			</a>
 			<a href="https://www.facebook.com/DaVinciBotPULV/" target="_blank">
 				<svg
-					class="h-10 md:h-12 fill-dark-light-blue"
+					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -105,7 +105,7 @@
 			</a>
 			<a href="https://www.youtube.com/@davincibot-pulv" target="_blank">
 				<svg
-					class="h-10 md:h-12 fill-dark-light-blue"
+					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>

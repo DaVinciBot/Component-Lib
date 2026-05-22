@@ -1,6 +1,4 @@
 <script>
-	// @ts-nocheck
-
 	/** @type {{title?: string, permissionCategories?: any, permissionPackages?: any, projectOptions?: any, initialPermissions?: any, initialProject?: string, onSubmit?: any, onClose?: any}} */
 	let {
 		title = 'Ajouter des utilisateurs',
@@ -20,12 +18,12 @@
 	];
 
 	let activeTab = $state('simple');
-	let selectedPermissions = $state(
+	let selectedPermissions = $derived(
 		Array.isArray(initialPermissions) ? [...initialPermissions] : []
 	);
-	let selectedProject = $state(initialProject);
-	let simpleUser = $state({ name: '', email: '', project: initialProject || '' });
-	let bulkUsers = $state([{ name: '', email: '', project: initialProject || '' }]);
+	let selectedProject = $derived(initialProject);
+	let simpleUser = $derived({ name: '', email: '', project: initialProject || '' });
+	let bulkUsers = $derived([{ name: '', email: '', project: initialProject || '' }]);
 	let csvUsers = $state([]);
 	let csvInput = $state();
 	let errorMessage = $state('');

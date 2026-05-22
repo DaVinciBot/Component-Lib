@@ -1,6 +1,4 @@
-<script>
-	// @ts-nocheck
-
+<script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
 	import { updateText } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
@@ -8,7 +6,22 @@
 
 	import Icon from '../share/Icon.svelte';
 
-	/** @type {{values?: any, files?: any, actions?: any, fields?: any, id?: string, onSubmit?: any, onClose?: any}} */
+	type DrawerValues = {
+		header: { title: string; sub?: string; stepper?: any[] };
+		body: any[];
+	};
+	type FilePreview = { mime: string; url: string | null; name?: string };
+
+	type ReadDrawerProps = {
+		values?: DrawerValues;
+		files?: string[];
+		actions?: any[];
+		fields?: any[];
+		id?: string;
+		onSubmit?: any;
+		onClose?: any;
+	};
+
 	let {
 		values = {
 			header: { title: 'Pas de détails', sub: '-', stepper: [] },
@@ -19,11 +32,11 @@
 		fields = $bindable([]),
 		id = 'readDrawer',
 		onSubmit = async () => {},
-		onClose = (e) => {}
-	} = $props();
+		onClose = (e: Event) => {}
+	}: ReadDrawerProps = $props();
 
 	let isEditing = $state(false);
-	function handleSave(e) {
+	function handleSave(e: SubmitEvent) {
 		e.preventDefault();
 		onSubmit(e, forms, fields);
 		isEditing = false;
@@ -34,10 +47,10 @@
 
 	let current_file = $state('');
 	let current_file_index = $state(0);
-	let scroll_body = $state(null);
+	let scroll_body: HTMLDivElement | null = $state(null);
 	let isMobile = $state(false);
-	let files_array = $state([{ mime: 'application/pdf', url: null }]);
-	let forms = $state();
+	let files_array: FilePreview[] = $state([{ mime: 'application/pdf', url: null }]);
+	let forms: HTMLFormElement | null = $state(null);
 
 	// Resizing state for the right-anchored drawer (drag from left edge)
 	let width = $state(384); // default equals Tailwind w-96
@@ -47,7 +60,7 @@
 	let startX = 0;
 	let startWidth = width;
 
-	function beginResize(clientX) {
+	function beginResize(clientX: number) {
 		isResizing = true;
 		startX = clientX;
 		startWidth = width;
@@ -59,13 +72,13 @@
 		window.addEventListener('touchend', endResize);
 	}
 
-	function onMouseMove(e) {
+	function onMouseMove(e: MouseEvent) {
 		if (!isResizing) return;
 		const dx = startX - e.clientX; // dragging left increases width
 		width = Math.max(minWidth, Math.min(maxWidth, startWidth + dx));
 	}
 
-	function onTouchMove(e) {
+	function onTouchMove(e: TouchEvent) {
 		if (!isResizing) return;
 		if (e.touches && e.touches.length) {
 			e.preventDefault();
@@ -95,14 +108,22 @@
 		endResize();
 	});
 
-	let __onClose = (e) => {
+	let __onClose = (e: Event): void => {
 		onClose(e);
 	};
+
+	function getSignedFileName(url: string | null): string {
+		if (!url) return '';
+		const parts = url.split('/');
+		const rawName = parts[10] ?? parts[parts.length - 1] ?? '';
+		const cleanName = rawName.split('?')[0] ?? '';
+		return decodeURI(cleanName);
+	}
 
 	function parseValuesToFields() {
 		fields.forEach((field) => {
 			const fieldKey = field.id || field.name.toLowerCase();
-			const bodyItem = values.body.find((item) => {
+			const bodyItem = values.body.find((item: { id: any; label: string }) => {
 				const bodyKey = item.id || item.label.toLowerCase();
 				return bodyKey === fieldKey;
 			});
@@ -112,7 +133,7 @@
 					if (bodyItem.data) field.value = bodyItem.data;
 				} else if (field.type === 'select') {
 					// set the selected: true value for select fields. data is just value
-					field.options.forEach((option) => {
+					field.options.forEach((option: { selected: boolean; value: any }) => {
 						option.selected = option.value === bodyItem.value;
 					});
 					field.value = bodyItem.value;
@@ -135,6 +156,7 @@
 		if (files && files.length > 0) {
 			// get the all signed url from supabase
 			const { data: urls } = await supabase.storage.from('proof').createSignedUrls(files, 600);
+			if (!urls) return;
 
 			for (let i = 0; i < urls.length; i++) {
 				if (urls[i].error) {
@@ -155,18 +177,18 @@
 				files_array[i] = {
 					mime: b.type,
 					url: urls[i].signedUrl,
-					name: decodeURI(urls[i].signedUrl.split('/')[10].split('?')[0])
+					name: getSignedFileName(urls[i].signedUrl)
 				};
 				console.log(files_array[i]);
 			}
-			current_file = files_array[0]?.name;
+			current_file = files_array[0]?.name ?? '';
 		}
 	});
 </script>
 
 <!-- Backdrop -->
 <div
-	class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+	class="bg-opacity-40 fixed inset-0 z-40 bg-black backdrop-blur-sm"
 	role="button"
 	tabindex="0"
 	onclick={__onClose}
@@ -180,14 +202,14 @@
 <div
 	id={'drawer-' + id}
 	tabindex="-1"
-	class="fixed top-0 right-0 z-50 flex flex-col h-full transition-transform duration-300 bg-gray-800 shadow-lg"
+	class="fixed top-0 right-0 z-50 flex h-full flex-col bg-gray-800 shadow-lg transition-transform duration-300"
 	style={`transform: translateX(0); width: ${width}px;`}
 >
 	<!-- Resize handle (left edge) -->
 	<button
 		type="button"
 		aria-label="Resize drawer"
-		class="absolute top-0 left-0 w-2 h-full bg-transparent cursor-col-resize group focus:outline-none"
+		class="group absolute top-0 left-0 h-full w-2 cursor-col-resize bg-transparent focus:outline-none"
 		onmousedown={(e) => beginResize(e.clientX)}
 		ontouchstart={(e) => beginResize(e.touches[0].clientX)}
 		onkeydown={(e) => {
@@ -197,11 +219,11 @@
 			if (e.key === 'ArrowRight') width = Math.max(minWidth, width - step);
 		}}
 	>
-		<span class="absolute top-0 right-0 w-1 h-full bg-transparent group-hover:bg-gray-600/60"
+		<span class="absolute top-0 right-0 h-full w-1 bg-transparent group-hover:bg-gray-600/60"
 		></span>
 	</button>
 	<!-- Header -->
-	<div class="flex items-center justify-between p-4 border-gray-700">
+	<div class="flex items-center justify-between border-gray-700 p-4">
 		<div class="flex flex-col">
 			<span class="text-lg font-semibold text-white">{cropTitle}</span>
 			{#if values.header.sub}
@@ -210,10 +232,10 @@
 		</div>
 		<button
 			type="button"
-			class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 hover:bg-gray-600 hover:text-white"
+			class="rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 			onclick={__onClose}
 		>
-			<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+			<svg aria-hidden="true" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
 				<path
 					fill-rule="evenodd"
 					d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -225,25 +247,25 @@
 	</div>
 	{#if values.header.stepper}
 		{@const stepper = values.header.stepper}
-		<div class="w-full px-4 pt-2 pb-4 m-auto border-b border-gray-700">
+		<div class="m-auto w-full border-b border-gray-700 px-4 pt-2 pb-4">
 			<Stepper steps={stepper} />
 		</div>
 	{/if}
 	<!-- Content -->
-	<div class="flex-1 p-4 space-y-4 overflow-y-auto">
+	<div class="flex-1 space-y-4 overflow-y-auto p-4">
 		{#if isEditing}
 			<form onsubmit={handleSave} bind:this={forms}>
-				<div class="grid gap-4 mb-4 sm:grid-cols-2">
+				<div class="mb-4 grid gap-4 sm:grid-cols-2">
 					{#each fields as field}
 						<div class={field.wide ? 'col-span-2' : ''}>
 							{#if field.type == 'document' || field.type == 'img'}
-								<p class="block mb-2 text-sm font-medium text-white" data-utils={field.data || ''}>
+								<p class="mb-2 block text-sm font-medium text-white" data-utils={field.data || ''}>
 									{field.name}
 								</p>
 							{:else if field.type !== 'duplicate' && field.type !== 'info'}
 								<label
 									for={field.id || field.name.toLowerCase()}
-									class="block mb-2 text-sm font-medium text-white"
+									class="mb-2 block text-sm font-medium text-white"
 									data-utils={field.data || ''}>{field.name}</label
 								>
 							{/if}
@@ -251,9 +273,9 @@
 								<select
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									onchange={field.onChange || null}
-									readonly={field.readonly || false}
+									disabled={field.readonly || false}
 								>
 									{#if (field.readonly || false) == false}<option
 											selected={!field.autoselect}
@@ -270,7 +292,7 @@
 								</select>
 							{:else if field.type === 'info'}
 								<p
-									class="block p-3 mb-2 text-sm text-justify text-gray-200 bg-gray-700 rounded-lg max-w-prose"
+									class="mb-2 block max-w-prose rounded-lg bg-gray-700 p-3 text-justify text-sm text-gray-200"
 								>
 									{field.text}
 								</p>
@@ -279,7 +301,7 @@
 									type="number"
 									name={field.id || field.name.toLowerCase()}
 									id={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									value={field.value || ''}
@@ -292,7 +314,7 @@
 								<textarea
 									name={field.id || field.name.toLowerCase()}
 									id={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									value={field.value || ''}
@@ -307,29 +329,32 @@
 									class="hidden"
 									onchange={field.onChange ||
 										((e) => {
-											console.log(e.target.files[0]);
-											const file = e.target.files[0];
+											const input = e.currentTarget;
+											if (!(input instanceof HTMLInputElement) || !input.files?.length) return;
+											const file = input.files[0];
 											const reader = new FileReader();
-											reader.onload = (e) => (field.value = e.target.result);
+											reader.onload = () => {
+												if (typeof reader.result === 'string') field.value = reader.result;
+											};
 											reader.readAsDataURL(file);
 										})}
 								/>
 								<label
 									for={field.id || field.name.toLowerCase()}
-									class="flex items-center justify-center w-full h-12 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 								>
 									{#if field.value}
 										<img
 											id="svelte_breffffffffff"
 											src={field.value}
 											alt={field.name}
-											class="object-contain w-full h-full rounded-lg"
+											class="h-full w-full rounded-lg object-contain"
 										/>
 									{:else}
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
 											viewBox="0 0 24 24"
-											class="w-6 h-6 fill-gray-400"
+											class="h-6 w-6 fill-gray-400"
 											><path
 												d="M12 8.25a.75.75 0 0 1 .75.75v2.25H15a.75.75 0 0 1 0 1.5h-2.25V15a.75.75 0 0 1-1.5 0v-2.25H9a.75.75 0 0 1 0-1.5h2.25V9a.75.75 0 0 1 .75-.75Z"
 											></path><path
@@ -341,10 +366,10 @@
 							{:else if field.type === 'document'}
 								{#if field.multiple}
 									<div
-										class="flex items-center flex-col justify-center w-full border text-sm rounded-lg mb-2 p-2.5 bg-gray-700 border-gray-600 text-white"
+										class="mb-2 flex w-full flex-col items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 									>
 										{#each field.value as doc, i}
-											<div class="flex items-center w-full gap-2 py-1 border-gray-600">
+											<div class="flex w-full items-center gap-2 border-gray-600 py-1">
 												<svg
 													aria-hidden="true"
 													height="16"
@@ -364,9 +389,10 @@
 												</p>
 												<button
 													type="button"
-													class="text-gray-400 bg-transparent hover: rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
+													aria-label="Remove document"
+													class="hover: ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 													onclick={async (e) => {
-														field.value = field.value.filter((el) => el.name != doc.name);
+														field.value = field.value.filter((el: any) => el.name != doc.name);
 														if (field.onRemove) await field.onRemove(e, doc.name);
 													}}
 												>
@@ -398,24 +424,31 @@
 									class="hidden"
 									onchange={field.onChange ||
 										((e) => {
+											const input = e.currentTarget;
+											if (!(input instanceof HTMLInputElement) || !input.files?.length) return;
 											if (field.multiple) {
-												const temp_arr = [...e.target.files].map((file) => {
-													return { name: file.name, type: file.type };
+												const temp_arr = [...input.files].map((file) => {
+													return { name: file.name, type: file.type, value: '' };
 												});
 												for (let i = 0; i < temp_arr.length; i++) {
 													if (temp_arr[i].type.split('/')[0] === 'image') {
 														const reader = new FileReader();
-														reader.onload = (e) => (temp_arr.value = e.target.result);
-														reader.readAsDataURL(e.target.files[i]);
+														reader.onload = () => {
+															if (typeof reader.result === 'string')
+																temp_arr[i].value = reader.result;
+														};
+														reader.readAsDataURL(input.files[i]);
 													}
 												}
 												field.value = [...field.value, ...temp_arr];
 											} else {
-												const file = e.target.files[0];
+												const file = input.files[0];
 												field.data = file.type.split('/')[0];
 												if (field.data === 'image') {
 													const reader = new FileReader();
-													reader.onload = (e) => (field.value = e.target.result);
+													reader.onload = () => {
+														if (typeof reader.result === 'string') field.value = reader.result;
+													};
 													reader.readAsDataURL(file);
 												} else {
 													field.value = file;
@@ -425,14 +458,14 @@
 								/>
 								<label
 									for={field.id || field.name.toLowerCase()}
-									class="flex items-center justify-center w-full h-12 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 								>
 									{#if field.value && field.data === 'image' && !field.multiple}
 										<img
 											id="svelte_breffffffffff"
 											src={field.value}
 											alt={field.name}
-											class="object-contain w-full h-full rounded-lg"
+											class="h-full w-full rounded-lg object-contain"
 										/>
 									{:else if field.value && field.data === 'application' && !field.multiple}
 										<p>
@@ -442,7 +475,7 @@
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
 											viewBox="0 0 24 24"
-											class="w-6 h-6 fill-gray-400"
+											class="h-6 w-6 fill-gray-400"
 											><path
 												d="M12 8.25a.75.75 0 0 1 .75.75v2.25H15a.75.75 0 0 1 0 1.5h-2.25V15a.75.75 0 0 1-1.5 0v-2.25H9a.75.75 0 0 1 0-1.5h2.25V9a.75.75 0 0 1 .75-.75Z"
 											></path><path
@@ -455,7 +488,7 @@
 								<!--Duplicate is a + btn to replicate the last collumn -->
 								<button
 									type="button"
-									class="flex items-center justify-center w-full h-8 border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="flex h-8 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									onclick={() => {
 										const clean_filter = fields.filter((el) => el.type != 'duplicate');
 										let lasts = []; // get the last full row, 1 if wide, 2 if not
@@ -474,9 +507,10 @@
 											el.value = '';
 											el.data = '';
 											// add number at the end of the id
-											const num = parseInt(el.id.match(/\d+/g));
-											if (num) {
-												el.id = el.id.replace(/\d+/g, num + 1);
+											const match = typeof el.id === 'string' ? el.id.match(/\d+/) : null;
+											const num = match ? Number(match[0]) : null;
+											if (num !== null && !Number.isNaN(num)) {
+												el.id = el.id.replace(/\d+/g, String(num + 1));
 											} else {
 												el.id = el.id + '_1';
 											}
@@ -493,19 +527,19 @@
 								</button>
 							{:else if field.type === 'autocomplete'}
 								<div
-									class="relative w-full flex flex-row items-center justify-center border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="relative flex w-full flex-row items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 								>
 									{#if field.image}
 										<img
 											src={field.image}
 											alt={field.name}
-											class="w-6 h-6 mr-1 -ml-1 rounded-full"
+											class="mr-1 -ml-1 h-6 w-6 rounded-full"
 										/>
 									{/if}
 									<input
 										type="text"
 										id={field.id || field.name.toLowerCase()}
-										class=" bordertext-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+										class=" bordertext-sm block w-full rounded-lg border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 										placeholder={field.placeholder || field.name.toLowerCase()}
 										required={field.required}
 										value={field.value || ''}
@@ -518,12 +552,12 @@
 								</div>
 								{#if field.completion?.length > 0}
 									<div
-										class="absolute z-10 block w-full p-2 pl-4 mt-1 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+										class="absolute z-10 mt-1 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
 									>
 										{#each field.completion as c}
 											<button
-												class=" w-full rounded-lg
-												flex items-center border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
+												class=" flex w-full
+												items-center rounded-lg border-b border-gray-700 {c.image ? 'p-1' : ''} cursor-pointer"
 												onclick={async (e) => {
 													field.value = c.text;
 													field.data = c.value;
@@ -540,7 +574,7 @@
 												}}
 											>
 												{#if c.image}
-													<img src={c.image} alt={c.text} class="w-6 h-6 mr-1 -ml-1 rounded-full" />
+													<img src={c.image} alt={c.text} class="mr-1 -ml-1 h-6 w-6 rounded-full" />
 												{/if}
 												<p>
 													{c.text}
@@ -553,21 +587,22 @@
 							{:else if field.type === 'multiselect'}
 								<!-- Selected items display -->
 								{#if field.value && field.value.length > 0}
-									<div class="flex flex-wrap gap-2 mb-2">
+									<div class="mb-2 flex flex-wrap gap-2">
 										{#each field.value as item}
 											<div
-												class="flex items-center px-2 py-1 text-sm text-white bg-blue-600 rounded-md"
+												class="flex items-center rounded-md bg-blue-600 px-2 py-1 text-sm text-white"
 											>
 												{#if item.image}
-													<img src={item.image} alt={item.text} class="w-4 h-4 mr-1 rounded-full" />
+													<img src={item.image} alt={item.text} class="mr-1 h-4 w-4 rounded-full" />
 												{/if}
 												<span>{item.text}</span>
 												<button
 													type="button"
+													aria-label="Remove {item.text}"
 													class="ml-2 text-white hover:text-gray-300"
 													onclick={async () => {
-														field.value = field.value.filter((v) => v.value !== item.value);
-														field.data = field.value.map((v) => v.value);
+														field.value = field.value.filter((v: any) => v.value !== item.value);
+														field.data = field.value.map((v: any) => v.value);
 														if (field.onRemove) {
 															if (field.onRemove.constructor.name == 'AsyncFunction')
 																await field.onRemove(item.value);
@@ -575,7 +610,7 @@
 														}
 													}}
 												>
-													<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+													<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
 														<path
 															fill-rule="evenodd"
 															d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -592,12 +627,13 @@
 									<input
 										type="text"
 										id={field.id || field.name.toLowerCase()}
-										class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+										class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 										placeholder={field.placeholder || field.name.toLowerCase()}
 										value={field.searchTerm || ''}
 										readonly={field.readonly || false}
 										name={field.id || field.name.toLowerCase()}
 										oninput={async (e) => {
+											if (!(e.target instanceof HTMLInputElement)) return;
 											field.searchTerm = e.target.value;
 											if (field.searchTerm.length > 0) {
 												field.completion = await field.onChange(e);
@@ -608,14 +644,14 @@
 									/>
 									{#if field.completion?.length > 0}
 										<div
-											class="absolute z-10 block w-full p-2 mt-1 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+											class="absolute z-10 mt-1 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
 										>
 											{#each field.completion as c}
-												{@const isSelected = field.value?.some((v) => v.value === c.value)}
+												{@const isSelected = field.value?.some((v: any) => v.value === c.value)}
 												{#if !isSelected}
 													<button
 														type="button"
-														class="w-full rounded-lg flex items-center border-b border-gray-700 {c.image
+														class="flex w-full items-center rounded-lg border-b border-gray-700 {c.image
 															? 'p-1'
 															: ''} cursor-pointer hover:bg-gray-600"
 														onclick={async (e) => {
@@ -627,14 +663,19 @@
 																...field.value,
 																{ text: c.text, value: c.value, image: c.image }
 															];
-															field.data = field.value.map((v) => v.value);
+															field.data = field.value.map((v: any) => v.value);
 
 															// Clear search and completion
 															field.searchTerm = '';
 															field.completion = [];
 
 															// Clear the input
-															e.target.closest('.relative').querySelector('input').value = '';
+															const root =
+																e.currentTarget instanceof HTMLElement
+																	? e.currentTarget.closest('.relative')
+																	: null;
+															const input = root?.querySelector('input');
+															if (input instanceof HTMLInputElement) input.value = '';
 
 															// call onSelect function if exists
 															if (
@@ -650,7 +691,7 @@
 															<img
 																src={c.image}
 																alt={c.text}
-																class="w-6 h-6 mr-1 -ml-1 rounded-full"
+																class="mr-1 -ml-1 h-6 w-6 rounded-full"
 															/>
 														{/if}
 														<p>{c.text}</p>
@@ -803,7 +844,7 @@
 									type="checkbox"
 									id={field.id || field.name.toLowerCase()}
 									name={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									checked={field.checked || false}
@@ -815,7 +856,7 @@
 									type={field.type}
 									name={field.id || field.name.toLowerCase()}
 									id={field.id || field.name.toLowerCase()}
-									class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+									class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 									placeholder={field.placeholder || field.name.toLowerCase()}
 									required={field.required}
 									value={field.value || ''}
@@ -828,11 +869,11 @@
 				<div class="flex space-x-2">
 					<button
 						type="submit"
-						class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">Save</button
+						class="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700">Save</button
 					>
 					<button
 						type="button"
-						class="px-4 py-2 text-gray-400 bg-gray-700 rounded-lg hover:bg-gray-600"
+						class="rounded-lg bg-gray-700 px-4 py-2 text-gray-400 hover:bg-gray-600"
 						onclick={handleCancel}>Cancel</button
 					>
 				</div>
@@ -841,19 +882,20 @@
 			{#if files.length > 0}
 				<div>
 					<h3 class="mb-2 text-lg font-semibold text-white">Pièces jointes</h3>
-					<div class="flex items-center mb-2">
+					<div class="mb-2 flex items-center">
 						<button
-							class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 hover:bg-gray-600 hover:text-white"
+							aria-label="Previous file"
+							class="rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 							onclick={() => {
 								if (current_file_index > 0) {
 									current_file_index--;
-									current_file = files_array[current_file_index].name;
+									current_file = files_array[current_file_index]?.name ?? '';
 									scroll_body &&
 										(scroll_body.style.transform = `translateX(${(scroll_body.scrollWidth / files.length) * current_file_index}px)`);
 								}
 							}}
 						>
-							<svg class="w-5 h-5" fill="white" viewBox="0 0 20 20"
+							<svg class="h-5 w-5" fill="white" viewBox="0 0 20 20"
 								><path
 									fill-rule="evenodd"
 									d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -861,21 +903,22 @@
 								></path></svg
 							>
 						</button>
-						<p class="flex-1 text-sm text-center text-gray-400">
+						<p class="flex-1 text-center text-sm text-gray-400">
 							{current_file || 'Chargement'} - {current_file_index + 1}/{files.length}
 						</p>
 						<button
-							class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 hover:bg-gray-600 hover:text-white"
+							aria-label="Next file"
+							class="rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 							onclick={() => {
 								if (current_file_index < files.length - 1) {
 									current_file_index++;
-									current_file = files_array[current_file_index].name;
+									current_file = files_array[current_file_index]?.name ?? '';
 									scroll_body &&
 										(scroll_body.style.transform = `translateX(-${(scroll_body.scrollWidth / files.length) * current_file_index}px)`);
 								}
 							}}
 						>
-							<svg class="w-5 h-5 rotate-180" fill="white" viewBox="0 0 20 20"
+							<svg class="h-5 w-5 rotate-180" fill="white" viewBox="0 0 20 20"
 								><path
 									fill-rule="evenodd"
 									d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -884,18 +927,18 @@
 							>
 						</button>
 					</div>
-					<div class="flex h-auto overflow-x-hidden w-full aspect-[1/1.414] gap-2">
+					<div class="flex aspect-[1/1.414] h-auto w-full gap-2 overflow-x-hidden">
 						<div class="flex rounded-lg" bind:this={scroll_body}>
 							{#each files_array as { mime, url }, i}
-								{@const name = decodeURI(url?.split('/')[10].split('?')[0])}
-								<div class="flex flex-col w-full">
+								{@const name = getSignedFileName(url)}
+								<div class="flex w-full flex-col">
 									{#if mime == 'application/pdf' && !isMobile}
-										<iframe src={url} frameborder="0" class="w-full h-full" title={name}></iframe>
+										<iframe src={url} frameborder="0" class="h-full w-full" title={name}></iframe>
 									{:else if mime == 'application/pdf' && isMobile}
 										<iframe
 											src="https://docs.google.com/viewer?url={url}&embedded=true"
 											frameborder="0"
-											class="w-full h-full"
+											class="h-full w-full"
 											title={name}
 										></iframe>
 									{:else if mime && mime.startsWith('image/')}
@@ -910,7 +953,7 @@
 
 			<dl>
 				{#each values.body as item, i}
-					<dt class="mb-2 font-semibold leading-none text-white">{item.label}</dt>
+					<dt class="mb-2 leading-none font-semibold text-white">{item.label}</dt>
 					{#if typeof item.value === 'object'}
 						{#if item.value.type == 'updates'}
 							<dd class="mt-8 ml-4">
@@ -958,7 +1001,7 @@
 																: '  bg-gray-800')}
 												>
 													<svg
-														class="w-3 h-3 mr-1"
+														class="mr-1 h-3 w-3"
 														aria-hidden="true"
 														xmlns="http://www.w3.org/2000/svg"
 														width="24"
@@ -977,8 +1020,10 @@
 													{value.date}
 												</span>
 											{/if}
-											<h3 class="mb-0.5 mt-2 text-base font-semibold text-gray-300">
-												{value.message ? value.message : updateText[value.type] || value.type}
+											<h3 class="mt-2 mb-0.5 text-base font-semibold text-gray-300">
+												{value.message
+													? value.message
+													: updateText[value.type as keyof typeof updateText] || value.type}
 											</h3>
 											{#if value.user}
 												<p class="text-sm font-normal text-gray-400">
@@ -1011,7 +1056,7 @@
 											<td>Nom</td>
 											<td>Quantité</td>
 											<td>Prix</td>
-											{#if values.body.find((el) => el.label == 'Status')?.type == 'pendingCDP'}
+											{#if values.body.find((el: any) => el.label == 'Status')?.type == 'pending_cdp'}
 												<td class="w-2.5"></td>
 											{/if}
 										</tr>
@@ -1019,11 +1064,11 @@
 									<tbody>
 										{#each item.value.list as listItem}
 											<tr data-utils={listItem.id}>
-												<td class="p-2 hover:fill-gray-200 fill-gray-400"
+												<td class="fill-gray-400 p-2 hover:fill-gray-200"
 													><a href={listItem.link} target="_blank">
 														{#if listItem.link}
 															<svg
-																class="inline w-4 h-4 ml-1 transition-all"
+																class="ml-1 inline h-4 w-4 transition-all"
 																xmlns="http://www.w3.org/2000/svg"
 																xmlns:xlink="http://www.w3.org/1999/xlink"
 																version="1.1"
@@ -1053,7 +1098,7 @@
 												>
 												<td>{listItem.quantity}</td>
 												<td>{listItem.price}</td>
-												{#if values.body.find((el) => el.label == 'Status')?.type == 'pendingCDP'}
+												{#if values.body.find((el: any) => el.label == 'Status')?.type == 'pending_cdp'}
 													<td class="flex justify-end p-2 gap-2">
 														<button
 															type="button"
@@ -1128,12 +1173,12 @@
 	</div>
 
 	<!-- Actions -->
-	<div class="flex items-center justify-between p-4 space-x-2 border-t border-gray-700">
+	<div class="flex items-center justify-between space-x-2 border-t border-gray-700 p-4">
 		<!-- toggle edit mode if fields provided -->
 		{#if !isEditing && fields.length > 0}
 			<button
 				type="button"
-				class="text-white inline-flex items-center bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+				class="inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 focus:ring-4 focus:ring-primary-800 focus:outline-none"
 				onclick={() => {
 					isEditing = true;
 					parseValuesToFields();
@@ -1141,7 +1186,7 @@
 			>
 				<svg
 					aria-hidden="true"
-					class="w-5 h-5 mr-1 -ml-1"
+					class="mr-1 -ml-1 h-5 w-5"
 					fill="currentColor"
 					viewBox="0 0 20 20"
 					xmlns="http://www.w3.org/2000/svg"
@@ -1158,7 +1203,7 @@
 		{#each actions as { title, type, handler }}
 			{#if type == 'selector'}
 				<select
-					class=" border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+					class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 					onchange={handler}
 				>
 					<option value="" disabled selected>Choisir une option</option>
@@ -1170,12 +1215,12 @@
 			{#if type == 'validate'}
 				<button
 					type="button"
-					class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+					class="inline-flex items-center rounded-lg bg-primary-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 focus:outline-none"
 					onclick={handler}
 				>
 					<svg
 						aria-hidden="true"
-						class="w-5 h-5 mr-1.5 -ml-1"
+						class="mr-1.5 -ml-1 h-5 w-5"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 					>
@@ -1191,12 +1236,12 @@
 			{#if type == 'delete'}
 				<button
 					type="button"
-					class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+					class="inline-flex items-center rounded-lg bg-red-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-700 focus:ring-4 focus:ring-red-300 focus:outline-none"
 					onclick={handler}
 				>
 					<svg
 						aria-hidden="true"
-						class="w-5 h-5 mr-1.5 -ml-1"
+						class="mr-1.5 -ml-1 h-5 w-5"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 					>
