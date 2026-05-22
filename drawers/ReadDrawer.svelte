@@ -11,6 +11,7 @@
 		body: any[];
 	};
 	type FilePreview = { mime: string; url: string | null; name?: string };
+	type Permission = { value: any; label: string };
 
 	type ReadDrawerProps = {
 		values?: DrawerValues;
@@ -120,9 +121,31 @@
 		return decodeURI(cleanName);
 	}
 
+	function getPermissionCategories(
+		categories: Record<string, Permission[]> | null | undefined
+	): [string, Permission[]][] {
+		return Object.entries(categories ?? {});
+	}
+
+	function getFieldKey(field: any): string {
+		return field.id || field.name?.toLowerCase() || '';
+	}
+
+	function setFieldValue(field: any, value: any) {
+		const fieldKey = getFieldKey(field);
+
+		fields = fields.map((currentField) => {
+			const isSameField =
+				currentField === field || (fieldKey && getFieldKey(currentField) === fieldKey);
+
+			if (!isSameField) return currentField;
+			return { ...currentField, value };
+		});
+	}
+
 	function parseValuesToFields() {
 		fields.forEach((field) => {
-			const fieldKey = field.id || field.name.toLowerCase();
+			const fieldKey = getFieldKey(field);
 			const bodyItem = values.body.find((item: { id: any; label: string }) => {
 				const bodyKey = item.id || item.label.toLowerCase();
 				return bodyKey === fieldKey;
@@ -188,7 +211,7 @@
 
 <!-- Backdrop -->
 <div
-	class="bg-opacity-40 fixed inset-0 z-40 bg-black backdrop-blur-sm"
+	class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
 	role="button"
 	tabindex="0"
 	onclick={__onClose}
@@ -705,60 +728,75 @@
 								<div class="mb-4 space-y-4">
 									{#if field.packages && field.packages.length > 0}
 										<div
-											class="flex flex-wrap gap-2 mb-4 p-3 bg-gray-900 border border-gray-600 rounded-lg"
+											class="mb-4 flex flex-wrap gap-2 rounded-lg border border-gray-600 bg-gray-900 p-3"
 										>
-											<p class="w-full text-xs text-gray-400 font-semibold mb-1">
+											<p class="mb-1 w-full text-xs font-semibold text-gray-400">
 												Packs pré-définis :
 											</p>
 											{#each field.packages as pack}
 												<button
 													type="button"
-													class="px-2 py-1 text-xs text-white bg-gray-700 hover:bg-primary-600 hover:text-white transition-colors border border-gray-500 rounded-md"
-													onclick={() => (field.value = pack.perms)}
+													class="rounded-md border border-gray-500 bg-gray-700 px-2 py-1 text-xs text-white transition-colors hover:bg-primary-600"
+													onclick={() => {
+														setFieldValue(field, [...(pack.perms || [])]);
+													}}
 												>
 													{pack.label}
 												</button>
 											{/each}
-											<div class="w-full mt-1 border-t border-gray-700 pt-2 flex justify-end">
+											<div class="mt-1 flex w-full justify-end border-t border-gray-700 pt-2">
 												<button
 													type="button"
-													class="px-2 py-1 text-xs text-red-400 hover:text-red-300 underline"
-													onclick={() => (field.value = [])}
+													class="px-2 py-1 text-xs text-red-400 underline hover:text-red-300"
+													onclick={() => {
+														setFieldValue(field, []);
+													}}
 												>
 													Tout décocher
 												</button>
 											</div>
 										</div>
 									{/if}
-									<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-										{#each Object.entries(field.categories) as [catName, perms]}
-											<div class="bg-gray-800 p-3 rounded-lg border border-gray-700">
+									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+										{#each getPermissionCategories(field.categories) as [catName, perms]}
+											<div class="rounded-lg border border-gray-700 bg-gray-800 p-3">
 												<h4
-													class="text-white text-sm font-semibold mb-3 border-b border-gray-700 pb-1"
+													class="mb-3 border-b border-gray-700 pb-1 text-sm font-semibold text-white"
 												>
 													{catName}
 												</h4>
 												<div class="flex flex-col gap-2">
 													{#each perms as perm}
-														<label class="inline-flex items-center group cursor-pointer">
+														<label class="group inline-flex cursor-pointer items-center">
 															<input
 																type="checkbox"
 																name={field.id || 'permissions'}
 																value={perm.value}
-																checked={field.value && field.value.includes(perm.value)}
+																checked={Array.isArray(field.value) &&
+																	field.value.includes(perm.value)}
 																onchange={(e) => {
-																	if (!field.value) field.value = [];
+																	if (!(e.target instanceof HTMLInputElement)) return;
+																	const currentValue = Array.isArray(field.value)
+																		? field.value
+																		: [];
+
 																	if (e.target.checked) {
-																		if (!field.value.includes(perm.value))
-																			field.value = [...field.value, perm.value];
+																		if (!currentValue.includes(perm.value)) {
+																			setFieldValue(field, [...currentValue, perm.value]);
+																		}
 																	} else {
-																		field.value = field.value.filter((v) => v !== perm.value);
+																		setFieldValue(
+																			field,
+																			currentValue.filter(
+																				(value: any) => value !== perm.value
+																			)
+																		);
 																	}
 																}}
-																class="form-checkbox h-4 w-4 text-primary-600 bg-gray-900 border-gray-500 rounded focus:ring-primary-600 focus:ring-2 transition duration-200 cursor-pointer"
+																class="h-4 w-4 cursor-pointer rounded border-gray-500 bg-gray-900 text-primary-600 transition duration-200 focus:ring-2 focus:ring-primary-600"
 															/>
 															<span
-																class="ml-2 text-sm text-gray-300 group-hover:text-white transition-colors"
+																class="ml-2 text-sm text-gray-300 transition-colors group-hover:text-white"
 																>{perm.label}</span
 															>
 														</label>
@@ -773,38 +811,40 @@
 									{#each field.value || [] as item, idx}
 										<div class="flex items-center gap-2">
 											<select
-												class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+												class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 												bind:value={item.project_id}
 											>
 												<option value={null}>Sélectionner un projet</option>
-												{#each field.projects as p}
+												{#each field.projects || [] as p}
 													<option
 														value={p.value}
 														disabled={(field.value || []).some(
-															(v, i) => i !== idx && v.project_id == p.value
+															(value: any, i: number) => i !== idx && value.project_id == p.value
 														)}>{p.name}</option
 													>
 												{/each}
 											</select>
 											<select
-												class="border text-sm rounded-lg block w-32 p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
+												class="block w-32 rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
 												bind:value={item.role}
 											>
-												{#each field.roles as r}
+												{#each field.roles || [] as r}
 													<option value={r.value}>{r.text}</option>
 												{/each}
 											</select>
 											<button
 												type="button"
-												class="p-2 text-red-500 hover:text-red-400"
-												onclick={() => {
-													field.value = field.value.filter((_, i) => i !== idx);
-												}}
 												aria-label="Supprimer ce projet"
+												class="rounded-lg bg-transparent p-2 text-red-500 hover:bg-gray-700 hover:text-red-400"
+												onclick={() => {
+													field.value = (field.value || []).filter(
+														(_: any, i: number) => i !== idx
+													);
+												}}
 											>
 												<svg
 													aria-hidden="true"
-													class="w-5 h-5 mr-1.5 -ml-1"
+													class="h-5 w-5"
 													fill="currentColor"
 													viewBox="0 0 20 20"
 													><path
@@ -818,14 +858,17 @@
 									{/each}
 									<button
 										type="button"
-										class="w-full mt-2 p-2 text-sm text-primary-500 items-center flex justify-center gap-2 border border-dashed border-gray-600 rounded-lg hover:bg-gray-700"
+										class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-600 p-2 text-sm text-primary-500 hover:bg-gray-700"
 										onclick={() => {
-											if (!field.value) field.value = [];
-											field.value = [...field.value, { project_id: null, role: 'membre' }];
+											const currentValue = Array.isArray(field.value) ? field.value : [];
+											field.value = [
+												...currentValue,
+												{ project_id: null, role: field.defaultRole || 'membre' }
+											];
 										}}
 									>
 										<svg
-											class="h-3.5 w-3.5 mr-2"
+											class="mr-2 h-3.5 w-3.5"
 											fill="currentColor"
 											viewBox="0 0 20 20"
 											xmlns="http://www.w3.org/2000/svg"
@@ -837,7 +880,11 @@
 											></path></svg
 										>Ajouter un projet
 									</button>
-									<input type="hidden" name={field.id} value={JSON.stringify(field.value)} />
+									<input
+										type="hidden"
+										name={field.id || field.name.toLowerCase()}
+										value={JSON.stringify(field.value || [])}
+									/>
 								</div>
 							{:else if field.type === 'checkbox'}
 								<input
@@ -1100,45 +1147,48 @@
 												<td>{listItem.price}</td>
 												{#if values.body.find((el: any) => el.label == 'Status')?.type == 'pending_cdp'}
 													<td class="flex justify-end p-2 gap-2">
-														<button
-															type="button"
-															class="inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-2 text-center"
-															onclick={(e) => {
-																if (item.value.onEdit) {
+														{#if item.value.onEdit}
+															<button
+																type="button"
+																aria-label="Edit item"
+																class="inline-flex items-center rounded-lg bg-primary-600 p-2 text-center text-sm font-medium text-white hover:bg-primary-700 focus:ring-4 focus:ring-primary-800 focus:outline-none"
+																onclick={() => {
 																	item.value.onEdit(listItem);
-																}
-															}}
-														>
-															<svg
-																class="w-4 h-4"
-																fill="currentColor"
-																viewBox="0 0 20 20"
-																xmlns="http://www.w3.org/2000/svg"
+																}}
 															>
-																<path
-																	d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-																></path>
-															</svg>
-														</button>
+																<svg
+																	class="h-4 w-4"
+																	fill="currentColor"
+																	viewBox="0 0 20 20"
+																	xmlns="http://www.w3.org/2000/svg"
+																	aria-hidden="true"
+																>
+																	<path
+																		d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+																	></path>
+																</svg>
+															</button>
+														{/if}
 														<button
 															type="button"
-															class="inline-flex items-center text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-2 py-2 text-center"
+															aria-label="Delete item"
+															class="inline-flex items-center rounded-lg bg-red-600 p-2 text-center text-sm font-medium text-white hover:bg-red-700 focus:ring-4 focus:ring-red-300 focus:outline-none"
 															onclick={async () => {
 																if (item.value.onDelete) {
-																	item.value.onDelete(listItem);
-																} else {
-																	const { data, error } = await supabase
-																		.from('items')
-																		.delete()
-																		.match({ id: listItem.id })
-																		.select()
-																		.single();
-																	if (error || !data) return;
-																	const tr = document.querySelector(
-																		`tr[data-utils="${listItem.id}"]`
-																	);
-																	tr && tr.remove();
+																	await item.value.onDelete(listItem);
+																	return;
 																}
+																const { data, error } = await supabase
+																	.from('items')
+																	.delete()
+																	.match({ id: listItem.id })
+																	.select()
+																	.single();
+																if (error || !data) return;
+																const tr = document.querySelector(
+																	`tr[data-utils="${listItem.id}"]`
+																);
+																tr && tr.remove();
 															}}
 														>
 															<svg
