@@ -1,0 +1,30 @@
+<script lang="ts">
+	import CtaButton from '$lib/components/utils/CTAButton.svelte';
+
+	export let onRefresh = () => {};
+	export let currentUserId: string | null = null;
+</script>
+
+<header
+	class="flex flex-col gap-6 rounded-[28px] border border-light-blue/15 bg-blue-gray/15 p-4 shadow-[0_20px_50px_rgba(1,7,32,0.35)] sm:p-6"
+>
+	<div
+		class="flex flex-col gap-4 min-[1040px]:flex-row min-[1040px]:items-center min-[1040px]:justify-between"
+	>
+		<div>
+			<p class="text-xs tracking-[0.3em] text-light-blue/60 uppercase">Formateur·ice·s</p>
+			<h1 class="mt-2 text-2xl font-bold text-white sm:text-3xl">Présences aux formations</h1>
+			<p class="mt-2 text-sm text-light-blue/70">
+				Indiquez les présences des membres sur vos sessions de formation.
+			</p>
+		</div>
+		<div class="flex flex-wrap gap-3 sm:justify-end">
+			<CtaButton type="button" variant="secondary" size="sm" onclick={onRefresh}>
+				Actualiser
+			</CtaButton>
+			{#if currentUserId}
+				<CtaButton href="/" variant="secondary" size="sm">Retour au calendrier</CtaButton>
+			{/if}
+		</div>
+	</div>
+</header>

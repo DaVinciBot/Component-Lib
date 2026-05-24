@@ -1,9 +1,8 @@
 <script>
-	import { preventDefault } from 'svelte/legacy';
-
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import { mountClosable } from '$lib/utils';
+	import { onMount } from 'svelte';
+	import { preventDefault } from 'svelte/legacy';
 
 	import SucessModal from '../modals/InfoModal.svelte';
 

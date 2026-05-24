@@ -116,9 +116,9 @@
 			</a>
 		</div>
 	</div>
-	<div class="flex flex-col order-4 col-span-2 md:col-span-3 md:-ml-32">
-		<h1 class="font-bold text-left uppercase">Nos Partenaires</h1>
-		<div class="w-full h-36">
+	<div class="order-4 col-span-2 flex flex-col md:col-span-3 md:-ml-32">
+		<h1 class="text-left font-bold uppercase">Nos Partenaires</h1>
+		<div class="h-36 w-full">
 			<SponsorsCarousel small={true} pauseOnHover={false} />
 		</div>
 	</div>

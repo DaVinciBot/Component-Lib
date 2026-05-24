@@ -787,9 +787,7 @@
 																	} else {
 																		setFieldValue(
 																			field,
-																			currentValue.filter(
-																				(value: any) => value !== perm.value
-																			)
+																			currentValue.filter((value: any) => value !== perm.value)
 																		);
 																	}
 																}}
