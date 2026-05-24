@@ -63,7 +63,6 @@
 <button
 	type="button"
 	class="mx-3 flex rounded-full bg-gray-800 text-sm focus:ring-3 focus:ring-gray-700 md:mr-0"
-	class="mx-3 flex rounded-full bg-gray-800 text-sm focus:ring-3 focus:ring-gray-700 md:mr-0"
 	id="user-menu-button"
 	aria-expanded="false"
 	onclick={(e) => {
@@ -75,26 +74,22 @@
 >
 	<span class="sr-only">Open user menu</span>
 	<img class="h-8 w-8 rounded-full" src={user.avatar} alt="user avatar" />
-	<img class="h-8 w-8 rounded-full" src={user.avatar} alt="user avatar" />
 </button>
 <!-- Dropdown menu -->
 <div
 	class="{fixed
 		? 'fixed'
 		: 'absolute'} bg-opacity-20 z-50 my-4 hidden w-56 list-none divide-y divide-gray-700 overflow-hidden rounded-xl border border-gray-700 bg-gray-900 text-base shadow backdrop-blur-lg"
-		: 'absolute'} bg-opacity-20 z-50 my-4 hidden w-56 list-none divide-y divide-gray-700 overflow-hidden rounded-xl border border-gray-700 bg-gray-900 text-base shadow backdrop-blur-lg"
 	id="dropdown"
 >
 	<div class="px-4 py-3">
 		<span class="block text-sm font-semibold text-white">{user.name}</span>
-		<span class="block truncate text-sm text-white">{user.email}</span>
 		<span class="block truncate text-sm text-white">{user.email}</span>
 	</div>
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
 			<a
 				href="/admin/profile"
-				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Profil</a
 				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Profil</a
 			>
 		</li>
@@ -106,7 +101,6 @@
 				<a
 					href="/admin/"
 					class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
-					class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
 					>Pannel Admin</a
 				>
 			</li>
@@ -116,7 +110,6 @@
 		<li>
 			<a
 				href="#"
-				class="bg-opacity-80 hover:bg-opacity-50 block px-4 py-2 text-sm hover:bg-red-700 hover:text-white"
 				class="bg-opacity-80 hover:bg-opacity-50 block px-4 py-2 text-sm hover:bg-red-700 hover:text-white"
 				onclick={LogOut}>Déconnexion</a
 			>
