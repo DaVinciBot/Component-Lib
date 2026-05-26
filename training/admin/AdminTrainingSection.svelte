@@ -1,15 +1,20 @@
 <script lang="ts">
-	import Table from '$lib/components/admin/Table.svelte';
+	import Table, {
+		type Action,
+		type DBInfo,
+		type Filter,
+		type ParseItems
+	} from '$lib/components/admin/Table.svelte';
 	import CTAButton from '$lib/components/utils/CTAButton.svelte';
 	import type { TrainingListItem } from '$lib/services/training';
 
 	export let trainings: TrainingListItem[] = [];
 	export let categoryOptions: { value: string; text: string; selected?: boolean }[] = [];
-	export let trainingDbInfo: any;
-	export let trainingActions: any[] = [];
-	export let trainingFilters: any[] = [];
+	export let trainingDbInfo: DBInfo;
+	export let trainingActions: Action[] = [];
+	export let trainingFilters: Filter[] = [];
 	export let trainingTableTopic = '';
-	export let parseTrainingItems: (data: any[]) => any[];
+	export let parseTrainingItems: ParseItems;
 	export let onAddTraining = () => {};
 	export let onEditTraining = (training: TrainingListItem) => {};
 </script>

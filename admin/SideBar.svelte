@@ -1,5 +1,5 @@
-<script>
-	import { navigating } from '$app/stores';
+<script lang="ts">
+	import { page } from '$app/state';
 
 	/** @type {{menu?: any, open?: boolean, close?: any, noicon?: boolean, bgClass?: string, activeClass?: string}} */
 	let {
@@ -11,24 +11,17 @@
 		activeClass = 'hover:bg-gray-700'
 	} = $props();
 
-	let buttons_state = $state({});
+	let buttons_state = $state<Record<string, boolean>>({});
 
-	navigating.subscribe((value) => {
-		if (value) {
-			loadSidebar(value.to.route.id);
-		}
+	$effect(() => {
+		loadSidebar(page.route.id);
 	});
 
-	function loadSidebar(path) {
-		const current_route = path;
-		menu = menu.map((item) => {
-			if (item.uri === current_route) {
-				item.active = true;
-			} else {
-				item.active = false;
-			}
-			return item;
-		});
+	function loadSidebar(path: string | null) {
+		menu = menu.map((item: { uri: string | null }) => ({
+			...item,
+			active: item.uri === path
+		}));
 	}
 </script>
 

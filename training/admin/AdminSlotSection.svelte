@@ -1,20 +1,25 @@
 <script lang="ts">
-	import Table from '$lib/components/admin/Table.svelte';
+	import Table, {
+		type Action,
+		type DBInfo,
+		type Filter,
+		type ParseItems
+	} from '$lib/components/admin/Table.svelte';
 	import CTAButton from '$lib/components/utils/CTAButton.svelte';
-	import type { TrainingSlotListItem } from '$lib/services/training';
+	import type { TrainingListItem, TrainingSlotListItem } from '$lib/services/training';
 
 	export let slots: TrainingSlotListItem[] = [];
 	export let statusOptions: { value: string; text: string }[] = [];
-	export let slotDbInfo: any;
-	export let slotActions: any[] = [];
-	export let slotFilters: any[] = [];
+	export let slotDbInfo: DBInfo;
+	export let slotActions: Action[] = [];
+	export let slotFilters: Filter[] = [];
 	export let slotTableTopic = '';
-	export let parseSlotItems: (data: any[]) => any[];
+	export let parseSlotItems: ParseItems;
 	export let onAddSlot = () => {};
 	export let onEditSlot = (slot: TrainingSlotListItem) => {};
 	export let formatSlotDate: (value: string) => string;
-	export let findTrainingName: (trainingId: number, trainings: any[]) => string;
-	export let trainings: any[] = [];
+	export let findTrainingName: (trainingId: number, trainings: TrainingListItem[]) => string;
+	export let trainings: TrainingListItem[] = [];
 </script>
 
 <section class="rounded-[28px] border border-light-blue/10 bg-dark-blue/80 p-5 sm:p-6">

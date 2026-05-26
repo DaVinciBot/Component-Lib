@@ -38,14 +38,14 @@
 	<div class="order-0 col-span-2 flex h-full justify-center md:col-span-1 md:justify-start">
 		<DVBLogo />
 	</div>
-	{#each items as item, i}
+	{#each items as item, i (i)}
 		<FooterEl items={item} title={title[i]} />
 	{/each}
 
 	<div class="order-3 col-span-2 flex w-80 flex-col gap-4 py-5 md:pt-0">
 		<h1 class="text-left font-bold uppercase">Suivez Nous</h1>
 		<div class="flex flex-row justify-between">
-			<a href="https://www.linkedin.com/company/davincibot/" target="_blank">
+			<a href="https://www.linkedin.com/company/davincibot/" target="_blank" aria-label="LinkedIn">
 				<svg
 					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
@@ -56,7 +56,7 @@
 					/>
 				</svg>
 			</a>
-			<a href="https://www.instagram.com/davincibot_pulv/" target="_blank">
+			<a href="https://www.instagram.com/davincibot_pulv/" target="_blank" aria-label="Instagram">
 				<svg
 					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
@@ -67,7 +67,7 @@
 					/>
 				</svg>
 			</a>
-			<a href="https://github.com/DaVinciBot" target="_blank">
+			<a href="https://github.com/DaVinciBot" target="_blank" aria-label="GitHub">
 				<svg
 					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
@@ -92,7 +92,7 @@
 					</defs>
 				</svg>
 			</a>
-			<a href="https://www.facebook.com/DaVinciBotPULV/" target="_blank">
+			<a href="https://www.facebook.com/DaVinciBotPULV/" target="_blank" aria-label="Facebook">
 				<svg
 					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
@@ -103,7 +103,7 @@
 					/>
 				</svg>
 			</a>
-			<a href="https://www.youtube.com/@davincibot-pulv" target="_blank">
+			<a href="https://www.youtube.com/@davincibot-pulv" target="_blank" aria-label="YouTube">
 				<svg
 					class="h-10 fill-dark-light-blue md:h-12"
 					viewBox="0 0 80 80"
