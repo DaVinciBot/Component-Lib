@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
-	import { updateText } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 	import Stepper from '../admin/Stepper.svelte';
 
@@ -59,7 +58,24 @@
 	const maxWidth = 960;
 	let isResizing = false;
 	let startX = 0;
+	// svelte-ignore state_referenced_locally
 	let startWidth = width;
+
+	const updateText = {
+		'order-creation': 'Création de la commande',
+		comment: 'Commentaire ajouté',
+		update: 'Mise à jour de la commande',
+		'review-cdp-requested': 'Validation par le chef de projet demandée',
+		'review-cdp-approved': 'Validation par le chef de projet effectuée',
+		'review-cdp-refused': 'Validation par le chef de projet refusée',
+		'review-treso-requested': 'Validation par le trésorier demandée',
+		'review-treso-approved': 'Validation par le trésorier effectuée',
+		'review-treso-refused': 'Validation par le trésorier refusée',
+		'order-pending-delivery': 'Commande validée, en attente de livraison',
+		'order-canceled-user': 'Commande annulée par le demandeur',
+		'order-canceled-ops': 'Commande annulée côté opérationnel',
+		'order-completed': 'Commande complétée'
+	} satisfies Record<string, string>;
 
 	function beginResize(clientX: number) {
 		isResizing = true;
@@ -83,7 +99,7 @@
 		if (!isResizing) return;
 		if (e.touches && e.touches.length) {
 			e.preventDefault();
-			const dx = startX - e.touches[0].clientX;
+			const dx = startX - (e.touches[0]?.clientX ?? 0);
 			width = Math.max(minWidth, Math.min(maxWidth, startWidth + dx));
 		}
 	}
@@ -96,6 +112,12 @@
 		window.removeEventListener('mouseup', endResize);
 		window.removeEventListener('touchmove', onTouchMove);
 		window.removeEventListener('touchend', endResize);
+	}
+
+	function onResizeTouchStart(e: TouchEvent) {
+		const touch = e.touches[0];
+		if (!touch) return;
+		beginResize(touch.clientX);
 	}
 
 	let cropTitle = $derived(
@@ -181,13 +203,14 @@
 			const { data: urls } = await supabase.storage.from('proof').createSignedUrls(files, 600);
 			if (!urls) return;
 
-			for (let i = 0; i < urls.length; i++) {
-				if (urls[i].error) {
-					console.error(urls[i].error);
+			for (const [i, signedUrlResult] of urls.entries()) {
+				const signedUrl = signedUrlResult.signedUrl;
+				if (signedUrlResult.error || !signedUrl) {
+					console.error(signedUrlResult.error ?? 'Missing signed URL');
 					continue;
 				}
 				// get the blob from the url
-				const r = await fetch(urls[i].signedUrl);
+				const r = await fetch(signedUrl);
 				if (!r.ok) {
 					console.error('Error fetching blob:', r.statusText);
 					continue;
@@ -199,8 +222,8 @@
 				}
 				files_array[i] = {
 					mime: b.type,
-					url: urls[i].signedUrl,
-					name: getSignedFileName(urls[i].signedUrl)
+					url: signedUrl,
+					name: getSignedFileName(signedUrl)
 				};
 				console.log(files_array[i]);
 			}
@@ -234,7 +257,7 @@
 		aria-label="Resize drawer"
 		class="group absolute top-0 left-0 h-full w-2 cursor-col-resize bg-transparent focus:outline-none"
 		onmousedown={(e) => beginResize(e.clientX)}
-		ontouchstart={(e) => beginResize(e.touches[0].clientX)}
+		ontouchstart={onResizeTouchStart}
 		onkeydown={(e) => {
 			// keyboard resizing: arrow left increases width (drawer anchored right)
 			const step = e.shiftKey ? 40 : 10;
@@ -354,7 +377,8 @@
 										((e) => {
 											const input = e.currentTarget;
 											if (!(input instanceof HTMLInputElement) || !input.files?.length) return;
-											const file = input.files[0];
+											const file = input.files.item(0);
+											if (!file) return;
 											const reader = new FileReader();
 											reader.onload = () => {
 												if (typeof reader.result === 'string') field.value = reader.result;
@@ -450,22 +474,25 @@
 											const input = e.currentTarget;
 											if (!(input instanceof HTMLInputElement) || !input.files?.length) return;
 											if (field.multiple) {
-												const temp_arr = [...input.files].map((file) => {
+												const selectedFiles = Array.from(input.files);
+												const temp_arr = selectedFiles.map((file) => {
 													return { name: file.name, type: file.type, value: '' };
 												});
-												for (let i = 0; i < temp_arr.length; i++) {
-													if (temp_arr[i].type.split('/')[0] === 'image') {
+												selectedFiles.forEach((file, i) => {
+													const tempFile = temp_arr[i];
+													if (!tempFile) return;
+													if (tempFile.type.split('/')[0] === 'image') {
 														const reader = new FileReader();
 														reader.onload = () => {
-															if (typeof reader.result === 'string')
-																temp_arr[i].value = reader.result;
+															if (typeof reader.result === 'string') tempFile.value = reader.result;
 														};
-														reader.readAsDataURL(input.files[i]);
+														reader.readAsDataURL(file);
 													}
-												}
+												});
 												field.value = [...field.value, ...temp_arr];
 											} else {
-												const file = input.files[0];
+												const file = input.files.item(0);
+												if (!file) return;
 												field.data = file.type.split('/')[0];
 												if (field.data === 'image') {
 													const reader = new FileReader();
