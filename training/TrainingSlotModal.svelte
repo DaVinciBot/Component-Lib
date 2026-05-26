@@ -24,7 +24,7 @@
 		type RegistrationListItem,
 		type RegistrationSummary
 	} from '$lib/services/training';
-	import { supabase } from '$lib/supabaseClient';
+	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 	import {
 		Armchair,
 		ArrowRight,
@@ -71,7 +71,12 @@
 	let confirmLoading = $state(false);
 	let excuseUpdating = $state(false);
 
-	const supabaseClient: SupabaseClient = supabase as SupabaseClient;
+	let supabaseClient: SupabaseClient | null = null;
+
+	function getClient() {
+		supabaseClient ??= getSupabaseBrowserClient() as SupabaseClient;
+		return supabaseClient;
+	}
 
 	const isOpen = $derived(() => open && slot !== null);
 	const hasDescription = $derived(() => hasContent(slot?.description));
@@ -112,7 +117,7 @@
 		if (!slot) return;
 		const currentRequest = ++registrationRequestId;
 		try {
-			const data = await getMyRegistrationForSlot(supabaseClient, slot.slot_id, currentUserId);
+			const data = await getMyRegistrationForSlot(getClient(), slot.slot_id, currentUserId);
 			if (currentRequest !== registrationRequestId) return;
 			registration = data;
 		} catch (err) {
@@ -128,8 +133,8 @@
 		participantsError = null;
 		try {
 			const data = canManageTraining
-				? await getSlotRegistrations(supabaseClient, slot.slot_id)
-				: await getTrainerSlotRegistrations(supabaseClient, slot.slot_id);
+				? await getSlotRegistrations(getClient(), slot.slot_id)
+				: await getTrainerSlotRegistrations(getClient(), slot.slot_id);
 			if (currentRequest !== participantsRequestId) return;
 			participants = data;
 		} catch (err) {
@@ -157,7 +162,7 @@
 		if (!slot || !confirmMode) return;
 		confirmLoading = true;
 		try {
-			await registerToSlot(supabaseClient, slot.slot_id, confirmMode === 'remote', toExcuse);
+			await registerToSlot(getClient(), slot.slot_id, confirmMode === 'remote', toExcuse);
 			await refreshRegistration();
 			onRegistrationChange?.();
 		} catch (err) {
@@ -171,7 +176,7 @@
 	async function handleCancelRegistration() {
 		if (!slot) return;
 		try {
-			await cancelRegistration(supabaseClient, slot.slot_id);
+			await cancelRegistration(getClient(), slot.slot_id);
 			await refreshRegistration();
 			onRegistrationChange?.();
 		} catch (err) {
@@ -184,7 +189,7 @@
 		excuseUpdating = true;
 		try {
 			const nextValue = !registration.to_excuse;
-			await updateMyRegistrationExcuse(supabaseClient, slot.slot_id, nextValue, currentUserId);
+			await updateMyRegistrationExcuse(getClient(), slot.slot_id, nextValue, currentUserId);
 			await refreshRegistration();
 			onRegistrationChange?.();
 		} catch (err) {

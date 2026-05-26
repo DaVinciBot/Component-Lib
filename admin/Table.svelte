@@ -176,7 +176,7 @@
 		if (!can_load || !dbInfo) return [];
 		let query = getSupabaseBrowserClient()
 			.from(dbInfo.table)
-			.select(dbInfo.key, { count: 'exact', head: false }) as SupabaseFilterQuery;
+			.select(dbInfo.key, { count: 'exact', head: false }) as unknown as SupabaseFilterQuery;
 		query = applyFilters(query, filter);
 		if (dbInfo.ordering) {
 			const [col, dir] = dbInfo.ordering.split(':');
