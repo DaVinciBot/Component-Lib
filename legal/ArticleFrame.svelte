@@ -36,7 +36,7 @@
 <section class="relative text-white bg-dark-blue">
 	<div class="absolute inset-0 pointer-events-none opacity-30">
 		<div
-			class="w-full h-full bg-[radial-gradient(circle_at_top,_rgba(7,31,84,0.8),_rgba(1,1,40,0.95))]"
+			class="w-full h-full bg-[radial-gradient(circle_at_top,rgba(7,31,84,0.8),rgba(1,1,40,0.95))]"
 		></div>
 	</div>
 
@@ -79,7 +79,7 @@
 	<div class="relative pb-16">
 		<div class="px-6 md:pl-96 md:pr-16">
 			<div class="flex flex-col items-start justify-between w-full mx-auto md:flex-row flex-nowrap">
-				<article class="flex-shrink-0 w-full max-w-3xl prose legal-article prose-invert md-article">
+				<article class="shrink-0 w-full max-w-3xl prose legal-article prose-invert md-article">
 					{@render children?.()}
 				</article>
 				{#if (sections ?? []).length}
@@ -89,11 +89,11 @@
 					>
 						<p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Sommaire</p>
 						<ol class="space-y-2 text-sm text-white/80" role="list">
-							{#each sections as section}
+							{#each sections as section (section.id)}
 								<li>
 									<a
 										href={`#${section.id}`}
-										class="flex gap-2 px-3 py-2 transition rounded-xl hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+										class="flex gap-2 px-3 py-2 transition rounded-xl hover:bg-white/10 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-white"
 									>
 										<span class="font-semibold text-white">{section.label}</span>
 									</a>

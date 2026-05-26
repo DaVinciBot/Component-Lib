@@ -3,7 +3,7 @@
 	let { small = false } = $props();
 </script>
 
-<a href="https://www.alstom.com/fr" target="_blank" rel="noopener noreferrer">
+<a href="https://www.alstom.com/fr" target="_blank" rel="noopener noreferrer" aria-label="Alstom">
 	<svg
 		version="1.1"
 		id="Calque_1"

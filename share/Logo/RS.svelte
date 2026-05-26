@@ -8,6 +8,7 @@
 	class="h-full aspect-square"
 	target="_blank"
 	rel="noopener noreferrer"
+	aria-label="RS Components"
 >
 	<svg
 		class={small ? 'aspect-square' : 'h-full aspect-square'}

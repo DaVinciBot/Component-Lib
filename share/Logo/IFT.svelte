@@ -8,6 +8,7 @@
 	class="h-full aspect-square"
 	target="_blank"
 	rel="noopener noreferrer"
+	aria-label="Institute for Future Technologies"
 >
 	<svg
 		class={small ? '' : 'h-full'}

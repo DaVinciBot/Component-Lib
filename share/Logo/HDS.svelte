@@ -3,7 +3,12 @@
 	let { small = false } = $props();
 </script>
 
-<a href="https://www.hauts-de-seine.fr/" target="_blank" rel="noopener noreferrer">
+<a
+	href="https://www.hauts-de-seine.fr/"
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label="Hauts-de-Seine"
+>
 	<svg
 		class={small ? 'w-full' : 'w-full h-full'}
 		height="50"

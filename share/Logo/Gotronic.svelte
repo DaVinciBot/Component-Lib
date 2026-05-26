@@ -3,7 +3,13 @@
 	let { small = false } = $props();
 </script>
 
-<a href="https://www.gotronic.fr/" class="h-full" target="_blank" rel="noopener noreferrer">
+<a
+	href="https://www.gotronic.fr/"
+	class="h-full"
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label="Gotronic"
+>
 	<svg
 		class={small ? 'w-full' : 'w-full h-full'}
 		height="50"

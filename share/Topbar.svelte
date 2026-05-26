@@ -24,21 +24,21 @@
 		infos: false
 	});
 
-	let projectsDropdownEl = $state();
-	let infosDropdownEl = $state();
+	let projectsDropdownEl = $state<HTMLElement | null>(null);
+	let infosDropdownEl = $state<HTMLElement | null>(null);
 
-	userdata.subscribe((value) => {
+	const unsubscribeUserdata = userdata.subscribe((value) => {
 		user = value || null;
 	});
 
-	function setupDropdown(dropdownEl, activatorEl) {
+	function setupDropdown(dropdownEl: HTMLElement, activatorEl: HTMLElement) {
 		// set position of the popup just below the button
 		const rect = activatorEl.getBoundingClientRect();
 		dropdownEl.style.top = 'calc(' + rect.bottom + 'px + 2rem)';
 		dropdownEl.style.left = 'calc(' + rect.left + 'px + 0rem)';
 	}
 
-	function initDropdown(el, activatorId) {
+	function initDropdown(el: HTMLElement | null, activatorId: string) {
 		if (!el) return;
 
 		// Remove from current parent if not body
@@ -77,16 +77,16 @@
 		resizeHandler = () => {
 			onMobile = window.innerWidth < 768;
 			// reposition dropdowns
-			if (projectsDropdownEl && document.getElementById('ProjectsButton'))
-				setupDropdown(projectsDropdownEl, document.getElementById('ProjectsButton'));
-			if (infosDropdownEl && document.getElementById('AssosButton'))
-				setupDropdown(infosDropdownEl, document.getElementById('AssosButton'));
+			const projectsButton = document.getElementById('ProjectsButton');
+			const assosButton = document.getElementById('AssosButton');
+			if (projectsDropdownEl && projectsButton) setupDropdown(projectsDropdownEl, projectsButton);
+			if (infosDropdownEl && assosButton) setupDropdown(infosDropdownEl, assosButton);
 		};
 		window.addEventListener('resize', resizeHandler);
 	});
 
 	// make sure dropdowns are closed when navigating
-	const _afterUnsub = afterNavigate(() => {
+	afterNavigate(() => {
 		dropdown.projects = false;
 		dropdown.infos = false;
 	});
@@ -104,11 +104,7 @@
 			infosDropdownEl.parentNode.removeChild(infosDropdownEl);
 		}
 
-		try {
-			if (typeof _afterUnsub === 'function') _afterUnsub();
-		} catch (e) {
-			// ignore
-		}
+		unsubscribeUserdata();
 		if (resizeHandler) window.removeEventListener('resize', resizeHandler);
 	});
 
@@ -343,7 +339,7 @@
 				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' },
 				{ title: 'Contact', icon: 'mail', uri: '/contact' }
 			]}
-			on:click={closeSidebar}
+			close={closeSidebar}
 		/>
 	{/if}
 </section>

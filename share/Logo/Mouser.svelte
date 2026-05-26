@@ -3,7 +3,7 @@
 	let { small = false } = $props();
 </script>
 
-<a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer">
+<a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer" aria-label="Mouser">
 	<svg
 		height={small ? 50 : 80}
 		viewBox="0 0 859 332"
