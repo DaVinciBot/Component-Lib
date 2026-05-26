@@ -1,5 +1,5 @@
 <script>
-	import { navigating } from '$app/stores';
+	import { page } from '$app/state';
 
 	/** @type {{menu?: any, open?: boolean, close?: any, noicon?: boolean, bgClass?: string, activeClass?: string}} */
 	let {
@@ -13,22 +13,15 @@
 
 	let buttons_state = $state({});
 
-	navigating.subscribe((value) => {
-		if (value) {
-			loadSidebar(value.to.route.id);
-		}
+	$effect(() => {
+		loadSidebar(page.route.id);
 	});
 
 	function loadSidebar(path) {
-		const current_route = path;
-		menu = menu.map((item) => {
-			if (item.uri === current_route) {
-				item.active = true;
-			} else {
-				item.active = false;
-			}
-			return item;
-		});
+		menu = menu.map((item) => ({
+			...item,
+			active: item.uri === path
+		}));
 	}
 </script>
 
@@ -118,6 +111,3 @@
 	></script>
 	<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </section>
-
-<style>
-</style>
