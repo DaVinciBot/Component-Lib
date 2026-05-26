@@ -5,16 +5,88 @@
 	import { hashCode, hideOnClickOutside, loadSettings, saveSettings } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 	import { writable } from 'svelte/store';
-
-	// Props
-
 	// Optional topic name; when an app-wide event with this topic fires, the table reloads
-	/** @type {{actions?: any, headers?: any, filters?: any, dbInfo?: any, searchable?: string, type?: string, type_accord?: string, parseItems?: any, size?: number, can_load?: boolean, clickable?: boolean, addNew?: any, refreshTopic?: any, showToolbar?: boolean, showPagination?: boolean}} */
+
+	import type { Component } from 'svelte';
+
+	export type FilterOption = {
+		name: string;
+		value: string;
+		active: boolean;
+	};
+
+	export type Filter = {
+		category: string;
+		value: string;
+		wide?: boolean;
+		options: FilterOption[];
+	};
+
+	export type Action = {
+		type: string;
+		title: string;
+		handler: (e: Event) => void;
+	};
+
+	export type DBInfo = {
+		table: string;
+		key: string;
+		ordering?: string;
+	};
+
+	export type TableCell = {
+		value?: unknown;
+		data?: string | number | null;
+		warn?: boolean;
+		avatar?: string | null;
+		component?: Component<any>;
+		props?: Record<string, unknown>;
+	};
+
+	export type TableRow = TableCell[];
+	export type ParseItems = (data: unknown[]) => TableRow[] | Promise<TableRow[]>;
+
+	type SupabaseFilterQuery = {
+		filter: (column: string, operator: string, value: string) => SupabaseFilterQuery;
+		order: (column: string, options: { ascending: boolean }) => SupabaseFilterQuery;
+		range: (
+			from: number,
+			to: number
+		) => Promise<{ data: unknown[] | null; error: unknown; count: number | null }>;
+	};
+
+	type TableRefreshPayload = {
+		resetPage?: boolean;
+	};
+
+	function isTableRefreshPayload(payload: unknown): payload is TableRefreshPayload {
+		return typeof payload === 'object' && payload !== null;
+	}
+
+	type TableProps = {
+		actions?: Action[];
+		headers?: string[];
+		filters?: Filter[];
+		dbInfo?: DBInfo;
+		searchable?: string;
+		type?: string;
+		type_accord?: string;
+		parseItems?: ParseItems | null;
+		size?: number;
+		can_load?: boolean;
+		clickable?: boolean;
+		addNew?: (() => void) | null;
+		refreshTopic?: string;
+		showToolbar?: boolean;
+		showPagination?: boolean;
+		emptyMessage?: string;
+	};
+
 	let {
 		actions = [],
 		headers = ['Nom', 'Email', 'Rôle', 'Actions'],
-		filters = $bindable([]),
-		dbInfo = {},
+		filters = $bindable<Filter[]>([]),
+		dbInfo,
 		searchable = 'username',
 		type = 'élément',
 		type_accord = 'un',
@@ -27,11 +99,11 @@
 		showToolbar = true,
 		showPagination = true,
 		emptyMessage = 'Aucun résultat'
-	} = $props();
+	}: TableProps = $props();
 
 	// State
 	let search = $state('');
-	let items: Array<any[]> = $state([]);
+	let items: TableRow[] = $state([]);
 	let current_page = $state(0);
 	let total_items = $state(0);
 
@@ -45,64 +117,70 @@
 		if (current_page >= totalPages) current_page = Math.max(0, totalPages - 1);
 	});
 
-	function getFiltersSignature(filters: any[]) {
+	function getFiltersSignature(filters: Filter[]) {
 		return (filters || []).map((filter) => ({
-			category: filter?.category,
-			value: filter?.value,
-			wide: filter?.wide,
-			options: (filter?.options || []).map((option: any) => ({
-				value: option?.value,
-				name: option?.name
+			category: filter.category,
+			value: filter.value,
+			wide: filter.wide,
+			options: filter.options.map((option) => ({
+				value: option.value,
+				name: option.name
 			}))
 		}));
 	}
 
 	// persistable filter state
 	const hash = $derived(
-		Math.abs(
-			hashCode(JSON.stringify(getFiltersSignature(filters)) + JSON.stringify(dbInfo) + searchable)
+		String(
+			Math.abs(
+				hashCode(JSON.stringify(getFiltersSignature(filters)) + JSON.stringify(dbInfo) + searchable)
+			)
 		)
 	);
 	let can_update_settings = $state(false);
-	const filtersStore = writable(filters);
-	let hasWideFilter = $derived(filters?.some((f) => f?.wide));
-	let hasFilters = $derived((filters || []).some((filter) => filter?.category !== 'hidden'));
+	const filtersStore = writable<Filter[]>(filters);
+	let hasWideFilter = $derived(filters.some((f) => f.wide));
+	let hasFilters = $derived(filters.some((filter) => filter.category !== 'hidden'));
+	let viewAction = $derived(actions.find((action) => action.type === 'view') ?? null);
 
 	$effect.pre(() => {
 		filtersStore.set(filters);
 		if (can_update_settings) saveSettings(hash, filters);
 	});
 
-	function getFiltersString(filters: any[]) {
+	function getFiltersString(filters: Filter[]) {
 		let out = '';
-		const tmp = JSON.parse(JSON.stringify(filters || []));
-		tmp.forEach((f: any) => (f.options = f.options?.filter((o: any) => o.active)));
-		tmp.forEach((f: any) => {
-			if (f.options?.length) {
-				out += `${f.value}:in:("${f.options.map((o: any) => o.value).join('","')}")&`;
+		filters.forEach((filter) => {
+			const activeOptions = filter.options.filter((option) => option.active);
+			if (activeOptions.length) {
+				out += `${filter.value}:in:("${activeOptions.map((option) => option.value).join('","')}")&`;
 			}
 		});
 		if (search) out += `${searchable}:ilike:%${search}%&`;
 		return out.slice(0, -1);
 	}
 
-	function applyFilters(query: any, filter: string) {
+	function applyFilters(query: SupabaseFilterQuery, filter: string) {
 		if (!filter) return query;
 		const parts = filter.split('&').filter(Boolean);
 		for (const p of parts) {
-			const [column, operator, value] = p.split(':');
-			query = query.filter(column, operator as any, value as any);
+			const [column, operator, ...valueParts] = p.split(':');
+			const value = valueParts.join(':');
+			if (!column || !operator || !value) continue;
+			query = query.filter(column, operator, value);
 		}
 		return query;
 	}
 
 	async function loadPage(page: number, filter = '', step = size) {
-		if (!can_load) return [];
-		let query = supabase.from(dbInfo.table).select(dbInfo.key, { count: 'exact', head: false });
+		if (!can_load || !dbInfo) return [];
+		let query = supabase
+			.from(dbInfo.table)
+			.select(dbInfo.key, { count: 'exact', head: false }) as SupabaseFilterQuery;
 		query = applyFilters(query, filter);
 		if (dbInfo.ordering) {
 			const [col, dir] = dbInfo.ordering.split(':');
-			query = query.order(col, { ascending: dir === 'asc' });
+			if (col) query = query.order(col, { ascending: dir === 'asc' });
 		}
 
 		const { data, error, count } = await query.range(page * step, (page + 1) * step - 1);
@@ -111,10 +189,8 @@
 			return [];
 		}
 		total_items = count ?? 0;
-		if (!parseItems) return data || [];
-		return parseItems.constructor.name === 'AsyncFunction'
-			? await parseItems(data)
-			: parseItems(data);
+		if (!parseItems) return (data || []) as TableRow[];
+		return await parseItems(data || []);
 	}
 
 	// Public API: refresh current page (optionally reset to first page)
@@ -149,7 +225,7 @@
 	onMount(async () => {
 		mounted = true;
 		const saved = loadSettings(hash);
-		if (saved.length > 0) filters = saved;
+		if (Array.isArray(saved) && saved.length > 0) filters = saved as Filter[];
 		await reload({ resetPage: true });
 
 		if (showToolbar) {
@@ -171,7 +247,7 @@
 				if (!evt || !evt.topic) return;
 				if (evt.topic === refreshTopic) {
 					// If payload asks for reset, honor it
-					const resetPage = (evt?.payload as any)?.resetPage === true;
+					const resetPage = isTableRefreshPayload(evt.payload) && evt.payload.resetPage === true;
 					await reload({ resetPage });
 				}
 			});
@@ -360,7 +436,7 @@
 																value={option.value}
 																checked={option.active}
 																className="size-4"
-																onchange={(e: any) => {
+																onchange={(e: Event) => {
 																	e.preventDefault();
 																	can_update_settings = true;
 																	const target = e.target as HTMLInputElement | null;
@@ -436,7 +512,7 @@
 								onclick={clickable
 									? (e) => {
 											e.preventDefault();
-											actions.find((a) => a.type === 'view')?.handler(e);
+											viewAction?.handler(e);
 										}
 									: null}
 							>
@@ -484,14 +560,14 @@
 										</td>
 									{/if}
 								{/each}
-								{#if actions.length == 1 && actions[0].type === 'view'}
+								{#if actions.length == 1 && viewAction}
 									<td class="flex items-center justify-end px-2 py-2 sm:px-4 sm:py-3">
 										<button
 											type="button"
 											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
-											onclick={(e) => actions[0].handler(e)}
+											onclick={(e) => viewAction.handler(e)}
 										>
-											{actions[0].title}
+											{viewAction.title}
 										</button>
 									</td>
 								{:else if actions.length > 1}
@@ -499,7 +575,7 @@
 										<button
 											type="button"
 											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
-											onclick={(e) => actions.find((a) => a.type === 'view')?.handler(e)}
+											onclick={(e) => viewAction?.handler(e)}
 											aria-label="View"
 										>
 											<svg
