@@ -1,7 +1,23 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	/** @type {{menu?: any, open?: boolean, close?: any, noicon?: boolean, bgClass?: string, activeClass?: string}} */
+	type MenuItem = Record<string, any> & {
+		title: string;
+		icon?: string;
+		uri?: string | null;
+		active?: boolean;
+		sub?: MenuItem[];
+	};
+
+	type SideBarProps = {
+		menu?: MenuItem[];
+		open?: boolean;
+		close?: () => void;
+		noicon?: boolean;
+		bgClass?: string;
+		activeClass?: string;
+	};
+
 	let {
 		menu = $bindable([{ title: 'fill me', icon: 'timer', uri: '/admin' }]),
 		open = false,
@@ -9,20 +25,16 @@
 		noicon = false,
 		bgClass = 'bg-gray-800',
 		activeClass = 'hover:bg-gray-700'
-	} = $props();
+	}: SideBarProps = $props();
 
 	let buttons_state = $state<Record<string, boolean>>({});
 
-	$effect(() => {
-		loadSidebar(page.route.id);
-	});
-
-	function loadSidebar(path: string | null) {
-		menu = menu.map((item: { uri: string | null }) => ({
+	const sidebarMenu = $derived(
+		menu.map((item: MenuItem) => ({
 			...item,
-			active: item.uri === path
-		}));
-	}
+			active: item.uri === page.route.id
+		}))
+	);
 </script>
 
 <section>
@@ -34,7 +46,7 @@
 	>
 		<div class="h-full overflow-y-auto px-3 py-5 {bgClass}">
 			<ul class="space-y-2">
-				{#each menu as item (item.title)}
+				{#each sidebarMenu as item (item.title)}
 					{#if item.sub}
 						<li>
 							<button
