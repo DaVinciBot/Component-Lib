@@ -129,8 +129,10 @@
 					console.error(signedUrl?.error);
 					continue;
 				}
+				const fileUrl = signedUrl.signedUrl;
+				if (!fileUrl) continue;
 				// get the blob from the url
-				const r = await fetch(signedUrl.signedUrl);
+				const r = await fetch(fileUrl);
 				if (!r.ok) {
 					console.error('Error fetching blob:', r.statusText);
 					continue;
@@ -142,8 +144,8 @@
 				}
 				files_array[i] = {
 					mime: b.type,
-					url: signedUrl.signedUrl,
-					name: getNameFromUrl(signedUrl.signedUrl)
+					url: fileUrl,
+					name: getNameFromUrl(fileUrl)
 				};
 				console.log(files_array[i]);
 			}
