@@ -5,38 +5,57 @@
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
 
-	/** @type {{user?: any, fixed?: boolean}} */
-	let {
-		user = $bindable({
-			name: 'DVB',
-			email: 'davincibot@devinci.fr',
-			avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
-		}),
-		fixed = true
-	} = $props();
+	type UserBadgeUser = {
+		name: string;
+		email: string;
+		avatar: string;
+		permissions?: string[];
+		[key: string]: any;
+	};
+
+	type UserBadgeProps = {
+		user?: UserBadgeUser | null;
+		fixed?: boolean;
+	};
+
+	const fallbackUser: UserBadgeUser = {
+		name: 'DVB',
+		email: 'davincibot@devinci.fr',
+		avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
+	};
+
+	let { user = $bindable(fallbackUser), fixed = true }: UserBadgeProps = $props();
 
 	let skip = false;
 	let resizeHandler: (() => void) | null = null;
+	let displayUser = $derived(user ?? fallbackUser);
 
 	userdata.subscribe((value) => {
 		if (value) {
-			user = value;
+			user = value as UserBadgeUser;
 			skip = true;
 		} else {
 			user = null;
 		}
 	});
 
+	function getDropdown() {
+		return document.getElementById('dropdown') as HTMLDivElement | null;
+	}
+
 	function setupDropdown() {
 		// set position of the popup just below the button
-		const dropdown = document.querySelector('#dropdown');
-		const rect = document.querySelector('#user-menu-button').getBoundingClientRect();
+		const dropdown = getDropdown();
+		const button = document.getElementById('user-menu-button');
+		if (!dropdown || !button) return;
+		const rect = button.getBoundingClientRect();
 		dropdown.style.top = 'calc(' + rect.bottom + 'px - 0.25rem)';
 		dropdown.style.left = 'calc(' + rect.left + 'px - 12.05rem)';
 	}
 
-	onMount(async () => {
-		const dropdown = document.querySelector('#dropdown');
+	onMount(() => {
+		const dropdown = getDropdown();
+		if (!dropdown) return;
 		setupDropdown();
 		document.body.appendChild(dropdown);
 
@@ -66,14 +85,15 @@
 	id="user-menu-button"
 	aria-expanded="false"
 	onclick={(e) => {
-		const dropdown = document.querySelector('#dropdown');
+		const dropdown = getDropdown();
+		if (!dropdown) return;
 		dropdown.classList.toggle('hidden');
 		e.stopPropagation();
 		hideOnClickOutside(dropdown);
 	}}
 >
 	<span class="sr-only">Open user menu</span>
-	<img class="h-8 w-8 rounded-full" src={user.avatar} alt="user avatar" />
+	<img class="h-8 w-8 rounded-full" src={displayUser.avatar} alt="user avatar" />
 </button>
 <!-- Dropdown menu -->
 <div
@@ -83,8 +103,8 @@
 	id="dropdown"
 >
 	<div class="px-4 py-3">
-		<span class="block text-sm font-semibold text-white">{user.name}</span>
-		<span class="block truncate text-sm text-white">{user.email}</span>
+		<span class="block text-sm font-semibold text-white">{displayUser.name}</span>
+		<span class="block truncate text-sm text-white">{displayUser.email}</span>
 	</div>
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
@@ -108,10 +128,10 @@
 	{/if}
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
-			<a
-				href="#"
-				class="bg-opacity-80 hover:bg-opacity-50 block px-4 py-2 text-sm hover:bg-red-700 hover:text-white"
-				onclick={LogOut}>Déconnexion</a
+			<button
+				type="button"
+				class="bg-opacity-80 hover:bg-opacity-50 block w-full px-4 py-2 text-left text-sm hover:bg-red-700 hover:text-white"
+				onclick={LogOut}>Déconnexion</button
 			>
 		</li>
 	</ul>

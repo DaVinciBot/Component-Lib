@@ -8,10 +8,16 @@
 
 	type ReadModalProps = {
 		values?: any;
-		files?: any;
+		files?: string[] | null;
 		actions?: any;
 		id?: string;
-		onClose?: any;
+		onClose?: (e: Event | Element | null) => void;
+	};
+
+	type ReadFile = {
+		mime: string;
+		url: string;
+		name: string;
 	};
 
 	let {
@@ -54,40 +60,77 @@
 		files = [],
 		actions = [],
 		id = 'readModal',
-		onClose = (e) => {}
+		onClose = (_e: Event | Element | null) => {}
 	}: ReadModalProps = $props();
 
 	let current_file = $state('');
 	let current_file_index = $state(0);
-	let scroll_body = $state(null);
+	let scroll_body: HTMLDivElement | null = $state(null);
 
 	let isMobile = $state(false);
-	let files_array = $state([{ mime: 'application/pdf', url: null }]);
+	let files_array = $state<ReadFile[]>([]);
 
-	let __onClose = (e) => {
+	let __onClose = (e: Event | Element | null) => {
 		onClose(e);
 	};
 
+	function attachmentPaths() {
+		return Array.isArray(files) ? files : [];
+	}
+
+	function isPendingCdp() {
+		return (
+			values.body.find((el: { label?: string; type?: string }) => el.label == 'Status')?.type ==
+			'pending_cdp'
+		);
+	}
+
+	function getNameFromUrl(url: string) {
+		try {
+			const pathname = new URL(url).pathname;
+			return decodeURIComponent(pathname.split('/').filter(Boolean).at(-1) ?? 'Fichier');
+		} catch {
+			const urlWithoutQuery = url.split('?')[0] ?? url;
+			return decodeURI(urlWithoutQuery.split('/').at(-1) ?? 'Fichier');
+		}
+	}
+
+	function moveFile(direction: -1 | 1) {
+		const paths = attachmentPaths();
+		const nextIndex = current_file_index + direction;
+		const nextFile = files_array[nextIndex];
+		if (nextIndex < 0 || nextIndex >= paths.length || !nextFile || !scroll_body) return;
+
+		current_file_index = nextIndex;
+		current_file = nextFile.name;
+		scroll_body.style.transform = `translateX(-${
+			(scroll_body.scrollWidth / paths.length) * current_file_index
+		}px)`;
+	}
+
 	onMount(async () => {
 		const popup = document.querySelector(`#popup-${id}`);
-		hideOnClickOutside(popup, __onClose);
+		if (popup) hideOnClickOutside(popup, __onClose);
 		// check if mobile
 		if (window.innerWidth < 768) {
 			isMobile = true;
 		} else {
 			isMobile = false;
 		}
-		if (files) {
+		const paths = attachmentPaths();
+		if (paths.length > 0) {
 			// get the all signed url from supabase
-			const { data: urls } = await supabase.storage.from('proof').createSignedUrls(files, 600);
+			const { data: urls } = await supabase.storage.from('proof').createSignedUrls(paths, 600);
+			if (!urls) return;
 
 			for (let i = 0; i < urls.length; i++) {
-				if (urls[i].error) {
-					console.error(urls[i].error);
+				const signedUrl = urls[i];
+				if (!signedUrl || signedUrl.error) {
+					console.error(signedUrl?.error);
 					continue;
 				}
 				// get the blob from the url
-				const r = await fetch(urls[i].signedUrl);
+				const r = await fetch(signedUrl.signedUrl);
 				if (!r.ok) {
 					console.error('Error fetching blob:', r.statusText);
 					continue;
@@ -99,12 +142,12 @@
 				}
 				files_array[i] = {
 					mime: b.type,
-					url: urls[i].signedUrl,
-					name: decodeURI(urls[i].signedUrl.split('/')[10].split('?')[0])
+					url: signedUrl.signedUrl,
+					name: getNameFromUrl(signedUrl.signedUrl)
 				};
 				console.log(files_array[i]);
 			}
-			current_file = files_array[0].name;
+			current_file = files_array[0]?.name ?? '';
 		}
 	});
 </script>
@@ -158,24 +201,20 @@
 					</button>
 				</div>
 			</div>
-			<div class="grid space-x-4 {files ? 'md:grid-cols-2' : 'grid-cols-1'}">
-				{#if files.length > 0}
+			<div class="grid space-x-4 {attachmentPaths().length > 0 ? 'md:grid-cols-2' : 'grid-cols-1'}">
+				{#if attachmentPaths().length > 0}
 					<!-- Make a carousel -->
 					<div class="mb-2">
 						<div class="header">
 							<h3 class="text-lg font-semibold text-white">Pièces jointes</h3>
 							<div class="mt-2 mb-2 flex w-full justify-between">
 								<button
+									type="button"
+									aria-label="Pièce jointe précédente"
 									class="
 									inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 									onclick={() => {
-										if (current_file_index > 0) {
-											current_file_index--;
-											current_file = files_array[current_file_index].name;
-											scroll_body.style.transform = `translateX(${
-												(scroll_body.scrollWidth / files.length) * current_file_index
-											}px)`;
-										}
+										moveFile(-1);
 									}}
 								>
 									<svg
@@ -192,19 +231,16 @@
 									>
 								</button>
 								<p class="items-center self-center text-center text-sm text-gray-400">
-									{current_file || 'Chargement'} - {current_file_index + 1}/{files.length}
+									{current_file || 'Chargement'} - {current_file_index + 1}/{attachmentPaths()
+										.length}
 								</p>
 								<button
+									type="button"
+									aria-label="Pièce jointe suivante"
 									class="
 								inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 									onclick={() => {
-										if (current_file_index < files.length - 1) {
-											current_file_index++;
-											current_file = files_array[current_file_index].name;
-											scroll_body.style.transform = `translateX(-${
-												(scroll_body.scrollWidth / files.length) * current_file_index
-											}px)`;
-										}
+										moveFile(1);
 									}}
 								>
 									<svg
@@ -224,9 +260,8 @@
 						</div>
 						<div class="flex aspect-[1/1.414] h-auto w-88 gap-2 overflow-x-hidden md:w-96">
 							<div class="flex rounded-lg" bind:this={scroll_body}>
-								{#each files_array as { mime, url }, i}
-									{@const name = decodeURI(url?.split('/')[10].split('?')[0])}
-									<div class="flex w-[22rem] flex-col md:w-96">
+								{#each files_array as { mime, url, name }}
+									<div class="flex w-88 flex-col md:w-96">
 										<!-- <p class="text-white">{url?.split('/')[10].split('?')[0]}</p> -->
 										{#if mime == 'application/pdf' && !isMobile}
 											<iframe src={url} frameborder="0" class="h-full" title={name}></iframe>
@@ -258,7 +293,7 @@
 											<th scope="col">Nom</th>
 											<th scope="col">Quantité</th>
 											<th scope="col">Prix</th>
-											{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
+											{#if isPendingCdp()}
 												<th scope="col" class="w-2.5"></th>
 											{/if}
 										</tr>
@@ -269,10 +304,11 @@
 												<td class="p-2"><a href={item.link} target="_blank">{item.name}</a></td>
 												<td>{item.quantity}</td>
 												<td>{item.price}</td>
-												{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
+												{#if isPendingCdp()}
 													<td>
 														<button
 															type="button"
+															aria-label="Supprimer {item.name}"
 															class="inline-flex items-center rounded-lg bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-600 focus:ring-4 focus:ring-red-900 focus:outline-none"
 															onclick={async () => {
 																// remove item from database
@@ -290,7 +326,7 @@
 
 																// remove item from list
 																const tr = document.querySelector(`tr[data-utils="${item.id}"]`);
-																tr.remove();
+																tr?.remove();
 															}}
 														>
 															<svg

@@ -193,6 +193,10 @@
 		onSelectDay?.(date);
 	}
 
+	function weekdayLabel(index: number) {
+		return weekdays[index] ?? '';
+	}
+
 	// TODO: order by date and time
 </script>
 
@@ -372,7 +376,7 @@
 					} ${day.isToday ? 'text-primary-400' : ''}`}
 					onclick={() => handleDaySelect(day.date)}
 				>
-					<span>{weekdays[index].substring(0, 2)}</span>
+					<span>{weekdayLabel(index).substring(0, 2)}</span>
 					<span>{formatParisDayShort(day.date)}</span>
 				</button>
 			{/each}
@@ -451,7 +455,7 @@
 								onclick={() => handleDaySelect(day.date)}
 							>
 								<span class="text-[0.72rem] uppercase">
-									{weekdays[index]}
+									{weekdayLabel(index)}
 								</span>
 								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>
@@ -484,7 +488,7 @@
 								onclick={() => handleDaySelect(day.date)}
 							>
 								<span class="text-[0.72rem] uppercase">
-									{weekdays[index]}
+									{weekdayLabel(index)}
 								</span>
 								<span class="font-semibold">{formatParisDayShort(day.date)}</span>
 							</button>

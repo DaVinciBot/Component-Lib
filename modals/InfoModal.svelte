@@ -17,7 +17,8 @@
 		])
 	} = $props();
 
-	let id = `${type}Popup-${Math.random().toString(36).substring(7)}`;
+	const popupSuffix = Math.random().toString(36).substring(7);
+	let id = $derived(`${type}Popup-${popupSuffix}`);
 
 	function close(e) {
 		onClose(e);

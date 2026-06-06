@@ -13,7 +13,7 @@
 </script>
 
 <div
-	class="rounded-xl border-[3.5px] border-dark-light-blue p-4 w-[420px] flex flex-col gap-2 min-w-96"
+	class="rounded-xl border-[3.5px] border-dark-light-blue p-4 w-105 flex flex-col gap-2 min-w-96"
 >
 	<div class="flex flex-col">
 		<h1 class="text-xl font-bold">{title}</h1>
@@ -26,40 +26,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	/* Fix the title to exactly two lines for consistent height */
-	.title-2lines {
-		line-height: 1.2;
-		max-height: calc(2 * 1.2em);
-		min-height: calc(2 * 1.2em);
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-	.line-clamp-4 {
-		display: -webkit-box;
-		-webkit-line-clamp: 4;
-		line-clamp: 4;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-	#img-mask::after {
-		content: '';
-		width: 100%;
-		height: 100%;
-		transform: translateY(-100%);
-		position: relative;
-		display: block;
-		/* add blue transparent filter  */
-		background:
-			linear-gradient(rgb(2, 50, 255, 0.3), rgba(2, 50, 255, 0.3)),
-			url('') no-repeat center center;
-		background-size: cover;
-	}
-	#img-mask img {
-		object-fit: cover;
-	}
-</style>

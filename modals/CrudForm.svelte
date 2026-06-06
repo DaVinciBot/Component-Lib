@@ -22,6 +22,12 @@
 	let autocompleteCompletions: Record<string, any[]> = $state({});
 	let autocompleteImages: Record<string, string | null> = $state({});
 	let autocompleteRequestIds: Record<string, number> = $state({});
+
+	type DocumentPreview = {
+		name: string;
+		type: string;
+		value: string;
+	};
 </script>
 
 <div
@@ -142,9 +148,8 @@
 										onchange={field.onChange ||
 											((e) => {
 												const target = e.target as HTMLInputElement;
-												if (target && target.files) {
-													console.log(target.files[0]);
-													const file = target.files[0];
+												const file = target.files?.[0];
+												if (file) {
 													const reader = new FileReader();
 													reader.onload = (fileEvent) => {
 														const fileTarget = fileEvent.target as FileReader;
@@ -242,26 +247,30 @@
 										onchange={field.onChange ||
 											((e) => {
 												const target = e.target as HTMLInputElement;
-												if (target && target.files) {
+												const selectedFiles = [...(target.files ?? [])];
+												if (selectedFiles.length) {
 													if (field.multiple) {
-														const temp_arr = [...target.files].map((file) => {
+														const temp_arr: DocumentPreview[] = selectedFiles.map((file) => {
 															return { name: file.name, type: file.type, value: '' };
 														});
 														for (let i = 0; i < temp_arr.length; i++) {
-															if (temp_arr[i].type.split('/')[0] === 'image') {
+															const preview = temp_arr[i];
+															const file = selectedFiles[i];
+															if (preview && file && preview.type.split('/')[0] === 'image') {
 																const reader = new FileReader();
 																reader.onload = (fileEvent) => {
 																	const fileTarget = fileEvent.target as FileReader;
 																	if (typeof fileTarget.result === 'string') {
-																		temp_arr[i].value = fileTarget.result;
+																		preview.value = fileTarget.result;
 																	}
 																};
-																reader.readAsDataURL(target.files[i]);
+																reader.readAsDataURL(file);
 															}
 														}
 														field.value = [...field.value, ...temp_arr];
 													} else {
-														const file = target.files[0];
+														const file = selectedFiles[0];
+														if (!file) return;
 														field.data = file.type.split('/')[0];
 														if (field.data === 'image') {
 															const reader = new FileReader();
