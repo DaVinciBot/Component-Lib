@@ -59,6 +59,3 @@
 		</clipPath>
 	</defs>
 </svg>
-
-<style>
-</style>

@@ -215,9 +215,14 @@
 								</li>
 							</ul>
 							<div class="py-1">
-								<a href="#" class="block px-4 py-2 text-sm text-gray-500 hover:bg-gray-600"
-									>Travelers</a
+								<span
+									aria-disabled="true"
+									class="block cursor-not-allowed px-4 py-2 text-sm text-gray-500">Travelers</span
 								>
+								<!-- <a href="#" class="block px-4 py-2 text-sm text-gray-500 hover:bg-gray-600"
+									>Travelers</a
+								> -->
+								<!-- TODO: Implement Travelers link -->
 							</div>
 						</div>
 					</li>
@@ -265,9 +270,14 @@
 									>
 								</li>
 								<li>
-									<a href="#" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
-										>Soutenez-nous</a
+									<span
+										aria-disabled="true"
+										class="block cursor-not-allowed px-4 py-2 text-gray-500">Soutenez-nous</span
 									>
+									<!-- <a href="#" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
+										>Soutenez-nous</a
+									> -->
+									<!-- TODO: change href to /soutenez-nous -->
 								</li>
 							</ul>
 						</div>
@@ -342,6 +352,3 @@
 		/>
 	{/if}
 </section>
-
-<style>
-</style>

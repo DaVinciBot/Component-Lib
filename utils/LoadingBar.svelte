@@ -1,6 +1,11 @@
-<script>
-	/** @type {{percentage?: number, message?: string, color?: string}} */
-	let { percentage = 0, message = '', color = 'bg-primary-500' } = $props();
+<script lang="ts">
+	type LoadingBarProps = {
+		percentage?: number;
+		message?: string;
+		color?: string;
+	};
+
+	let { percentage = 0, message = '', color = 'bg-primary-500' }: LoadingBarProps = $props();
 </script>
 
 <div>

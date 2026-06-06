@@ -180,6 +180,3 @@
 		</defs>
 	</svg>
 </a>
-
-<style>
-</style>

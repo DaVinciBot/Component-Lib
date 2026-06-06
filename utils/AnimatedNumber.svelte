@@ -1,7 +1,7 @@
 <script>
 	import { run } from 'svelte/legacy';
 
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	// If true, animation will run only the first time it becomes visible
 	/** @type {{target?: number, duration?: number, prefix?: string, suffix?: string, locale?: string, decimals?: number, once?: boolean}} */
 	let {

@@ -7,7 +7,7 @@
 		[
 			{ text: "L'association", href: '/a-propos' },
 			{ text: 'Nos écoles', href: '/nos-ecoles' },
-			{ text: 'Soutenez-nous', href: '/soutenez-nous' }
+			{ text: 'Soutenez-nous', href: '/sponsors' } // TODO: change href to /soutenez-nous
 		],
 		[
 			{ text: 'La CDR', href: '/project/coupe-de-robotique' },
@@ -26,7 +26,7 @@
 			}
 		]
 	];
-	let title = ['à Propos', 'Nos Projets', 'Légal', 'Retrouvez-nous'];
+	let title = ['À Propos', 'Nos Projets', 'Légal', 'Retrouvez-nous'];
 </script>
 
 <footer
@@ -123,6 +123,3 @@
 		</div>
 	</div>
 </footer>
-
-<style>
-</style>

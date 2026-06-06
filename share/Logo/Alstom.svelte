@@ -46,6 +46,3 @@
 		</g>
 	</svg>
 </a>
-
-<style>
-</style>
