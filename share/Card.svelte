@@ -1,11 +1,12 @@
-<script>
-	/** @type {{title?: string, description?: string, image?: string, link?: string}} */
-	let {
-		title = '',
-		description = '',
-		image = '',
-		link = ''
-	} = $props();
+<script lang="ts">
+	type CardProps = {
+		title?: string;
+		description?: string;
+		image?: string;
+		link?: string;
+	};
+
+	let { title = '', description = '', image = '', link = '' }: CardProps = $props();
 </script>
 
 <div

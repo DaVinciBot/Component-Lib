@@ -1,11 +1,12 @@
-<script>
-	/** @type {{ordered?: boolean, start?: number, loose?: boolean, children?: import('svelte').Snippet}} */
-	let {
-		ordered = false,
-		start = 1,
-		loose = false,
-		children
-	} = $props();
+<script lang="ts">
+	type ListProps = {
+		ordered?: boolean;
+		start?: number;
+		loose?: boolean;
+		children?: import('svelte').Snippet;
+	};
+
+	let { ordered = false, start = 1, loose = false, children }: ListProps = $props();
 </script>
 
 <div class="py-2 pl-4">

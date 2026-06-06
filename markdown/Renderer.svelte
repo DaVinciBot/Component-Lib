@@ -1,5 +1,4 @@
 <script lang="ts">
-	// @ts-nocheck
 	import Node from './Node.svelte';
 	interface Props {
 		tree?: any;
@@ -9,7 +8,7 @@
 </script>
 
 {#if tree && Array.isArray(tree.children)}
-	{#each tree.children as child, i}
+	{#each tree.children as child (child.id)}
 		<Node {child} />
 	{/each}
 {/if}

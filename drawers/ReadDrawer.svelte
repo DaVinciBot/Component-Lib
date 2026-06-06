@@ -962,8 +962,9 @@
 								if (current_file_index > 0) {
 									current_file_index--;
 									current_file = files_array[current_file_index]?.name ?? '';
-									scroll_body &&
-										(scroll_body.style.transform = `translateX(${(scroll_body.scrollWidth / files.length) * current_file_index}px)`);
+									if (scroll_body) {
+										scroll_body.style.transform = `translateX(${(scroll_body.scrollWidth / files.length) * current_file_index}px)`;
+									}
 								}
 							}}
 						>
@@ -985,8 +986,9 @@
 								if (current_file_index < files.length - 1) {
 									current_file_index++;
 									current_file = files_array[current_file_index]?.name ?? '';
-									scroll_body &&
-										(scroll_body.style.transform = `translateX(-${(scroll_body.scrollWidth / files.length) * current_file_index}px)`);
+									if (scroll_body) {
+										scroll_body.style.transform = `translateX(-${(scroll_body.scrollWidth / files.length) * current_file_index}px)`;
+									}
 								}
 							}}
 						>
@@ -1213,7 +1215,7 @@
 																const tr = document.querySelector(
 																	`tr[data-utils="${listItem.id}"]`
 																);
-																tr && tr.remove();
+																tr?.remove();
 															}}
 														>
 															<svg

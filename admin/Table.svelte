@@ -213,8 +213,8 @@
 	});
 
 	$effect(() => {
-		search;
-		filters;
+		void search;
+		void filters;
 		if (!mounted) return;
 		void reload({ resetPage: true });
 	});
@@ -247,7 +247,8 @@
 				if (!evt || !evt.topic) return;
 				if (evt.topic === refreshTopic) {
 					// If payload asks for reset, honor it
-					const resetPage = isTableRefreshPayload(evt.payload) && evt.payload.resetPage === true;
+					const payload: unknown = evt.payload;
+					const resetPage = isTableRefreshPayload(payload) && payload.resetPage === true;
 					await reload({ resetPage });
 				}
 			});

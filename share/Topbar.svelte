@@ -167,7 +167,6 @@
 							id="ProjectsButton"
 							onclick={(e) => {
 								e.stopPropagation();
-								queueMicrotask;
 								dropdown.projects = !dropdown.projects;
 								dropdown.infos = false;
 							}}
