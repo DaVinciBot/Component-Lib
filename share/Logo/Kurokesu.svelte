@@ -1,8 +1,18 @@
-<script>
-	export let small = false;
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props() as LogoProps;
+	void small;
 </script>
 
-<a href="https://www.kurokesu.com/home/" target="_blank" rel="noopener noreferrer">
+<a
+	href="https://www.kurokesu.com/home/"
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label="Kurokesu"
+>
 	<svg width="327" height="30" viewBox="0 0 839 77" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<g clip-path="url(#clip0_1072_76)">
 			<path d="M19.921 0.00605712V76.7954H0V20.0231L19.921 0.00605712Z" fill="#B3C2FF" />

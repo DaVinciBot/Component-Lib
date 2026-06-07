@@ -1,8 +1,12 @@
-<script>
-	export let small = false;
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props() as LogoProps;
 </script>
 
-<a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer">
+<a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer" aria-label="Mouser">
 	<svg
 		height={small ? 50 : 80}
 		viewBox="0 0 859 332"
@@ -179,6 +183,3 @@
 		</defs>
 	</svg>
 </a>
-
-<style>
-</style>

@@ -358,6 +358,3 @@
 		</filter>
 	</defs>
 </svg>
-
-<style>
-</style>

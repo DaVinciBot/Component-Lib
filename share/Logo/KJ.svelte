@@ -1,10 +1,19 @@
-<script>
-	export let small = false;
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props() as LogoProps;
 </script>
 
-<a href="https://kerjuliette.fr/" target="_blank" rel="noopener noreferrer">
+<a
+	href="https://kerjuliette.fr/"
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label="Ker Juliette"
+>
 	<svg
-		class={small ? 'w-full' : 'w-full h-full'}
+		class={small ? 'w-full' : 'h-full w-full'}
 		height={small ? 50 : 100}
 		viewBox="0 0 458 358"
 		fill="none"
@@ -41,6 +50,3 @@
 		</defs>
 	</svg>
 </a>
-
-<style>
-</style>

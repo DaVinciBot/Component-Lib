@@ -1,5 +1,9 @@
-<script>
-	export let size = 'h-20 md:h-28';
+<script lang="ts">
+	interface LogoProps {
+		size?: string;
+	}
+
+	const { size = 'h-20 md:h-28' }: LogoProps = $props() as LogoProps;
 </script>
 
 <svg
@@ -58,6 +62,3 @@
 		</clipPath>
 	</defs>
 </svg>
-
-<style>
-</style>

@@ -1,5 +1,6 @@
-<script>
+<script lang="ts">
 	import { afterNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { userdata } from '$lib/store';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
@@ -8,34 +9,40 @@
 	import CTAButton from '../utils/CTAButton.svelte';
 	import DvbLogo from './Logo/DVBLogo.svelte';
 
-	let user;
-	let skip = false;
-
-	export let loginRedirect = '/admin';
-	let sidebarOpen = false;
-	let onMobile = false;
-
-	let dropdown = {
-		projects: false,
-		infos: false
-	};
-
-	let projectsDropdownEl;
-	let infosDropdownEl;
-
-	userdata.subscribe((value) => {
-		user = value || null;
-	});
-
-	function setupDropdown(dropdownEl, activatorEl) {
-		// set position of the popup just below the button
-		const rect = activatorEl.getBoundingClientRect();
-		dropdownEl.style.top = 'calc(' + rect.bottom + 'px + 2rem)';
-		dropdownEl.style.left = 'calc(' + rect.left + 'px + 0rem)';
+	interface TopbarProps {
+		loginRedirect?: string;
 	}
 
-	function initDropdown(el, activatorId) {
-		if (!el) return;
+	const { loginRedirect = '/admin' }: TopbarProps = $props() as TopbarProps;
+
+	let user = $state<Record<string, unknown> | null>(null);
+	let sidebarOpen = $state(false);
+	let onMobile = $state(false);
+	let resizeHandler: (() => void) | null = null;
+
+	const dropdown = $state({
+		projects: false,
+		infos: false
+	});
+
+	let projectsDropdownEl = $state<HTMLElement | null>(null);
+	let infosDropdownEl = $state<HTMLElement | null>(null);
+
+	const unsubscribeUserdata = userdata.subscribe((value) => {
+		user = value ?? null;
+	});
+
+	function setupDropdown(dropdownEl: HTMLElement, activatorEl: HTMLElement) {
+		// set position of the popup just below the button
+		const rect = activatorEl.getBoundingClientRect();
+		dropdownEl.style.top = `calc(${String(rect.bottom)}px + 2rem)`;
+		dropdownEl.style.left = `calc(${String(rect.left)}px + 0rem)`;
+	}
+
+	function initDropdown(el: HTMLElement | null, activatorId: string) {
+		if (!el) {
+			return;
+		}
 
 		// Remove from current parent if not body
 		if (el.parentNode !== document.body) {
@@ -48,40 +55,41 @@
 		}
 
 		if (!el.dataset.clickOutsideBound) {
-			try {
-				hideOnClickOutside(
-					el,
-					() => {
-						dropdown.projects = false;
-						dropdown.infos = false;
-					},
-					true
-				);
-				el.dataset.clickOutsideBound = 'true';
-			} catch (e) {
-				console.error('Failed to bind outside click for dropdown:', e);
-			}
+			hideOnClickOutside(
+				el,
+				() => {
+					dropdown.projects = false;
+					dropdown.infos = false;
+				},
+				true
+			);
+			el.dataset.clickOutsideBound = 'true';
 		}
 	}
 
-	onMount(async () => {
+	onMount(() => {
 		onMobile = window.innerWidth < 768;
 
 		initDropdown(projectsDropdownEl, 'ProjectsButton');
 		initDropdown(infosDropdownEl, 'AssosButton');
 
-		onresize = () => {
+		resizeHandler = () => {
 			onMobile = window.innerWidth < 768;
 			// reposition dropdowns
-			if (projectsDropdownEl && document.getElementById('ProjectsButton'))
-				setupDropdown(projectsDropdownEl, document.getElementById('ProjectsButton'));
-			if (infosDropdownEl && document.getElementById('AssosButton'))
-				setupDropdown(infosDropdownEl, document.getElementById('AssosButton'));
+			const projectsButton = document.getElementById('ProjectsButton');
+			const assosButton = document.getElementById('AssosButton');
+			if (projectsDropdownEl && projectsButton) {
+				setupDropdown(projectsDropdownEl, projectsButton);
+			}
+			if (infosDropdownEl && assosButton) {
+				setupDropdown(infosDropdownEl, assosButton);
+			}
 		};
+		window.addEventListener('resize', resizeHandler);
 	});
 
 	// make sure dropdowns are closed when navigating
-	const _afterUnsub = afterNavigate(() => {
+	afterNavigate(() => {
 		dropdown.projects = false;
 		dropdown.infos = false;
 	});
@@ -91,18 +99,22 @@
 		dropdown.projects = false;
 		dropdown.infos = false;
 
+		unsubscribeUserdata();
+
+		if (typeof document === 'undefined' || typeof window === 'undefined') {
+			return;
+		}
+
 		// Remove dropdowns from body
-		if (projectsDropdownEl && projectsDropdownEl.parentNode === document.body) {
+		if (projectsDropdownEl?.parentNode === document.body) {
 			projectsDropdownEl.parentNode.removeChild(projectsDropdownEl);
 		}
-		if (infosDropdownEl && infosDropdownEl.parentNode === document.body) {
+		if (infosDropdownEl?.parentNode === document.body) {
 			infosDropdownEl.parentNode.removeChild(infosDropdownEl);
 		}
 
-		try {
-			if (typeof _afterUnsub === 'function') _afterUnsub();
-		} catch (e) {
-			// ignore
+		if (resizeHandler) {
+			window.removeEventListener('resize', resizeHandler);
 		}
 	});
 
@@ -113,19 +125,19 @@
 
 <section>
 	<nav
-		class="border-b px-2 md:px-6 py-2.5 border-gray-700 fixed left-0 right-0 top-0 z-20 backdrop-blur-lg w-screen"
+		class="fixed top-0 right-0 left-0 z-20 w-screen border-b border-gray-700 px-2 py-2.5 backdrop-blur-lg md:px-6"
 	>
 		<div class="flex flex-wrap items-center justify-between">
 			<div class="flex items-center justify-start">
 				<button
-					class="p-2 mr-2 text-gray-400 rounded-lg cursor-pointer md:hidden focus:bg-gray-700 focus:ring-2 focus:ring-gray-700 hover:bg-gray-700 hover:text-white"
-					on:click={() => (sidebarOpen = !sidebarOpen)}
+					class="mr-2 cursor-pointer rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:ring-2 focus:ring-gray-700 md:hidden"
+					onclick={() => (sidebarOpen = !sidebarOpen)}
 					aria-controls="drawer-navigation"
 					aria-expanded={sidebarOpen}
 				>
 					<svg
 						aria-hidden="true"
-						class="w-6 h-6"
+						class="h-6 w-6"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +150,7 @@
 					</svg>
 					<svg
 						aria-hidden="true"
-						class="hidden w-6 h-6"
+						class="hidden h-6 w-6"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
@@ -151,27 +163,26 @@
 					</svg>
 					<span class="sr-only">Toggle sidebar</span>
 				</button>
-				<a href="/" class="flex items-center justify-between mr-4">
+				<a href={resolve('/')} class="mr-4 flex items-center justify-between">
 					<DvbLogo size="h-12" />
 				</a>
 			</div>
-			<div class="items-center hidden md:flex">
+			<div class="hidden items-center md:flex">
 				<ul class="flex gap-10">
 					<li>
-						<a href="/blog" class="text-gray-400 hover:text-white">Actus</a>
+						<a href={resolve('/blog')} class="text-gray-400 hover:text-white">Actus</a>
 					</li>
 					<li>
 						<button
 							id="ProjectsButton"
-							on:click={(e) => {
+							onclick={(e: MouseEvent) => {
 								e.stopPropagation();
-								queueMicrotask;
 								dropdown.projects = !dropdown.projects;
 								dropdown.infos = false;
 							}}
-							class="flex items-center justify-between w-full px-3 py-2 text-gray-400 rounded-sm hover:text-white md:border-0 md:p-0 md:w-auto"
+							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white md:w-auto md:border-0 md:p-0"
 							>Nos Projets <svg
-								class="w-2.5 h-2.5 ms-2.5"
+								class="ms-2.5 h-2.5 w-2.5"
 								aria-hidden="true"
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
@@ -191,46 +202,51 @@
 							data-activator="ProjectsButton"
 							class="{dropdown.projects
 								? ''
-								: 'hidden'} dropdown z-30 font-normal bg-opacity-0 border border-gray-700 divide-y divide-gray-600 rounded-lg backdrop-blur-lg w-44 fixed"
+								: 'hidden'} dropdown bg-opacity-0 fixed z-30 w-44 divide-y divide-gray-600 rounded-lg border border-gray-700 font-normal backdrop-blur-lg"
 						>
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
 									<a
-										href="/project/coupe-de-robotique"
+										href={resolve('/project/coupe-de-robotique')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">La CDR</a
 									>
 								</li>
 								<li>
 									<a
-										href="/project/exodus"
+										href={resolve('/project/exodus')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Exodus</a
 									>
 								</li>
 								<li>
 									<a
-										href="/project/cohoma"
+										href={resolve('/project/cohoma')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">CoHoMa</a
 									>
 								</li>
 							</ul>
 							<div class="py-1">
-								<a href="#" class="block px-4 py-2 text-sm text-gray-500 hover:bg-gray-600"
-									>Travelers</a
+								<span
+									aria-disabled="true"
+									class="block cursor-not-allowed px-4 py-2 text-sm text-gray-500">Travelers</span
 								>
+								<!-- <a href="#" class="block px-4 py-2 text-sm text-gray-500 hover:bg-gray-600"
+									>Travelers</a
+								> -->
+								<!-- TODO: Implement Travelers link -->
 							</div>
 						</div>
 					</li>
 					<li>
 						<button
 							id="AssosButton"
-							on:click={(e) => {
+							onclick={(e: MouseEvent) => {
 								e.stopPropagation();
 								dropdown.infos = !dropdown.infos;
 								dropdown.projects = false;
 							}}
-							class="flex items-center justify-between w-full px-3 py-2 text-gray-400 rounded-sm hover:text-white md:border-0 md:p-0 md:w-auto"
+							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white md:w-auto md:border-0 md:p-0"
 							>À Propos<svg
-								class="w-2.5 h-2.5 ms-2.5"
+								class="ms-2.5 h-2.5 w-2.5"
 								aria-hidden="true"
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
@@ -250,37 +266,46 @@
 							data-activator="AssosButton"
 							class="{dropdown.infos
 								? ''
-								: 'hidden'} dropdown z-30 font-normal bg-opacity-0 border border-gray-700 divide-y divide-gray-600 rounded-lg backdrop-blur-lg w-44 fixed"
+								: 'hidden'} dropdown bg-opacity-0 fixed z-30 w-44 divide-y divide-gray-600 rounded-lg border border-gray-700 font-normal backdrop-blur-lg"
 						>
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
-									<a href="/a-propos" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
-										>L'association</a
+									<a
+										href={resolve('/a-propos')}
+										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">L'association</a
 									>
 								</li>
 								<li>
-									<a href="/nos-ecoles" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
-										>Nos écoles</a
+									<a
+										href={resolve('/nos-ecoles')}
+										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Nos écoles</a
 									>
 								</li>
 								<li>
-									<a href="#" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
+									<span
+										aria-disabled="true"
+										class="block cursor-not-allowed px-4 py-2 text-gray-500">Soutenez-nous</span
+									>
+									<!-- <a href="#" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
 										>Soutenez-nous</a
-									>
+									> -->
+									<!-- TODO: change href to /soutenez-nous -->
 								</li>
 							</ul>
 						</div>
 					</li>
 					<li>
-						<a href="/sponsors" class="text-gray-400 hover:text-white">Partenaires</a>
+						<a href={resolve('/sponsors')} class="text-gray-400 hover:text-white">Partenaires</a>
 					</li>
 
 					<li>
-						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
+						<a href={resolve('/formation' as '/')} class="text-gray-400 hover:text-white"
+							>Formation</a
+						>
 					</li>
 
 					<li>
-						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
+						<a href={resolve('/contact')} class="text-gray-400 hover:text-white">Contact</a>
 					</li>
 				</ul>
 			</div>
@@ -298,13 +323,14 @@
 	{#if onMobile}
 		<button
 			type="button"
-			class="fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black bg-opacity-40 {!sidebarOpen
-				? 'hidden'
-				: ''}"
+			class="bg-opacity-40 fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black"
+			class:hidden={!sidebarOpen}
 			aria-label="Close sidebar"
-			on:click={closeSidebar}
-			on:keydown={(e) => {
-				if (e.key === 'Escape') closeSidebar();
+			onclick={closeSidebar}
+			onkeydown={(e: KeyboardEvent) => {
+				if (e.key === 'Escape') {
+					closeSidebar();
+				}
 			}}
 		></button>
 
@@ -337,10 +363,7 @@
 				{ title: 'Formation', icon: 'academic-cap', uri: '/formation' },
 				{ title: 'Contact', icon: 'mail', uri: '/contact' }
 			]}
-			on:click={closeSidebar}
+			close={closeSidebar}
 		/>
 	{/if}
 </section>
-
-<style>
-</style>

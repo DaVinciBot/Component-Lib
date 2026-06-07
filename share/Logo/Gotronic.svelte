@@ -1,10 +1,20 @@
-<script>
-	export let small = false;
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props() as LogoProps;
 </script>
 
-<a href="https://www.gotronic.fr/" class="h-full" target="_blank" rel="noopener noreferrer">
+<a
+	href="https://www.gotronic.fr/"
+	class="h-full"
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label="Gotronic"
+>
 	<svg
-		class={small ? 'w-full' : 'w-full h-full'}
+		class={small ? 'w-full' : 'h-full w-full'}
 		height="50"
 		viewBox="0 0 310 76"
 		fill="none"
@@ -169,6 +179,3 @@
 		</defs>
 	</svg>
 </a>
-
-<style>
-</style>

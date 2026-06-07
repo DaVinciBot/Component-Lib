@@ -1,11 +1,14 @@
-<script>
-	export let align = 'left';
-	export let header = false;
-	export let text = '';
+<script lang="ts">
+	interface TableCellProps {
+		header?: boolean;
+		text?: string;
+	}
+
+	const { header = false, text = '' }: TableCellProps = $props() as TableCellProps;
 </script>
 
 {#if header}
-	<th class="px-4 py-2 border">{text}</th>
+	<th class="border px-4 py-2">{text}</th>
 {:else}
-	<td class="px-4 py-2 border">{text}</td>
+	<td class="border px-4 py-2">{text}</td>
 {/if}

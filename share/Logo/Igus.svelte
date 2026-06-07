@@ -1,8 +1,12 @@
-<script>
-	export let small = false;
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props() as LogoProps;
 </script>
 
-<a href="https://www.igus.fr/" target="_blank" rel="noopener noreferrer">
+<a href="https://www.igus.fr/" target="_blank" rel="noopener noreferrer" aria-label="Igus">
 	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 307.68 159.53" height={small ? 50 : 80}>
 		<path
 			fill="#B3C2FF"
@@ -19,6 +23,3 @@
 		<path fill="#B3C2FF" d="M25.31,12.65A6.33,6.33,0,1,0,19,6.33,6.33,6.33,0,0,0,25.31,12.65Z" />
 	</svg>
 </a>
-
-<style>
-</style>

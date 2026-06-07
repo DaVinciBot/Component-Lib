@@ -1,8 +1,12 @@
-<script>
-	export let small = false;
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props() as LogoProps;
 </script>
 
-<a href="https://www.aisler.net/" target="_blank" rel="noopener noreferrer">
+<a href="https://www.aisler.net/" target="_blank" rel="noopener noreferrer" aria-label="Aisler">
 	<svg
 		width={small ? undefined : 120}
 		height={small ? 50 : 80}
@@ -40,6 +44,3 @@
 		/>
 	</svg>
 </a>
-
-<style>
-</style>

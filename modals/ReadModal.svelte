@@ -1,105 +1,236 @@
-<script>
+<script lang="ts">
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { get_current_component } from 'svelte/internal';
-	const current_component = get_current_component();
 
-	import { supabase } from '$lib/supabaseClient';
+	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 
 	import Stepper from '../admin/Stepper.svelte';
 
-	export let values = {
-		header: {
-			title: 'Pas de détails',
-			sub: '-',
-			stepper: []
+	interface ReadHeader {
+		title: string;
+		sub?: string;
+		stepper?: unknown[] | boolean;
+	}
+
+	interface ReadItem {
+		id?: string | number;
+		name: string;
+		quantity?: string | number;
+		price?: string | number;
+		link?: string;
+	}
+
+	type ReadBodyValue = string | number | boolean | null | undefined | ReadItem[];
+
+	interface ReadBodyEntry {
+		label: string;
+		value: ReadBodyValue;
+		type?: string;
+	}
+
+	interface ReadValues {
+		header: ReadHeader;
+		body: ReadBodyEntry[];
+	}
+
+	interface SelectorOption {
+		name: string;
+		value: string;
+	}
+
+	interface SelectorAction {
+		type: 'selector';
+		title: SelectorOption[];
+		handler: (event: Event) => void;
+	}
+
+	interface ButtonAction {
+		type: 'edit' | 'validate' | 'delete';
+		title: string;
+		handler: (event: Event) => void;
+	}
+
+	type ReadAction = SelectorAction | ButtonAction;
+
+	interface ReadModalProps {
+		values?: ReadValues;
+		files?: string[] | null;
+		actions?: ReadAction[];
+		id?: string;
+		onClose?: (e: Event | Element | null) => void;
+	}
+
+	interface ReadFile {
+		mime: string;
+		url: string;
+		name: string;
+	}
+
+	const {
+		values = {
+			header: {
+				title: 'Pas de détails',
+				sub: '-',
+				stepper: []
+			},
+			body: [
+				{
+					label: 'Objets',
+					value: [
+						{
+							name: 'Vis',
+							quantity: 10,
+							price: 10
+						},
+						{
+							name: 'Ecrou',
+							quantity: 10,
+							price: 10
+						}
+					]
+				},
+				{
+					label: 'Date',
+					value: '2024-05-17'
+				},
+				{
+					label: 'Prédictions',
+					value: 'Victoire de SKT, 2-1' // ou bien 'Match non joué'
+				},
+				{
+					label: 'Utilisateur',
+					value: 'Mascode'
+				}
+			]
 		},
-		body: [
-			{
-				label: 'Objets',
-				value: [
-					{
-						name: 'Vis',
-						quantity: 10,
-						price: 10
-					},
-					{
-						name: 'Ecrou',
-						quantity: 10,
-						price: 10
-					}
-				]
-			},
-			{
-				label: 'Date',
-				value: '2024-05-17'
-			},
-			{
-				label: 'Prédictions',
-				value: 'Victoire de SKT, 2-1' // ou bien 'Match non joué'
-			},
-			{
-				label: 'Utilisateur',
-				value: 'Mascode'
-			}
-		]
+		files = [],
+		actions = [],
+		id = 'readModal',
+		onClose
+	}: ReadModalProps = $props() as ReadModalProps;
+	const closeModal = onClose ?? (() => undefined);
+
+	let current_file = $state('');
+	let current_file_index = $state(0);
+	let scroll_body: HTMLDivElement | null = $state(null);
+
+	let isMobile = $state(false);
+	const files_array = $state<ReadFile[]>([]);
+
+	const __onClose = (e: Event | Element | null) => {
+		closeModal(e);
 	};
-	export let files = [];
-	export let actions = [];
-	export let id = 'readModal';
 
-	let current_file = '';
-	let current_file_index = 0;
-	let scroll_body = null;
+	function attachmentPaths() {
+		return Array.isArray(files) ? files : [];
+	}
 
-	let isMobile = false;
+	function isPendingCdp() {
+		return values.body.find((el) => el.label === 'Status')?.type === 'pending_cdp';
+	}
 
-	export let onClose = (e) => {};
-	let files_array = [{ mime: 'application/pdf', url: null }];
+	function actionKey(action: ReadAction, index: number) {
+		const title =
+			typeof action.title === 'string'
+				? action.title
+				: action.title.map((option) => option.value).join('-');
+		return `${action.type}-${String(index)}-${title}`;
+	}
 
-	let __onClose = (e) => {
-		// remove componant from tree
-		current_component.$destroy();
-		onClose(e);
-	};
+	function itemKey(item: ReadItem, index: number) {
+		return item.id === undefined ? `${item.name}-${String(index)}` : String(item.id);
+	}
+
+	function formatItemData(item: ReadItem) {
+		return item.id === undefined ? '' : String(item.id);
+	}
+
+	async function removeItem(item: ReadItem) {
+		if (item.id === undefined) {
+			return;
+		}
+		const { error } = await getSupabaseBrowserClient()
+			.from('items')
+			.delete()
+			.match({ id: item.id })
+			.select()
+			.single();
+
+		if (error) {
+			return;
+		}
+
+		const tr = document.querySelector(`tr[data-utils="${String(item.id)}"]`);
+		tr?.remove();
+	}
+
+	function getNameFromUrl(url: string) {
+		try {
+			const pathname = new URL(url).pathname;
+			return decodeURIComponent(pathname.split('/').filter(Boolean).at(-1) ?? 'Fichier');
+		} catch {
+			const urlWithoutQuery = url.split('?')[0] ?? url;
+			return decodeURI(urlWithoutQuery.split('/').at(-1) ?? 'Fichier');
+		}
+	}
+
+	function moveFile(direction: -1 | 1) {
+		const paths = attachmentPaths();
+		const nextIndex = current_file_index + direction;
+		const nextFile = files_array[nextIndex];
+		if (nextIndex < 0 || nextIndex >= paths.length || !nextFile || !scroll_body) {
+			return;
+		}
+
+		current_file_index = nextIndex;
+		current_file = nextFile.name;
+		const offset = (scroll_body.scrollWidth / paths.length) * current_file_index;
+		scroll_body.style.transform = `translateX(-${String(offset)}px)`;
+	}
 
 	onMount(async () => {
-		const popup = document.querySelector(`#popup-${id}`);
-		hideOnClickOutside(popup, __onClose);
+		const popup = document.querySelector<HTMLElement>(`#popup-${id}`);
+		if (popup) {
+			hideOnClickOutside(popup, __onClose);
+		}
 		// check if mobile
 		if (window.innerWidth < 768) {
 			isMobile = true;
 		} else {
 			isMobile = false;
 		}
-		if (files) {
+		const paths = attachmentPaths();
+		if (paths.length > 0) {
 			// get the all signed url from supabase
-			const { data: urls } = await supabase.storage.from('proof').createSignedUrls(files, 600);
+			const { data: urls } = await getSupabaseBrowserClient()
+				.storage.from('proof')
+				.createSignedUrls(paths, 600);
+			if (!urls) {
+				return;
+			}
 
 			for (let i = 0; i < urls.length; i++) {
-				if (urls[i].error) {
-					console.error(urls[i].error);
+				const signedUrl = urls[i];
+				if (!signedUrl || signedUrl.error) {
+					continue;
+				}
+				const fileUrl = signedUrl.signedUrl;
+				if (!fileUrl) {
 					continue;
 				}
 				// get the blob from the url
-				const r = await fetch(urls[i].signedUrl);
+				const r = await fetch(fileUrl);
 				if (!r.ok) {
-					console.error('Error fetching blob:', r.statusText);
 					continue;
 				}
 				const b = await r.blob();
-				if (!b) {
-					console.error('Error getting blob:', r.statusText);
-					continue;
-				}
 				files_array[i] = {
 					mime: b.type,
-					url: urls[i].signedUrl,
-					name: decodeURI(urls[i].signedUrl.split('/')[10].split('?')[0])
+					url: fileUrl,
+					name: getNameFromUrl(fileUrl)
 				};
-				console.log(files_array[i]);
 			}
-			current_file = files_array[0].name;
+			current_file = files_array[0]?.name ?? '';
 		}
 	});
 </script>
@@ -108,17 +239,17 @@
 	{id}
 	tabindex="-1"
 	aria-hidden="true"
-	class="fixed top-0 left-0 right-0 z-50 items-center justify-center w-full h-full overflow-x-hidden overflow-y-auto md:inset-0 backdrop-blur-sm"
+	class="fixed top-0 right-0 left-0 z-50 h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto backdrop-blur-sm md:inset-0"
 	data-toggle="true"
 >
-	<div class="relative flex w-full h-full p-4 m-auto">
+	<div class="relative m-auto flex h-full w-full p-4">
 		<!-- Modal content -->
 		<div
-			class="relative p-4 m-auto bg-gray-800 rounded-lg sm:p-5 min-w-96 max-w-[80%] md:max-w-[75%] lg:max-w-[70%] xl:max-w-[65%] 2xl:max-w-[55%] modal"
+			class="modal relative m-auto max-w-[80%] min-w-96 rounded-lg bg-gray-800 p-4 sm:p-5 md:max-w-[75%] lg:max-w-[70%] xl:max-w-[65%] 2xl:max-w-[55%]"
 			id="popup-{id}"
 		>
 			<!-- Modal header -->
-			<div class="flex justify-between mb-4 rounded-t sm:mb-5">
+			<div class="mb-4 flex justify-between rounded-t sm:mb-5">
 				<div class="flex w-full text-lg text-white md:text-xl">
 					<h3 class="mr-2 font-semibold">{values.header.title}</h3>
 					{#if values.header.sub}
@@ -131,14 +262,14 @@
 				<div>
 					<button
 						type="button"
-						class="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
+						class="inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 						data-modal-toggle={id}
-						on:click={__onClose}
+						onclick={__onClose}
 						data-toggle="true"
 					>
 						<svg
 							aria-hidden="true"
-							class="w-5 h-5"
+							class="h-5 w-5"
 							fill="currentColor"
 							viewBox="0 0 20 20"
 							xmlns="http://www.w3.org/2000/svg"
@@ -153,28 +284,24 @@
 					</button>
 				</div>
 			</div>
-			<div class="grid space-x-4 {files ? 'md:grid-cols-2' : 'grid-cols-1'}">
-				{#if files.length > 0}
+			<div class="grid space-x-4 {attachmentPaths().length > 0 ? 'md:grid-cols-2' : 'grid-cols-1'}">
+				{#if attachmentPaths().length > 0}
 					<!-- Make a carousel -->
 					<div class="mb-2">
 						<div class="header">
 							<h3 class="text-lg font-semibold text-white">Pièces jointes</h3>
-							<div class="flex justify-between w-full mt-2 mb-2">
+							<div class="mt-2 mb-2 flex w-full justify-between">
 								<button
+									type="button"
+									aria-label="Pièce jointe précédente"
 									class="
-									text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
-									on:click={() => {
-										if (current_file_index > 0) {
-											current_file_index--;
-											current_file = files_array[current_file_index].name;
-											scroll_body.style.transform = `translateX(${
-												(scroll_body.scrollWidth / files.length) * current_file_index
-											}px)`;
-										}
+									inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
+									onclick={() => {
+										moveFile(-1);
 									}}
 								>
 									<svg
-										class="w-5 h-5"
+										class="h-5 w-5"
 										aria-hidden="true"
 										fill="white"
 										viewBox="0 0 20 20"
@@ -186,24 +313,21 @@
 										></path></svg
 									>
 								</button>
-								<p class="items-center self-center text-sm text-center text-gray-400">
-									{current_file || 'Chargement'} - {current_file_index + 1}/{files.length}
+								<p class="items-center self-center text-center text-sm text-gray-400">
+									{current_file || 'Chargement'} - {current_file_index + 1}/{attachmentPaths()
+										.length}
 								</p>
 								<button
+									type="button"
+									aria-label="Pièce jointe suivante"
 									class="
-								text-gray-400 bg-transparent rounded-lg text-sm p-1.5 inline-flex hover:bg-gray-600 hover:text-white"
-									on:click={() => {
-										if (current_file_index < files.length - 1) {
-											current_file_index++;
-											current_file = files_array[current_file_index].name;
-											scroll_body.style.transform = `translateX(-${
-												(scroll_body.scrollWidth / files.length) * current_file_index
-											}px)`;
-										}
+								inline-flex rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
+									onclick={() => {
+										moveFile(1);
 									}}
 								>
 									<svg
-										class="w-5 h-5 rotate-180"
+										class="h-5 w-5 rotate-180"
 										aria-hidden="true"
 										fill="white"
 										viewBox="0 0 20 20"
@@ -217,15 +341,14 @@
 								</button>
 							</div>
 						</div>
-						<div class="flex h-auto overflow-x-hidden w-[22rem] md:w-96 aspect-[1/1.414] gap-2">
+						<div class="flex aspect-[1/1.414] h-auto w-88 gap-2 overflow-x-hidden md:w-96">
 							<div class="flex rounded-lg" bind:this={scroll_body}>
-								{#each files_array as { mime, url }, i}
-									{@const name = decodeURI(url?.split('/')[10].split('?')[0])}
-									<div class="flex flex-col w-[22rem] md:w-96">
+								{#each files_array as { mime, url, name } (url)}
+									<div class="flex w-88 flex-col md:w-96">
 										<!-- <p class="text-white">{url?.split('/')[10].split('?')[0]}</p> -->
-										{#if mime == 'application/pdf' && !isMobile}
+										{#if mime === 'application/pdf' && !isMobile}
 											<iframe src={url} frameborder="0" class="h-full" title={name}></iframe>
-										{:else if mime == 'application/pdf' && isMobile}
+										{:else if mime === 'application/pdf' && isMobile}
 											<iframe
 												src="https://docs.google.com/viewer?url={url}&embedded=true"
 												frameborder="0"
@@ -243,52 +366,46 @@
 				{/if}
 
 				<dl>
-					{#each values.body as { label, value }}
-						<dt class="mb-2 font-semibold leading-none text-white">{label}</dt>
-						{#if typeof value === 'object'}
+					{#each values.body as { label, value } (label)}
+						<dt class="mb-2 leading-none font-semibold text-white">{label}</dt>
+						{#if Array.isArray(value)}
 							<dd class="mb-4 ml-2 font-light text-gray-400 sm:mb-5">
 								<table class="w-full border-separate">
 									<thead class="font-bold">
-										<td>Nom</td>
-										<td>Quantité</td>
-										<td>Prix</td>
-										{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
-											<td class="w-2.5"></td>
-										{/if}
+										<tr>
+											<th scope="col">Nom</th>
+											<th scope="col">Quantité</th>
+											<th scope="col">Prix</th>
+											{#if isPendingCdp()}
+												<th scope="col" class="w-2.5"></th>
+											{/if}
+										</tr>
 									</thead>
 									<tbody>
-										{#each value as item}
-											<tr data-utils={item.id}>
-												<td class="p-2"><a href={item.link} target="_blank">{item.name}</a></td>
+										{#each value as item, index (itemKey(item, index))}
+											<tr data-utils={formatItemData(item)}>
+												<td class="p-2">
+													<!-- eslint-disable svelte/no-navigation-without-resolve -->
+													<a href={item.link ?? ''} target="_blank" rel="noopener noreferrer"
+														>{item.name}</a
+													>
+													<!-- eslint-enable svelte/no-navigation-without-resolve -->
+												</td>
 												<td>{item.quantity}</td>
 												<td>{item.price}</td>
-												{#if values.body.find((el) => el.label == 'Status').type == 'pending_cdp'}
+												{#if isPendingCdp()}
 													<td>
 														<button
 															type="button"
-															class="inline-flex items-center text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-red-500 hover:bg-red-600 focus:ring-red-900"
-															on:click={async () => {
-																// remove item from database
-																const { data, error } = await supabase
-																	.from('items')
-																	.delete()
-																	.match({ id: item.id })
-																	.select()
-																	.single();
-
-																if (error || !data) {
-																	console.error(error);
-																	return;
-																}
-
-																// remove item from list
-																const tr = document.querySelector(`tr[data-utils="${item.id}"]`);
-																tr.remove();
+															aria-label="Supprimer {item.name}"
+															class="inline-flex items-center rounded-lg bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-600 focus:ring-4 focus:ring-red-900 focus:outline-none"
+															onclick={() => {
+																void removeItem(item);
 															}}
 														>
 															<svg
 																aria-hidden="true"
-																class="w-5 h-5 -mx-2.5"
+																class="-mx-2.5 h-5 w-5"
 																fill="currentColor"
 																viewBox="0 0 20 20"
 																xmlns="http://www.w3.org/2000/svg"
@@ -308,7 +425,7 @@
 							</dd>
 						{:else}
 							<dd
-								class="mb-4 font-light text-gray-400 transition-colors sm:mb-5 hover:text-gray-300"
+								class="mb-4 font-light text-gray-400 transition-colors hover:text-gray-300 sm:mb-5"
 							>
 								{value}
 							</dd>
@@ -317,27 +434,27 @@
 				</dl>
 			</div>
 			<div class="flex items-center justify-between">
-				{#each actions as { title, type, handler }}
-					{#if type == 'selector'}
+				{#each actions as action, index (actionKey(action, index))}
+					{#if action.type === 'selector'}
 						<select
-							class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
-							on:change={handler}
+							class="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
+							onchange={action.handler}
 						>
 							<option value="" disabled selected>Choisir une option</option>
-							{#each title as { name, value }}
+							{#each action.title as { name, value } (value)}
 								<option {value}>{name}</option>
 							{/each}
 						</select>
 					{/if}
-					{#if type == 'edit'}
+					{#if action.type === 'edit'}
 						<button
 							type="button"
-							class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-							on:click={handler}
+							class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-800 inline-flex items-center rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:outline-none"
+							onclick={action.handler}
 						>
 							<svg
 								aria-hidden="true"
-								class="w-5 h-5 mr-1 -ml-1"
+								class="mr-1 -ml-1 h-5 w-5"
 								fill="currentColor"
 								viewBox="0 0 20 20"
 								xmlns="http://www.w3.org/2000/svg"
@@ -349,18 +466,18 @@
 									clip-rule="evenodd"
 								></path></svg
 							>
-							{title}
+							{action.title}
 						</button>
 					{/if}
-					{#if type == 'validate'}
+					{#if action.type === 'validate'}
 						<button
 							type="button"
-							class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-							on:click={handler}
+							class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-800 inline-flex items-center rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:outline-none"
+							onclick={action.handler}
 						>
 							<svg
 								aria-hidden="true"
-								class="w-5 h-5 mr-1.5 -ml-1"
+								class="mr-1.5 -ml-1 h-5 w-5"
 								fill="currentColor"
 								viewBox="0 0 20 20"
 								xmlns="http://www.w3.org/2000/svg"
@@ -370,18 +487,18 @@
 									clip-rule="evenodd"
 								></path></svg
 							>
-							{title}
+							{action.title}
 						</button>
 					{/if}
-					{#if type == 'delete'}
+					{#if action.type === 'delete'}
 						<button
 							type="button"
-							class="inline-flex items-center text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-red-500 hover:bg-red-600 focus:ring-red-900"
-							on:click={handler}
+							class="inline-flex items-center rounded-lg bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-600 focus:ring-4 focus:ring-red-900 focus:outline-none"
+							onclick={action.handler}
 						>
 							<svg
 								aria-hidden="true"
-								class="w-5 h-5 mr-1.5 -ml-1"
+								class="mr-1.5 -ml-1 h-5 w-5"
 								fill="currentColor"
 								viewBox="0 0 20 20"
 								xmlns="http://www.w3.org/2000/svg"
@@ -391,7 +508,7 @@
 									clip-rule="evenodd"
 								></path></svg
 							>
-							{title}
+							{action.title}
 						</button>
 					{/if}
 				{/each}

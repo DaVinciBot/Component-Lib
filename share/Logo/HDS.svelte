@@ -1,10 +1,19 @@
-<script>
-	export let small = false;
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props() as LogoProps;
 </script>
 
-<a href="https://www.hauts-de-seine.fr/" target="_blank" rel="noopener noreferrer">
+<a
+	href="https://www.hauts-de-seine.fr/"
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label="Hauts-de-Seine"
+>
 	<svg
-		class={small ? 'w-full' : 'w-full h-full'}
+		class={small ? 'w-full' : 'h-full w-full'}
 		height="50"
 		viewBox="0 0 233 48"
 		fill="none"
@@ -144,6 +153,3 @@
 		/>
 	</svg>
 </a>
-
-<style>
-</style>

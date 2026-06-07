@@ -1,17 +1,26 @@
-<script>
-	export let href = '';
-	export let title = undefined;
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+
+	interface LinkProps {
+		href?: string;
+		title?: string;
+		children?: Snippet;
+	}
+
+	const { href = '', title, children }: LinkProps = $props() as LinkProps;
 </script>
 
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <a
 	{href}
 	{title}
 	target="_blank"
 	rel="noopener noreferrer"
-	class="text-blue-400 hover:text-blue-300 underline"
+	class="text-blue-400 underline hover:text-blue-300"
 >
-	<slot />
-	{#if !$$slots.default}
-		{title}
+	{@render children?.()}
+	{#if !children}
+		{title ?? ''}
 	{/if}
 </a>
+<!-- eslint-enable svelte/no-navigation-without-resolve -->

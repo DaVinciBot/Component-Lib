@@ -1,13 +1,13 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 
-	let cursor;
-	let cursorInner;
+	let cursor = $state<HTMLDivElement | null>(null);
+	let cursorInner = $state<HTMLDivElement | null>(null);
 	let mouseX = 0;
 	let mouseY = 0;
 	let cursorX = 0;
 	let cursorY = 0;
-	let dampening = 0.1;
+	const dampening = 0.1;
 	let hover = false;
 
 	onMount(() => {
@@ -31,11 +31,20 @@
 	});
 
 	function animateCursor() {
+		if (!cursor || !cursorInner) {
+			requestAnimationFrame(animateCursor);
+			return;
+		}
 		cursorX += (mouseX - cursorX) * dampening;
 		cursorY += (mouseY - cursorY) * dampening;
 
-		cursor.style.transform = `translate3d(${cursorX + 4 - 24}px, ${cursorY + 4 - 24}px, 0) scale(${hover ? 1.5 : 1})`;
-		cursorInner.style.transform = `translate3d(${mouseX + 20 - 24}px, ${mouseY + 20 - 24}px, 0) scale(${hover ? 1 : 1})`;
+		const outerX = cursorX + 4 - 24;
+		const outerY = cursorY + 4 - 24;
+		const innerX = mouseX + 20 - 24;
+		const innerY = mouseY + 20 - 24;
+		const outerScale = hover ? '1.5' : '1';
+		cursor.style.transform = `translate3d(${String(outerX)}px, ${String(outerY)}px, 0) scale(${outerScale})`;
+		cursorInner.style.transform = `translate3d(${String(innerX)}px, ${String(innerY)}px, 0) scale(1)`;
 
 		requestAnimationFrame(animateCursor);
 	}

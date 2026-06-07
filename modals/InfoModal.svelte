@@ -1,71 +1,78 @@
-<script>
-	import { get_current_component } from 'svelte/internal';
+<script lang="ts">
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
 
-	const current_component = get_current_component();
+	type InfoType = 'success' | 'error' | 'warning' | 'info';
 
-	export let message = 'La commande a été passée avec succès.';
-	export let type = 'success';
+	interface InfoAction {
+		text: string;
+		is_main?: boolean;
+		callback?: (event: MouseEvent) => void;
+	}
 
-	let id = `${type}Popup-${Math.random().toString(36).substring(7)}`;
+	interface InfoModalProps {
+		message?: string;
+		type?: InfoType;
+		onClose?: (event: Event | Element | null) => void;
+		action?: InfoAction[];
+	}
 
-	export let onClose = (e) => {
-		window.location.reload();
-	};
-
-	let __onClose = (e) => {
-		// remove componant from tree
-		current_component.$destroy();
-		onClose(e);
-	};
-
-	export let action = [
-		{
-			text: 'Suivant',
-			callback: __onClose,
-			is_main: true
-		}
-	];
-
-	$: {
-		// add close to all callback
-		action = action.map((el) => {
-			return {
-				...el,
-				callback: () => {
-					el.callback();
-					current_component.$destroy();
-				}
-			};
+	const {
+		action = $bindable<InfoAction[]>([
+			{
+				text: 'Suivant',
+				is_main: true
+			}
+		]),
+		...props
+	}: InfoModalProps = $props() as InfoModalProps;
+	const message = props.message ?? 'La commande a été passée avec succès.';
+	const type = props.type ?? 'success';
+	const onClose =
+		props.onClose ??
+		(() => {
+			window.location.reload();
 		});
+
+	const popupSuffix = Math.random().toString(36).substring(7);
+	const id = $derived(`${type}Popup-${popupSuffix}`);
+
+	function close(e: Event | Element | null) {
+		onClose(e);
+	}
+
+	function handleActionClick(el: InfoAction, e: MouseEvent) {
+		el.callback?.(e);
+		close(e);
 	}
 
 	onMount(() => {
-		const popup = document.querySelector(`#MultiPopup`);
-		hideOnClickOutside(popup, __onClose);
+		const popup = document.querySelector<HTMLElement>('#MultiPopup');
+		if (popup) {
+			hideOnClickOutside(popup, close);
+		}
 	});
 </script>
 
 <div
 	{id}
 	tabindex="-1"
-	class="fixed top-0 left-0 right-0 z-50 items-center justify-center w-full h-full overflow-x-hidden overflow-y-auto md:inset-0 backdrop-blur-sm"
+	class="fixed top-0 right-0 left-0 z-50 h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto backdrop-blur-sm md:inset-0"
 >
-	<div class="relative flex w-full h-full max-w-md p-4 m-auto">
+	<div class="relative m-auto flex h-full w-full max-w-md p-4">
 		<!-- Modal content -->
 		<div
-			class="relative p-4 m-auto text-center bg-gray-800 rounded-lg shadow sm:p-5"
+			class="relative m-auto rounded-lg bg-gray-800 p-4 text-center shadow sm:p-5"
 			id="MultiPopup"
 		>
 			<button
 				type="button"
-				class="text-gray-400 absolute top-2.5 right-2.5 bg-transparent rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
-				on:click={__onClose}
+				class="absolute top-2.5 right-2.5 ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
+				onclick={close}
 			>
 				<svg
 					aria-hidden="true"
-					class="w-5 h-5"
+					class="h-5 w-5"
 					fill="currentColor"
 					viewBox="0 0 20 20"
 					xmlns="http://www.w3.org/2000/svg"
@@ -78,16 +85,16 @@
 				<span class="sr-only">Close modal</span>
 			</button>
 			<div
-				class="w-12 h-12 rounded-full {type == 'success' ? 'bg-green-900' : ''} {type == 'error'
+				class="h-12 w-12 rounded-full {type === 'success' ? 'bg-green-900' : ''} {type === 'error'
 					? 'bg-red-900'
-					: ''} {type == 'warning' ? 'bg-yellow-900' : ''} {type == 'info'
+					: ''} {type === 'warning' ? 'bg-yellow-900' : ''} {type === 'info'
 					? 'bg-opacity-0'
-					: ''} p-2 flex items-center justify-center mx-auto mb-3.5"
+					: ''} mx-auto mb-3.5 flex items-center justify-center p-2"
 			>
 				{#if type === 'success'}
 					<svg
 						aria-hidden="true"
-						class="w-8 h-8text-green-400"
+						class="h-8text-green-400 w-8"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +106,7 @@
 					>
 				{:else if type === 'error'}
 					<svg
-						class="w-8 h-8 text-red-400"
+						class="h-8 w-8 text-red-400"
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
 						height="24"
@@ -116,7 +123,7 @@
 					</svg>
 				{:else if type === 'warning'}
 					<svg
-						class="w-8 h-8 text-yellow-400"
+						class="h-8 w-8 text-yellow-400"
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
 						height="24"
@@ -133,7 +140,7 @@
 					</svg>
 				{:else if type === 'info'}
 					<svg
-						class="w-8 h-8 text-gray-400"
+						class="h-8 w-8 text-gray-400"
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
 						height="24"
@@ -153,13 +160,15 @@
 			</div>
 			<p class="mb-4 text-lg font-semibold text-white">{message}</p>
 			<div class="flex flex-row justify-center space-x-2">
-				{#each action as el}
+				{#each action as el (el.text)}
 					<button
 						type="button"
-						class="px-3 py-2 text-sm font-medium text-center text-white rounded-lg {el.is_main
+						class="rounded-lg px-3 py-2 text-center text-sm font-medium text-white {el.is_main
 							? 'bg-primary-600 hover:bg-primary-700'
-							: 'border-white border'} focus:ring-4 focus:outline-none focus:ring-primary-900"
-						on:click={el.callback}
+							: 'border border-white'} focus:ring-primary-900 focus:ring-4 focus:outline-none"
+						onclick={(e: MouseEvent) => {
+							handleActionClick(el, e);
+						}}
 					>
 						{el.text}
 					</button>

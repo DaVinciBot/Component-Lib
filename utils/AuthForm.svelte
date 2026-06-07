@@ -1,5 +1,7 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { mountClosable } from '$lib/utils';
 	import { onMount } from 'svelte';
 
 	import SucessModal from '../modals/InfoModal.svelte';
@@ -12,24 +14,67 @@
 		register: 'Inscription',
 		reset: 'Changement du mot de passe',
 		oauth: 'Login avec OAuth'
+	} as const;
+
+	type AuthTypeValue = (typeof AuthType)[keyof typeof AuthType];
+
+	interface AuthFormProps {
+		redirect_uri?: string;
+		auth_type?: string;
+		access_token?: string;
+		refresh_token?: string;
+	}
+
+	interface SessionPayload {
+		session: unknown;
+		user: { email?: string | null } | null;
+	}
+
+	interface OpenIDParams {
+		client_id?: string;
+		redirect_uri?: string;
+		response_type?: string;
+		state?: string;
+		scope?: string;
+		nonce?: string;
+		code_challenge?: string;
+		code_challenge_method?: string;
+	}
+
+	const authTypeByKey: Record<string, AuthTypeValue> = {
+		login: AuthType.login,
+		register: AuthType.register,
+		reset: AuthType.reset,
+		oauth: AuthType.oauth
 	};
 
-	export let redirect_uri = '/';
-	/**
-	 * {'login' | 'register' | 'reset'}
-	 */
-	export let auth_type = AuthType.login;
-	export let access_token = '';
-	export let refresh_token = '';
-
-	if (
-		auth_type !== AuthType.login &&
-		auth_type !== AuthType.register &&
-		auth_type !== AuthType.reset
-	) {
-		// try to parse it
-		auth_type = AuthType[auth_type.toLowerCase()] || AuthType.login;
+	function isRecord(value: unknown): value is Record<string, unknown> {
+		return typeof value === 'object' && value !== null;
 	}
+
+	function isSessionPayload(value: unknown): value is SessionPayload {
+		return isRecord(value) && 'session' in value && 'user' in value;
+	}
+
+	function normalizeAuthType(value: string): AuthTypeValue {
+		if (Object.values(AuthType).includes(value as AuthTypeValue)) {
+			return value as AuthTypeValue;
+		}
+
+		return authTypeByKey[value.toLowerCase()] ?? AuthType.login;
+	}
+
+	let {
+		redirect_uri = $bindable<string>('/'),
+		auth_type = $bindable<string>(AuthType.login),
+		...props
+	}: AuthFormProps = $props() as AuthFormProps;
+	props = { ...props };
+
+	const access_token = props.access_token ?? '';
+	const refresh_token = props.refresh_token ?? '';
+
+	auth_type = normalizeAuthType(auth_type);
 
 	// Auto-detect PKCE / OpenID mode from URL parameters so the page works
 	// even when auth_type is not explicitly set to "oauth".
@@ -37,10 +82,36 @@
 		auth_type = AuthType.oauth;
 	}
 
-	let loading = false;
-	let email = '';
-	let password = '';
-	let password_confirm = '';
+	let loading = $state(false);
+	let email = $state('');
+	let password = $state('');
+	let password_confirm = $state('');
+
+	async function navigateTo(target: string) {
+		if (target.startsWith('http')) {
+			window.location.href = target;
+			return;
+		}
+
+		await goto(resolve(target as '/'));
+	}
+
+	async function readJson(response: Response): Promise<unknown> {
+		try {
+			return await response.json();
+		} catch {
+			return null;
+		}
+	}
+
+	async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+		const payload = await readJson(response);
+		return isRecord(payload) && typeof payload.error === 'string' ? payload.error : fallback;
+	}
+
+	function optionalToken(token: string): string | undefined {
+		return token.length > 0 ? token : undefined;
+	}
 
 	onMount(async () => {
 		redirect_uri = parseRedirectURI(redirect_uri);
@@ -55,25 +126,51 @@
 		}
 
 		const sessionResponse = await fetch('/auth/session');
-		const sessionPayload = sessionResponse.ok
-			? await sessionResponse.json()
+		const rawSessionPayload = sessionResponse.ok ? await readJson(sessionResponse) : null;
+		const sessionPayload = isSessionPayload(rawSessionPayload)
+			? rawSessionPayload
 			: { session: null, user: null };
 		const session = sessionPayload.session;
 		const sessionUser = sessionPayload.user;
 
 		if (session && auth_type === AuthType.login) {
 			// If the user is already logged in, redirect to the specified redirect_uri
-			goto(redirect_uri);
+			void navigateTo(redirect_uri);
 		}
 		if (session && auth_type === AuthType.oauth) {
 			await handleOAuth();
 		}
 
-		email = sessionUser?.email || '';
+		email = sessionUser?.email ?? '';
 		if (!email && access_token) {
 			email = decodeEmail(access_token);
 		}
 	});
+
+	// TODO: This function shares a lot of code with the handler in the edge function.
+	// We should unify them to avoid drift and ensure consistent behavior (e.g. around error handling).
+
+	// TODO: We should also unify the handlers for login / register / reset since they share a lot of common code (form handling, error handling, etc.) and only differ in the API endpoint and payload.
+
+	// TODO: We should also handle and display errors more gracefully in the UI instead of just using alert().
+
+	// TODO: We should also add client-side validation for the form inputs (e.g. email format, password strength, etc.) before sending the request to the server.
+
+	// TODO: We should also consider adding support for showing server-side validation errors (e.g. "email already in use" for registration) in the UI instead of just using alert().
+
+	// TODO: mieux gérer les différents types d'erreurs (network errors, server errors, validation errors, etc.) pour afficher des messages plus précis à l'utilisateur.
+
+	// FIXME: handle the case where the access token is expired and we need to use the refresh token to get a new one before completing the OAuth flow.
+
+	// FIXME: handle the case where the user tries to access the login page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just redirecting them).
+
+	// FIXME: handle the case where the user tries to access the registration page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just showing the registration form).
+
+	// FIXME: handle the case where the user tries to access the password reset page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just showing the password reset form).
+
+	// FIXME: handle the case where the user tries to access the OAuth login page while already having a valid session (e.g. show a message "you are already logged in" and a button to go to the app or log out instead of just redirecting them).
+
+	// TODO: Vérifier le flux de sécurité des tokens etc.
 
 	const handleLogin = async () => {
 		try {
@@ -84,15 +181,14 @@
 				body: JSON.stringify({ email, password })
 			});
 			if (!response.ok) {
-				const payload = await response.json().catch(() => ({}));
-				throw new Error(payload?.error || 'Connexion impossible.');
+				throw new Error(await readErrorMessage(response, 'Connexion impossible.'));
 			}
 			// If OpenID / PKCE SSO parameters are present, complete the authorization
 			if (auth_type === AuthType.oauth) {
 				await handleOAuth();
 			} else {
 				// Otherwise, just redirect to the specified redirect_uri
-				goto(redirect_uri);
+				await navigateTo(redirect_uri);
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -115,15 +211,16 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					password,
-					access_token: access_token || undefined,
-					refresh_token: refresh_token || undefined
+					access_token: optionalToken(access_token),
+					refresh_token: optionalToken(refresh_token)
 				})
 			});
 			if (!response.ok) {
-				const payload = await response.json().catch(() => ({}));
-				throw new Error(payload?.error || 'Impossible de mettre a jour le mot de passe.');
+				throw new Error(
+					await readErrorMessage(response, 'Impossible de mettre a jour le mot de passe.')
+				);
 			}
-			goto(redirect_uri);
+			await navigateTo(redirect_uri);
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message);
@@ -151,7 +248,6 @@
 		// CSRF check – ensure the state has not been replaced since page load.
 		const pinnedState = sessionStorage.getItem(PKCE_STATE_KEY);
 		if (pinnedState && pinnedState !== openIdParams.state) {
-			console.error('PKCE state mismatch – possible CSRF attempt.');
 			alert('Une erreur de sécurité est survenue (state invalide). Veuillez recommencer.');
 			return;
 		}
@@ -171,16 +267,16 @@
 			})
 		});
 		if (!response.ok) {
-			const payload = await response.json().catch(() => ({}));
-			console.error('Error invoking OIDC authorize function:', payload);
 			alert('Une erreur est survenue lors de la connexion avec OAuth.');
 			return;
 		}
-		const data = await response.json();
-		if (data?.redirect_uri) {
+		const data = await readJson(response);
+		const redirectUri =
+			isRecord(data) && typeof data.redirect_uri === 'string' ? data.redirect_uri : null;
+		if (redirectUri) {
 			// Clean up stored state before leaving.
 			sessionStorage.removeItem(PKCE_STATE_KEY);
-			window.location.href = data.redirect_uri;
+			window.location.href = redirectUri;
 		}
 	}
 
@@ -193,27 +289,26 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					password,
-					access_token: access_token || undefined,
-					refresh_token: refresh_token || undefined
+					access_token: optionalToken(access_token),
+					refresh_token: optionalToken(refresh_token)
 				})
 			});
 			if (!response.ok) {
-				const payload = await response.json().catch(() => ({}));
-				throw new Error(payload?.error || "Impossible d'enregistrer le mot de passe.");
+				throw new Error(
+					await readErrorMessage(response, "Impossible d'enregistrer le mot de passe.")
+				);
 			}
-			if (response.ok) {
-				// show success message
-				new SucessModal({
-					target: document.body,
-					props: {
-						message:
-							'Vous avez bien été inscrit. Vous allez être redirigé vers la page de connexion.',
-						onClose: () => {
-							goto(`https://davincibot.fr/auth/login`);
-						}
+			// show success message
+			mountClosable(SucessModal, {
+				target: document.body,
+				props: {
+					message:
+						'Vous avez bien été inscrit. Vous allez être redirigé vers la page de connexion.',
+					onClose: () => {
+						void navigateTo('/auth/login');
 					}
-				});
-			}
+				}
+			});
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message);
@@ -233,20 +328,19 @@
 		}
 	};
 
-	function parseRedirectURI(redirect_uri) {
+	function parseRedirectURI(redirect_uri: string): string {
 		const urlParams = new URLSearchParams(window.location.search);
 		const redirect = urlParams.get('redirect');
 		if (redirect) {
 			return redirect;
-		} else if (redirect_uri == '/') {
+		} else if (redirect_uri === '/') {
 			return window.location.origin;
-		} else {
-			return redirect_uri;
 		}
+		return redirect_uri;
 	}
 
 	/** Returns true when all mandatory PKCE Authorization Code params are present. */
-	function isOpenID() {
+	function isOpenID(): boolean {
 		const urlParams = new URLSearchParams(window.location.search);
 		return (
 			urlParams.has('client_id') &&
@@ -264,11 +358,11 @@
 	 * `nonce` is optional per the spec but forwarded when present so the
 	 * edge function can embed it in the issued ID token.
 	 */
-	function getOpenIDParams() {
+	function getOpenIDParams(): OpenIDParams {
 		const urlParams = new URLSearchParams(window.location.search);
-		const openIdParams = {};
+		const openIdParams: OpenIDParams = {};
 
-		const ssoParams = [
+		const ssoParams: (keyof OpenIDParams)[] = [
 			'client_id',
 			'redirect_uri',
 			'response_type',
@@ -289,14 +383,16 @@
 		return openIdParams;
 	}
 
-	function decodeEmail(token) {
+	function decodeEmail(token: string): string {
 		try {
 			const payload = token.split('.')[1];
-			if (!payload) return '';
+			if (!payload) {
+				return '';
+			}
 			const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
 			const decoded = atob(base64);
-			const data = JSON.parse(decoded);
-			return data?.email || '';
+			const data: unknown = JSON.parse(decoded);
+			return isRecord(data) && typeof data.email === 'string' ? data.email : '';
 		} catch {
 			return '';
 		}
@@ -304,32 +400,38 @@
 </script>
 
 <section class="">
-	<div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-		<a class="flex items-center mb-6 text-2xl font-semibold text-white" href="/">
-			<img class="h-20 mr-2" src="/white_logo.webp" alt="logo" />
+	<div class="mx-auto flex flex-col items-center justify-center px-6 py-8 md:h-screen lg:py-0">
+		<a class="mb-6 flex items-center text-2xl font-semibold text-white" href={resolve('/')}>
+			<img class="mr-2 h-20" src="/white_logo.webp" alt="logo" />
 		</a>
 		<div
-			class="w-full rounded-xl border-[3.5px] shadow border-dark-blue-gray md:mt-0 sm:max-w-md xl:p-0"
+			class="border-dark-blue-gray w-full rounded-xl border-[3.5px] shadow sm:max-w-md md:mt-0 xl:p-0"
 		>
-			<div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-				<h1 class="text-xl font-bold leading-tight tracking-tight text-white md:text-2xl">
+			<div class="space-y-4 p-6 sm:p-8 md:space-y-6">
+				<h1 class="text-xl leading-tight font-bold tracking-tight text-white md:text-2xl">
 					{auth_type}
 				</h1>
-				<form class="space-y-4 md:space-y-6" on:submit|preventDefault={handleAuth}>
+				<form
+					class="space-y-4 md:space-y-6"
+					onsubmit={(event) => {
+						event.preventDefault();
+						void handleAuth();
+					}}
+				>
 					<div>
-						<label for="email" class="block mb-2 text-sm font-medium text-white">Votre email</label>
+						<label for="email" class="mb-2 block text-sm font-medium text-white">Votre email</label>
 						<input
 							type="email"
 							name="email"
 							id="email"
-							class="border-2 rounded-lg block w-full p-2.5 bg-transparent border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue focus:ring-blue-500 focus:border-blue-500"
+							class="border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue block w-full rounded-lg border-2 bg-transparent p-2.5 focus:border-blue-500 focus:ring-blue-500"
 							placeholder="davincibot@devinci.fr"
 							disabled={auth_type === AuthType.reset || auth_type === AuthType.register}
 							bind:value={email}
 						/>
 					</div>
 					<div>
-						<label for="password" class="block mb-2 text-sm font-medium text-white"
+						<label for="password" class="mb-2 block text-sm font-medium text-white"
 							>Votre mot de passe</label
 						>
 						<input
@@ -337,13 +439,13 @@
 							name="password"
 							id="password"
 							placeholder="••••••••"
-							class="border-2 rounded-lg block w-full p-2.5 bg-transparent border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue focus:ring-blue-500 focus:border-blue-500"
+							class="border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue block w-full rounded-lg border-2 bg-transparent p-2.5 focus:border-blue-500 focus:ring-blue-500"
 							bind:value={password}
 						/>
 					</div>
 					{#if auth_type === AuthType.reset || auth_type === AuthType.register}
 						<div>
-							<label for="password-confirm" class="block mb-2 text-sm font-medium text-white"
+							<label for="password-confirm" class="mb-2 block text-sm font-medium text-white"
 								>Confirmer votre mot de passe</label
 							>
 							<input
@@ -351,7 +453,7 @@
 								name="password-confirm"
 								id="password-confirm"
 								placeholder="••••••••"
-								class="border-2 rounded-lg block w-full p-2.5 bg-transparent border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue focus:ring-blue-500 focus:border-blue-500"
+								class="border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue block w-full rounded-lg border-2 bg-transparent p-2.5 focus:border-blue-500 focus:ring-blue-500"
 								bind:value={password_confirm}
 							/>
 						</div>
@@ -360,21 +462,18 @@
 					<button
 						type="submit"
 						disabled={loading}
-						class="px-4 py-2 font-bold rounded-xl hover:bg-dark-light-blue hover:text-dark-blue text-dark-light-blue border-[3.25px] transition-all border-dark-light-blue w-full focus:outline-none text-center bg-transparent focus:ring-dark-blue-gray focus:ring-4 disabled:opacity-50"
+						class="hover:bg-dark-light-blue hover:text-dark-blue text-dark-light-blue border-dark-light-blue focus:ring-dark-blue-gray w-full rounded-xl border-[3.25px] bg-transparent px-4 py-2 text-center font-bold transition-all focus:ring-4 focus:outline-none disabled:opacity-50"
 						>{loading ? 'Chargement ...' : auth_type}</button
 					>
 				</form>
 			</div>
 			{#if auth_type === AuthType.login}
 				<div
-					class="flex items-center justify-center px-4 py-2 text-sm text-gray-400 border-t rounded-b-lg border-dark-blue-gray"
+					class="border-dark-blue-gray flex items-center justify-center rounded-b-lg border-t px-4 py-2 text-sm text-gray-400"
 				>
-					<a href="/auth/reset" class="hover:underline">Mot de passe oublié ?</a>
+					<a href={resolve('/auth/reset')} class="hover:underline">Mot de passe oublié ?</a>
 				</div>
 			{/if}
 		</div>
 	</div>
 </section>
-
-<style>
-</style>

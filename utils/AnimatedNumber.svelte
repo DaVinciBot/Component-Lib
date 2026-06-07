@@ -1,27 +1,39 @@
-<script>
-	import { onMount, onDestroy } from 'svelte';
-	export let target = 0; // final value to count to
-	export let duration = 2000; // ms
-	export let prefix = '';
-	export let suffix = '';
-	export let locale = 'fr-FR';
-	export let decimals = 0;
+<script lang="ts">
+	import { onDestroy, onMount } from 'svelte';
 	// If true, animation will run only the first time it becomes visible
-	export let once = true;
+	interface AnimatedNumberProps {
+		target?: number;
+		duration?: number;
+		prefix?: string;
+		suffix?: string;
+		locale?: Intl.LocalesArgument;
+		decimals?: number;
+		once?: boolean;
+	}
 
-	let display = '';
-	let raf;
-	let el;
-	let visible = false;
-	let observer;
+	const {
+		target = 0,
+		duration = 2000,
+		prefix = '',
+		suffix = '',
+		locale = 'fr-FR',
+		decimals = 0,
+		once = true
+	}: AnimatedNumberProps = $props() as AnimatedNumberProps;
 
-	const fmt = (v) => {
+	let display = $state('');
+	let raf: number | null = null;
+	let el = $state<HTMLDivElement | null>(null);
+	let visible = $state(false);
+	let observer: IntersectionObserver | null = null;
+
+	const fmt = (v: number) => {
 		// If decimals > 0 keep decimal places, otherwise round
 		const opts = { maximumFractionDigits: decimals };
 		return new Intl.NumberFormat(locale, opts).format(decimals > 0 ? v : Math.round(v));
 	};
 
-	function easeOutCubic(t) {
+	function easeOutCubic(t: number) {
 		return 1 - Math.pow(1 - t, 3);
 	}
 
@@ -30,21 +42,26 @@
 		const start = performance.now();
 		const from = 0;
 
-		function step(now) {
+		function step(now: number) {
 			const elapsed = now - start;
 			const t = Math.min(1, elapsed / ms);
 			const eased = easeOutCubic(t);
 			const current = from + (to - from) * eased;
 			display = fmt(current);
-			if (t < 1) raf = requestAnimationFrame(step);
-			else display = fmt(to);
+			if (t < 1) {
+				raf = requestAnimationFrame(step);
+			} else {
+				display = fmt(to);
+			}
 		}
 
 		raf = requestAnimationFrame(step);
 	}
 
 	function cancel() {
-		if (raf) cancelAnimationFrame(raf);
+		if (raf) {
+			cancelAnimationFrame(raf);
+		}
 		raf = null;
 	}
 
@@ -62,7 +79,7 @@
 		observer = new IntersectionObserver(
 			(entries) => {
 				const e = entries[0];
-				if (e && e.isIntersecting) {
+				if (e?.isIntersecting) {
 					visible = true;
 					animate(target, duration);
 					if (once && observer) {
@@ -74,7 +91,9 @@
 			{ threshold: 0.1 }
 		);
 
-		if (el) observer.observe(el);
+		if (el) {
+			observer.observe(el);
+		}
 	});
 
 	onDestroy(() => {
@@ -86,14 +105,14 @@
 	});
 
 	// restart when target or duration changes, but only if visible
-	$: if (typeof target === 'number') {
+	$effect(() => {
 		if (visible) {
 			animate(target, duration);
 		} else {
 			// ensure it shows the initial state until visible
 			display = fmt(0);
 		}
-	}
+	});
 </script>
 
 <div bind:this={el} class="animated-number" aria-live="polite">
