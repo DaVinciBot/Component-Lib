@@ -21,7 +21,7 @@
 		class: className = '',
 		children,
 		...rest
-	}: CtaButtonProps = $props();
+	}: CtaButtonProps = $props() as CtaButtonProps;
 
 	const widthClass = $derived(fullWidth ? 'w-full' : '');
 

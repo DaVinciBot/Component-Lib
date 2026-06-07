@@ -68,7 +68,7 @@
 		redirect_uri = $bindable<string>('/'),
 		auth_type = $bindable<string>(AuthType.login),
 		...props
-	}: AuthFormProps = $props();
+	}: AuthFormProps = $props() as AuthFormProps;
 	props = { ...props };
 
 	const access_token = props.access_token ?? '';

@@ -46,7 +46,7 @@
 		initialProject = '',
 		onSubmit = () => Promise.resolve(),
 		onClose = null
-	}: UserImportModalProps = $props();
+	}: UserImportModalProps = $props() as UserImportModalProps;
 
 	const tabs = [
 		{ id: 'simple', label: 'Simple' },

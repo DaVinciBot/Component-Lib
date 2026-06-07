@@ -25,7 +25,7 @@
 			}
 		]),
 		...props
-	}: InfoModalProps = $props();
+	}: InfoModalProps = $props() as InfoModalProps;
 	const message = props.message ?? 'La commande a été passée avec succès.';
 	const type = props.type ?? 'success';
 	const onClose =

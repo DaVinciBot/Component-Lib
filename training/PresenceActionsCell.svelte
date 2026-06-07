@@ -17,7 +17,7 @@
 		isSaving = false,
 		onChange,
 		presenceButtonClass
-	}: PresenceActionsCellProps = $props();
+	}: PresenceActionsCellProps = $props() as PresenceActionsCellProps;
 </script>
 
 {#if status === 'registered'}

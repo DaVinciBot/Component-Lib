@@ -4,7 +4,7 @@
 		text?: string;
 	}
 
-	const { header = false, text = '' }: TableCellProps = $props();
+	const { header = false, text = '' }: TableCellProps = $props() as TableCellProps;
 </script>
 
 {#if header}

@@ -7,7 +7,7 @@
 		children?: Snippet;
 	}
 
-	const { depth = 1, text = '', children }: HeadingProps = $props();
+	const { depth = 1, text = '', children }: HeadingProps = $props() as HeadingProps;
 </script>
 
 {#if depth === 1}

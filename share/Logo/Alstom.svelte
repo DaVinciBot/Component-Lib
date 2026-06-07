@@ -3,7 +3,7 @@
 		small?: boolean;
 	}
 
-	const { small = false }: LogoProps = $props();
+	const { small = false }: LogoProps = $props() as LogoProps;
 </script>
 
 <a href="https://www.alstom.com/fr" target="_blank" rel="noopener noreferrer" aria-label="Alstom">

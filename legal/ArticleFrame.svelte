@@ -27,7 +27,7 @@
 		sections = [],
 		redirectToLegalHome = false,
 		children
-	}: ArticleFrameProps = $props();
+	}: ArticleFrameProps = $props() as ArticleFrameProps;
 
 	const getValidDate = (value: string) => {
 		if (!value) {

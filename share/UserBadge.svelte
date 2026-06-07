@@ -25,7 +25,8 @@
 		avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
 	};
 
-	let { user = $bindable<UserBadgeUser | null>(fallbackUser), ...props }: UserBadgeProps = $props();
+	let { user = $bindable<UserBadgeUser | null>(fallbackUser), ...props }: UserBadgeProps =
+		$props() as UserBadgeProps;
 	props = { ...props };
 	const fixed = props.fixed ?? true;
 

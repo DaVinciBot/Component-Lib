@@ -7,7 +7,7 @@
 		className?: string;
 	};
 
-	let { checked = $bindable(false), ...props }: CheckboxProps = $props();
+	let { checked = $bindable(false), ...props }: CheckboxProps = $props() as CheckboxProps;
 	props = { ...props };
 	const typedProps = props as unknown as Omit<CheckboxProps, 'checked'>;
 	const {

@@ -9,7 +9,12 @@
 		children?: Snippet;
 	}
 
-	const { time = 50, pauseOnHover = true, small = false, children }: CarouselProps = $props();
+	const {
+		time = 50,
+		pauseOnHover = true,
+		small = false,
+		children
+	}: CarouselProps = $props() as CarouselProps;
 </script>
 
 <div class="h-full w-full">

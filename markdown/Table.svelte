@@ -5,7 +5,7 @@
 		children?: Snippet;
 	}
 
-	const { children }: TableProps = $props();
+	const { children }: TableProps = $props() as TableProps;
 </script>
 
 <div class="overflow-x-auto">

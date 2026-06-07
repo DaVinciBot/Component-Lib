@@ -191,7 +191,8 @@
 		onClose?: (event: Event) => void | Promise<void>;
 	}
 
-	let { fields = $bindable<EditableField[]>([]), ...props }: ReadDrawerProps = $props();
+	let { fields = $bindable<EditableField[]>([]), ...props }: ReadDrawerProps =
+		$props() as ReadDrawerProps;
 	props = { ...props };
 
 	const values = props.values ?? {
@@ -373,7 +374,7 @@
 	}
 
 	function getSupabase(): SupabaseClient<Database> {
-		return getSupabaseBrowserClient() as SupabaseClient<Database>;
+		return getSupabaseBrowserClient();
 	}
 
 	function stringValue(value: FieldValue | BodyValue): string {

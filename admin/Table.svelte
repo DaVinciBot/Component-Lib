@@ -103,7 +103,7 @@
 		emptyMessage?: string;
 	}
 
-	let { filters = $bindable<Filter[]>([]), ...props }: TableProps = $props();
+	let { filters = $bindable<Filter[]>([]), ...props }: TableProps = $props() as TableProps;
 
 	const actions = $derived(props.actions ?? []);
 	const headers = $derived(props.headers ?? ['Nom', 'Email', 'Rôle', 'Actions']);

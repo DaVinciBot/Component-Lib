@@ -107,7 +107,7 @@
 		actions = [],
 		id = 'readModal',
 		onClose
-	}: ReadModalProps = $props();
+	}: ReadModalProps = $props() as ReadModalProps;
 	const closeModal = onClose ?? (() => undefined);
 
 	let current_file = $state('');

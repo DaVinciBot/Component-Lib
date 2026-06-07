@@ -5,7 +5,11 @@
 		color?: string;
 	}
 
-	const { percentage = 0, message = '', color = 'bg-primary-500' }: LoadingBarProps = $props();
+	const {
+		percentage = 0,
+		message = '',
+		color = 'bg-primary-500'
+	}: LoadingBarProps = $props() as LoadingBarProps;
 </script>
 
 <div>

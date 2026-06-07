@@ -5,7 +5,7 @@
 		className?: string;
 	}
 
-	const { text, color, className = '' }: BadgeProps = $props();
+	const { text, color, className = '' }: BadgeProps = $props() as BadgeProps;
 
 	const badgeStyle: () => string = $derived(() =>
 		color ? `--badge-color: var(--color-${color});` : ''

@@ -67,7 +67,7 @@
 		onRegistrationChange,
 		canManageTraining = false,
 		currentUserId = null
-	}: TrainingSlotModalProps = $props();
+	}: TrainingSlotModalProps = $props() as TrainingSlotModalProps;
 	const closeModal = onClose ?? (() => undefined);
 	let registration = $state<RegistrationSummary | null>(null);
 	let registrationRequestId = 0;

@@ -67,7 +67,7 @@
 		value: string;
 	}
 
-	let { fields = $bindable<CrudField[]>([]), ...props }: CrudFormProps = $props();
+	let { fields = $bindable<CrudField[]>([]), ...props }: CrudFormProps = $props() as CrudFormProps;
 	props = { ...props };
 
 	const type = props.type ?? 'Utilisateur';

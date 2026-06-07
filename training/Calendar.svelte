@@ -52,7 +52,7 @@
 		isLoading = false,
 		errorMessage = null,
 		onRetry
-	}: CalendarProps = $props();
+	}: CalendarProps = $props() as CalendarProps;
 
 	let isInPerson = $state(false);
 	let isOnline = $state(false);

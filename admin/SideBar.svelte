@@ -25,7 +25,7 @@
 		noicon = false,
 		bgClass = 'bg-gray-800',
 		activeClass = 'hover:bg-gray-700'
-	}: SideBarProps = $props();
+	}: SideBarProps = $props() as SideBarProps;
 
 	const buttons_state = $state<Record<string, boolean>>({});
 
