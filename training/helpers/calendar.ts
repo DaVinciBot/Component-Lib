@@ -6,13 +6,13 @@ import {
 
 export const weekdays: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
-export type CalendarSlotLike = {
+export interface CalendarSlotLike {
 	start: Date | string;
 	on_site_seats?: number | null;
 	on_site_remaining?: number | null;
 	remote_seats?: number | null;
 	remote_remaining?: number | null;
-};
+}
 
 export function toDateKey(date: Date) {
 	return getParisDateKey(date);
@@ -20,7 +20,9 @@ export function toDateKey(date: Date) {
 
 export function getWeekStart(date: Date) {
 	const parts = getParisDateParts(date);
-	if (!parts) return new Date(NaN);
+	if (!parts) {
+		return new Date(NaN);
+	}
 	const baseUtc = Date.UTC(parts.year, parts.month - 1, parts.day);
 	const dayIndex = (new Date(baseUtc).getUTCDay() + 6) % 7;
 	const weekStartUtc = new Date(baseUtc - dayIndex * 24 * 60 * 60 * 1000);
@@ -35,7 +37,9 @@ export function getWeekStart(date: Date) {
 
 export function getWeekNumber(date: Date) {
 	const parts = getParisDateParts(date);
-	if (!parts) return NaN;
+	if (!parts) {
+		return NaN;
+	}
 	const target = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
 	const dayNr = (target.getUTCDay() + 6) % 7;
 	target.setUTCDate(target.getUTCDate() - dayNr + 3);
@@ -82,7 +86,9 @@ export function groupSlotsByDay<T extends CalendarSlotLike>(slots: T[]) {
 	const map = new Map<string, T[]>();
 	for (const slot of slots) {
 		const date = new Date(slot.start);
-		if (Number.isNaN(date.getTime())) continue;
+		if (Number.isNaN(date.getTime())) {
+			continue;
+		}
 		const key = toDateKey(date);
 		const existing = map.get(key) ?? [];
 		existing.push(slot);

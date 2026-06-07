@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { CalendarSlot } from '$lib/components/training/Calendar.svelte';
+	import { resolve } from '$app/paths';
 	import {
 		buildActionButtons,
 		buildAvailability,
@@ -22,7 +22,9 @@
 		registerToSlot,
 		updateMyRegistrationExcuse,
 		type RegistrationListItem,
-		type RegistrationSummary
+		type RegistrationSummary,
+		type TrainingSlotListItem,
+		type TrainingSupabaseClient
 	} from '$lib/services/training';
 	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 	import {
@@ -41,25 +43,32 @@
 		Video,
 		X
 	} from '@lucide/svelte';
-	import type { SupabaseClient } from '@supabase/supabase-js';
 
-	type TrainingSlotModalProps = {
-		slot: CalendarSlot | null;
+	type TrainingCardStatus = 'complete' | 'free' | 'hidden' | 'registered' | 'waiting' | 'my';
+
+	type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
+		start: Date | string;
+		cardStatus?: TrainingCardStatus;
+	};
+
+	interface TrainingSlotModalProps {
+		slot?: CalendarSlot | null;
 		open?: boolean;
 		onClose?: () => void;
 		onRegistrationChange?: () => void;
 		canManageTraining?: boolean;
 		currentUserId?: string | null;
-	};
+	}
 
-	let {
+	const {
 		slot = null,
 		open = false,
-		onClose = () => {},
+		onClose,
 		onRegistrationChange,
 		canManageTraining = false,
 		currentUserId = null
 	}: TrainingSlotModalProps = $props();
+	const closeModal = onClose ?? (() => undefined);
 	let registration = $state<RegistrationSummary | null>(null);
 	let registrationRequestId = 0;
 	let participants = $state<RegistrationListItem[]>([]);
@@ -71,10 +80,10 @@
 	let confirmLoading = $state(false);
 	let excuseUpdating = $state(false);
 
-	let supabaseClient: SupabaseClient | null = null;
+	let supabaseClient: TrainingSupabaseClient | null = null;
 
 	function getClient() {
-		supabaseClient ??= getSupabaseBrowserClient() as SupabaseClient;
+		supabaseClient ??= getSupabaseBrowserClient() as unknown as TrainingSupabaseClient;
 		return supabaseClient;
 	}
 
@@ -99,9 +108,7 @@
 	const excuseToggleLabel = $derived(() =>
 		registration?.to_excuse ? "Je n'ai plus besoin d'excuse" : "J'ai besoin d'une excuse"
 	);
-	const canViewParticipants = $derived(
-		() => slot?.cardStatus === 'my' || Boolean(canManageTraining)
-	);
+	const canViewParticipants = $derived(() => slot?.cardStatus === 'my' || canManageTraining);
 
 	const availability = $derived(() => buildAvailability(slot));
 
@@ -114,20 +121,28 @@
 	);
 
 	async function refreshRegistration() {
-		if (!slot) return;
+		if (!slot) {
+			return;
+		}
 		const currentRequest = ++registrationRequestId;
 		try {
 			const data = await getMyRegistrationForSlot(getClient(), slot.slot_id, currentUserId);
-			if (currentRequest !== registrationRequestId) return;
+			if (currentRequest !== registrationRequestId) {
+				return;
+			}
 			registration = data;
-		} catch (err) {
-			if (currentRequest !== registrationRequestId) return;
+		} catch {
+			if (currentRequest !== registrationRequestId) {
+				return;
+			}
 			registration = null;
 		}
 	}
 
 	async function refreshParticipants() {
-		if (!slot || !canViewParticipants()) return;
+		if (!slot || !canViewParticipants()) {
+			return;
+		}
 		const currentRequest = ++participantsRequestId;
 		participantsLoading = true;
 		participantsError = null;
@@ -135,10 +150,14 @@
 			const data = canManageTraining
 				? await getSlotRegistrations(getClient(), slot.slot_id)
 				: await getTrainerSlotRegistrations(getClient(), slot.slot_id);
-			if (currentRequest !== participantsRequestId) return;
+			if (currentRequest !== participantsRequestId) {
+				return;
+			}
 			participants = data;
-		} catch (err) {
-			if (currentRequest !== participantsRequestId) return;
+		} catch {
+			if (currentRequest !== participantsRequestId) {
+				return;
+			}
 			participantsError = 'Impossible de charger les inscriptions.';
 			participants = [];
 		} finally {
@@ -159,14 +178,16 @@
 	}
 
 	async function handleConfirmRegistration(toExcuse: boolean) {
-		if (!slot || !confirmMode) return;
+		if (!slot || !confirmMode) {
+			return;
+		}
 		confirmLoading = true;
 		try {
 			await registerToSlot(getClient(), slot.slot_id, confirmMode === 'remote', toExcuse);
 			await refreshRegistration();
 			onRegistrationChange?.();
-		} catch (err) {
-			console.error(err);
+		} catch {
+			participantsError = "Impossible de finaliser l'inscription.";
 		} finally {
 			confirmLoading = false;
 			closeConfirmation();
@@ -174,38 +195,52 @@
 	}
 
 	async function handleCancelRegistration() {
-		if (!slot) return;
+		if (!slot) {
+			return;
+		}
 		try {
 			await cancelRegistration(getClient(), slot.slot_id);
 			await refreshRegistration();
 			onRegistrationChange?.();
-		} catch (err) {
-			console.error(err);
+		} catch {
+			participantsError = "Impossible d'annuler l'inscription.";
 		}
 	}
 
 	async function handleExcuseToggle() {
-		if (!slot || !registration) return;
+		if (!slot || !registration) {
+			return;
+		}
 		excuseUpdating = true;
 		try {
 			const nextValue = !registration.to_excuse;
 			await updateMyRegistrationExcuse(getClient(), slot.slot_id, nextValue, currentUserId);
 			await refreshRegistration();
 			onRegistrationChange?.();
-		} catch (err) {
-			console.error(err);
+		} catch {
+			participantsError = "Impossible de mettre à jour l'excuse.";
 		} finally {
 			excuseUpdating = false;
 		}
 	}
 
 	function handleActionClick(action: ActionButton) {
-		if (confirmLoading) return;
+		if (confirmLoading) {
+			return;
+		}
 		if (action.isCancel) {
-			handleCancelRegistration();
+			void handleCancelRegistration();
 			return;
 		}
 		openConfirmation(action.key);
+	}
+
+	function isExcuseUpdating() {
+		return excuseUpdating;
+	}
+
+	function isRegistrationBusy() {
+		return confirmLoading || isExcuseUpdating();
 	}
 
 	$effect(() => {
@@ -217,8 +252,8 @@
 			closeConfirmation();
 			return;
 		}
-		refreshRegistration();
-		refreshParticipants();
+		void refreshRegistration();
+		void refreshParticipants();
 	});
 </script>
 
@@ -231,20 +266,20 @@
 		<button
 			type="button"
 			class="absolute inset-0 bg-[rgba(4,8,32,0.65)] backdrop-blur-md"
-			onclick={onClose}
+			onclick={closeModal}
 			aria-label="Fermer"
 		></button>
 		<section
-			class="relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-140 overflow-hidden rounded-[22px] border border-light-blue/30 bg-linear-to-b from-[rgba(6,10,44,0.98)] to-[rgba(4,6,26,0.96)] text-light-blue shadow-[0_26px_70px_rgba(2,6,30,0.6)]"
+			class="border-light-blue/30 text-light-blue relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-140 overflow-hidden rounded-[22px] border bg-linear-to-b from-[rgba(6,10,44,0.98)] to-[rgba(4,6,26,0.96)] shadow-[0_26px_70px_rgba(2,6,30,0.6)]"
 		>
 			<div class="max-h-[calc(100vh-2rem)] overflow-y-auto p-4 sm:p-6">
-				<header class="flex items-start justify-between gap-4 border-b border-light-blue/20 pb-4">
+				<header class="border-light-blue/20 flex items-start justify-between gap-4 border-b pb-4">
 					<div class="max-w-[calc(100%-60px)]">
-						<p class="m-0 text-xs tracking-[0.38em] text-dark-light-blue uppercase">
+						<p class="text-dark-light-blue m-0 text-xs tracking-[0.38em] uppercase">
 							{slot ? formatDate(slot.start) : ''}
 						</p>
 						<div class="m-0 mt-2 flex items-center gap-2">
-							<h2 class="overflow-hidden text-2xl font-semibold text-ellipsis text-light-blue">
+							<h2 class="text-light-blue overflow-hidden text-2xl font-semibold text-ellipsis">
 								{slot?.name}
 							</h2>
 							{#if badgeText()}
@@ -252,10 +287,10 @@
 							{/if}
 						</div>
 						{#if slot?.cardStatus === 'hidden'}
-							<p class="m-0 mt-1 text-sm text-waiting">
-								Cette session est {slot?.status === 'canceled'
+							<p class="text-waiting m-0 mt-1 text-sm">
+								Cette session est {slot.status === 'canceled'
 									? 'annulée'
-									: slot?.status === 'postponed'
+									: slot.status === 'postponed'
 										? 'reportée'
 										: 'en cours de planification'}
 							</p>
@@ -263,72 +298,72 @@
 					</div>
 					<button
 						type="button"
-						class="flex size-9 cursor-pointer items-center justify-center rounded-full border border-light-blue/30 text-light-blue transition hover:border-light-blue/60"
-						onclick={onClose}
+						class="border-light-blue/30 text-light-blue hover:border-light-blue/60 flex size-9 cursor-pointer items-center justify-center rounded-full border transition"
+						onclick={closeModal}
 						aria-label="Fermer"
 					>
 						<X class="size-5.5" />
 					</button>
 				</header>
 				<div class="mt-5 grid gap-3">
-					<div class="grid gap-3 rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+					<div class="border-light-blue/20 bg-blue-gray/15 grid gap-3 rounded-2xl border p-4">
 						<div class="grid gap-3 md:grid-cols-2">
 							<div class="flex items-center gap-3">
 								<div
-									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
+									class="border-light-blue/30 bg-dark-blue/70 flex size-10 items-center justify-center rounded-xl border"
 								>
 									<Calendar class="size-5.5" />
 								</div>
 								<div>
-									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+									<p class="text-dark-light-blue m-0 text-[0.6rem] tracking-[0.32em] uppercase">
 										Date
 									</p>
-									<p class="m-0 text-sm font-semibold text-light-blue">
+									<p class="text-light-blue m-0 text-sm font-semibold">
 										{slot ? formatDate(slot.start) : ''}
 									</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<div
-									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
+									class="border-light-blue/30 bg-dark-blue/70 flex size-10 items-center justify-center rounded-xl border"
 								>
 									<Clock class="size-5.5" />
 								</div>
 								<div>
-									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+									<p class="text-dark-light-blue m-0 text-[0.6rem] tracking-[0.32em] uppercase">
 										Heure
 									</p>
-									<p class="m-0 text-sm font-semibold text-light-blue">
+									<p class="text-light-blue m-0 text-sm font-semibold">
 										{slot ? formatTimeRange(slot.start, slot.duration_hours) : ''}
 									</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<div
-									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
+									class="border-light-blue/30 bg-dark-blue/70 flex size-10 items-center justify-center rounded-xl border"
 								>
 									<MapPin class="size-5.5" />
 								</div>
 								<div>
-									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+									<p class="text-dark-light-blue m-0 text-[0.6rem] tracking-[0.32em] uppercase">
 										Lieu
 									</p>
-									<p class="m-0 text-sm font-semibold text-light-blue">
+									<p class="text-light-blue m-0 text-sm font-semibold">
 										{slot?.location ?? '-'}
 									</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<div
-									class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70"
+									class="border-light-blue/30 bg-dark-blue/70 flex size-10 items-center justify-center rounded-xl border"
 								>
 									<UserRound class="size-5.5" />
 								</div>
 								<div>
-									<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+									<p class="text-dark-light-blue m-0 text-[0.6rem] tracking-[0.32em] uppercase">
 										Formateur·ice
 									</p>
-									<p class="m-0 text-sm font-semibold text-light-blue">
+									<p class="text-light-blue m-0 text-sm font-semibold">
 										{slot?.trainer_username ?? '-'}
 									</p>
 								</div>
@@ -337,9 +372,9 @@
 					</div>
 
 					{#if availability().length > 0}
-						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div class="border-light-blue/20 bg-blue-gray/15 rounded-2xl border p-4">
 							<div
-								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+								class="text-dark-light-blue flex items-center gap-2 text-xs tracking-[0.32em] uppercase"
 							>
 								<Armchair class="size-4" />
 								<span>Places</span>
@@ -348,7 +383,7 @@
 								{#each availability() as mode (mode.key)}
 									<div class="flex items-center gap-3 rounded-xl border-0">
 										<div
-											class="flex size-10 items-center justify-center rounded-xl border border-light-blue/30 bg-dark-blue/70 text-light-blue"
+											class="border-light-blue/30 bg-dark-blue/70 text-light-blue flex size-10 items-center justify-center rounded-xl border"
 										>
 											{#if mode.key === 'on-site'}
 												<House class="size-5.5" />
@@ -357,7 +392,7 @@
 											{/if}
 										</div>
 										<div>
-											<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">
+											<p class="text-dark-light-blue m-0 text-[0.6rem] tracking-[0.32em] uppercase">
 												{mode.label}
 											</p>
 											{#if isRegistrationMode(registration, mode.key)}
@@ -365,12 +400,13 @@
 													{isWaitlisted() ? "Sur liste d'attente" : 'Inscrit·e'}
 												</p>
 											{:else if mode.isFull}
-												<p class="m-0 text-sm font-semibold text-waiting">
+												<p class="text-waiting m-0 text-sm font-semibold">
 													Liste d'attente ouverte
 												</p>
 											{:else}
-												<p class="m-0 text-sm font-semibold text-light-blue">
-													{`${mode.remaining} ${mode.remaining > 1 ? 'places restantes' : 'place restante'}`}
+												<p class="text-light-blue m-0 text-sm font-semibold">
+													{mode.remaining}
+													{mode.remaining > 1 ? 'places restantes' : 'place restante'}
 												</p>
 											{/if}
 										</div>
@@ -381,10 +417,10 @@
 					{/if}
 
 					{#if canViewParticipants()}
-						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div class="border-light-blue/20 bg-blue-gray/15 rounded-2xl border p-4">
 							<div class="flex items-center justify-between gap-3">
 								<div
-									class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+									class="text-dark-light-blue flex items-center gap-2 text-xs tracking-[0.32em] uppercase"
 								>
 									<Users class="size-4" />
 									<span>Participant·e·s</span>
@@ -393,7 +429,11 @@
 									type="button"
 									size="xs"
 									variant="secondary"
-									onclick={() => slot && goto(`/formation/presence?slot=${slot.slot_id}`)}
+									onclick={() => {
+										if (slot) {
+											void goto(resolve(`/formation/presence?slot=${String(slot.slot_id)}` as '/'));
+										}
+									}}
 									class="manage_button hidden items-center gap-2 whitespace-nowrap min-[430px]:inline-flex"
 									fullWidth={false}
 								>
@@ -402,11 +442,11 @@
 								</CtaButton>
 							</div>
 							{#if participantsLoading}
-								<p class="mt-3 text-sm text-light-blue/70">Chargement des inscrit·e·s...</p>
+								<p class="text-light-blue/70 mt-3 text-sm">Chargement des inscrit·e·s...</p>
 							{:else if participantsError}
-								<p class="mt-3 text-sm text-waiting">{participantsError}</p>
+								<p class="text-waiting mt-3 text-sm">{participantsError}</p>
 							{:else if participants.length === 0}
-								<p class="mt-3 text-sm text-light-blue/70">Aucun·e inscrit·e pour le moment.</p>
+								<p class="text-light-blue/70 mt-3 text-sm">Aucun·e inscrit·e pour le moment.</p>
 							{:else}
 								<div class="mt-3 grid gap-2 sm:grid-cols-2">
 									{#each participants as reg (reg.member_id)}
@@ -423,20 +463,20 @@
 												<img
 													src={reg.member_avatar_url}
 													alt={reg.member_username ?? 'Membre'}
-													class="size-9 rounded-full border border-light-blue/20 object-cover"
+													class="border-light-blue/20 size-9 rounded-full border object-cover"
 												/>
 											{:else}
 												<div
-													class="flex size-9 items-center justify-center rounded-full border border-light-blue/20 bg-dark-blue/70 text-xs font-semibold text-light-blue/80"
+													class="border-light-blue/20 bg-dark-blue/70 text-light-blue/80 flex size-9 items-center justify-center rounded-full border text-xs font-semibold"
 												>
 													{(reg.member_username ?? '?').charAt(0).toUpperCase()}
 												</div>
 											{/if}
 											<div class="min-w-0 flex-1">
-												<p class="m-0 truncate text-sm/4 font-semibold text-light-blue">
+												<p class="text-light-blue m-0 truncate text-sm/4 font-semibold">
 													{reg.member_username ?? 'Membre'}
 												</p>
-												<p class="m-0 text-[0.7rem]/3 text-light-blue/70">
+												<p class="text-light-blue/70 m-0 text-[0.7rem]/3">
 													{reg.remote ? 'Distanciel' : 'Présentiel'}
 												</p>
 											</div>
@@ -449,7 +489,11 @@
 									type="button"
 									size="xs"
 									variant="secondary"
-									onclick={() => slot && goto(`/formation/presence?slot=${slot.slot_id}`)}
+									onclick={() => {
+										if (slot) {
+											void goto(resolve(`/formation/presence?slot=${String(slot.slot_id)}` as '/'));
+										}
+									}}
 									class="manage_button inline-flex items-center gap-2 whitespace-nowrap"
 									fullWidth={false}
 								>
@@ -461,50 +505,56 @@
 					{/if}
 
 					{#if hasDescription()}
-						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div class="border-light-blue/20 bg-blue-gray/15 rounded-2xl border p-4">
 							<div
-								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+								class="text-dark-light-blue flex items-center gap-2 text-xs tracking-[0.32em] uppercase"
 							>
 								<MessageSquare class="size-4" />
 								<span>Description</span>
 							</div>
-							<p class="mt-3 text-sm/5 text-light-blue/90">
+							<p class="text-light-blue/90 mt-3 text-sm/5">
+								<!-- eslint-disable svelte/no-at-html-tags -->
 								{@html slot?.description ?? ''}
+								<!-- eslint-enable svelte/no-at-html-tags -->
 							</p>
 						</div>
 					{/if}
 
 					{#if hasPrerequisites()}
-						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div class="border-light-blue/20 bg-blue-gray/15 rounded-2xl border p-4">
 							<div
-								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+								class="text-dark-light-blue flex items-center gap-2 text-xs tracking-[0.32em] uppercase"
 							>
 								<TextAlignStart class="size-4" />
 								<span>Prérequis</span>
 							</div>
-							<p class="mt-3 text-sm/5 text-light-blue/90">
+							<p class="text-light-blue/90 mt-3 text-sm/5">
+								<!-- eslint-disable svelte/no-at-html-tags -->
 								{@html slot?.prerequisites ?? ''}
+								<!-- eslint-enable svelte/no-at-html-tags -->
 							</p>
 						</div>
 					{/if}
 
 					{#if hasVideoLink()}
-						<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/15 p-4">
+						<div class="border-light-blue/20 bg-blue-gray/15 rounded-2xl border p-4">
 							<div
-								class="flex items-center gap-2 text-xs tracking-[0.32em] text-dark-light-blue uppercase"
+								class="text-dark-light-blue flex items-center gap-2 text-xs tracking-[0.32em] uppercase"
 							>
 								<Video class="size-4" />
 								<span>Lien distanciel</span>
 							</div>
+							<!-- eslint-disable svelte/no-navigation-without-resolve -->
 							<a
-								href={slot?.video_conference_link}
+								href={slot?.video_conference_link ?? ''}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-light-blue transition hover:text-blue-peps"
+								class="text-light-blue hover:text-blue-peps mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold transition"
 							>
 								<span>Rejoindre la session en ligne</span>
 								<MoveUpRight class="size-4" />
 							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						</div>
 					{/if}
 				</div>
@@ -517,9 +567,9 @@
 								size="sm"
 								variant="secondary"
 								onclick={handleExcuseToggle}
-								disabled={confirmLoading || excuseUpdating}
+								disabled={isRegistrationBusy()}
 							>
-								{excuseUpdating ? 'Mise à jour...' : excuseToggleLabel()}
+								{isExcuseUpdating() ? 'Mise à jour...' : excuseToggleLabel()}
 							</CtaButton>
 						{/if}
 						{#each actionButtons() as action (action.key)}
@@ -527,7 +577,9 @@
 								type="button"
 								size="sm"
 								variant={action.variant}
-								onclick={() => handleActionClick(action)}
+								onclick={() => {
+									handleActionClick(action);
+								}}
 								disabled={confirmLoading || excuseUpdating}
 								class={actionCount() === 1 ? 'w-auto justify-self-end md:col-start-2' : ''}
 								>{action.label}

@@ -8,6 +8,9 @@
 	import CTAButton from '$lib/components/utils/CTAButton.svelte';
 	import type { TrainingListItem } from '$lib/services/training';
 
+	const noop = () => undefined;
+	const noopTraining: (training: TrainingListItem) => void = () => undefined;
+
 	export let trainings: TrainingListItem[] = [];
 	export let categoryOptions: { value: string; text: string; selected?: boolean }[] = [];
 	export let trainingDbInfo: DBInfo;
@@ -15,8 +18,8 @@
 	export let trainingFilters: Filter[] = [];
 	export let trainingTableTopic = '';
 	export let parseTrainingItems: ParseItems;
-	export let onAddTraining = () => {};
-	export let onEditTraining = (training: TrainingListItem) => {};
+	export let onAddTraining: () => void = noop;
+	export let onEditTraining: (training: TrainingListItem) => void = noopTraining;
 </script>
 
 <section class="rounded-[28px] border border-light-blue/10 bg-dark-blue/80 p-5 sm:p-6">
@@ -57,19 +60,21 @@
 								<div>
 									<p class="text-base font-semibold text-white">{training.name}</p>
 									<p class="mt-1 text-xs tracking-[0.2em] text-light-blue/60 uppercase">
-										{categoryOptions.find((opt) => opt.value === training.category)?.text ||
+										{categoryOptions.find((opt) => opt.value === training.category)?.text ??
 											'Autre'}
 									</p>
 								</div>
 								<button
 									class="text-xs tracking-[0.2em] text-light-blue/70 uppercase hover:text-white"
-									onclick={() => onEditTraining(training)}
+									onclick={() => {
+										onEditTraining(training);
+									}}
 								>
 									Editer
 								</button>
 							</div>
 							<p class="mt-3 text-sm text-light-blue/70">
-								{training.description || 'Aucune description'}
+								{training.description ?? 'Aucune description'}
 							</p>
 						</article>
 					{/each}

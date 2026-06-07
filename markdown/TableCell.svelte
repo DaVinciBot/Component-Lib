@@ -1,6 +1,10 @@
-<script>
-	/** @type {{align?: string, header?: boolean, text?: string}} */
-	let { align = 'left', header = false, text = '' } = $props();
+<script lang="ts">
+	interface TableCellProps {
+		header?: boolean;
+		text?: string;
+	}
+
+	const { header = false, text = '' }: TableCellProps = $props();
 </script>
 
 {#if header}

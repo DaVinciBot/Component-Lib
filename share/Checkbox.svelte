@@ -1,13 +1,16 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	type CheckboxProps = Omit<HTMLInputAttributes, 'type' | 'class' | 'checked'> & {
+	type CheckboxProps = Omit<HTMLInputAttributes, 'type' | 'class' | 'checked' | 'value'> & {
 		checked?: boolean;
+		value?: string | number;
 		className?: string;
 	};
 
-	let {
-		checked = $bindable(false),
+	let { checked = $bindable(false), ...props }: CheckboxProps = $props();
+	props = { ...props };
+	const typedProps = props as unknown as Omit<CheckboxProps, 'checked'>;
+	const {
 		disabled = false,
 		name,
 		value,
@@ -15,12 +18,12 @@
 		required = false,
 		className = '',
 		...rest
-	}: CheckboxProps = $props();
+	} = typedProps;
 </script>
 
 <input
 	type="checkbox"
-	class="grid size-3.5 cursor-pointer appearance-none place-content-center rounded border-[0.15em] border-solid border-light-blue before:size-[0.8em] before:origin-center before:content-[''] checked:bg-light-blue disabled:cursor-not-allowed disabled:border-dark-light-blue-faded {className}"
+	class="border-light-blue checked:bg-light-blue disabled:border-dark-light-blue-faded grid size-3.5 cursor-pointer appearance-none place-content-center rounded border-[0.15em] border-solid before:size-[0.8em] before:origin-center before:content-[''] disabled:cursor-not-allowed {className}"
 	bind:checked
 	{name}
 	{disabled}

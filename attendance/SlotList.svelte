@@ -27,7 +27,7 @@
 						? 'border-light-blue/20 bg-blue-gray/25 text-light-blue'
 						: 'border-light-blue/15 bg-blue-gray/10 text-light-blue/70 hover:border-light-blue/40'
 				}`}
-				onclick={() => onSelectSlot(slot.slot_id)}
+				onclick={() => { onSelectSlot(slot.slot_id); }}
 			>
 				<p class="text-sm font-semibold text-white">{slot.name}</p>
 				<p class="text-xs tracking-[0.2em] text-dark-light-blue uppercase">

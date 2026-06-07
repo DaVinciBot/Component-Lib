@@ -1,15 +1,17 @@
 import { writable } from 'svelte/store';
 
-export type CalendarFilters = {
+export interface CalendarFilters {
 	inPerson: boolean;
 	online: boolean;
-};
+}
 
 const FILTERS_KEY = 'training_calendar_filters';
 const defaultFilters: CalendarFilters = { inPerson: false, online: false };
 
 function loadFilters(): CalendarFilters {
-	if (typeof localStorage === 'undefined') return { ...defaultFilters };
+	if (typeof localStorage === 'undefined') {
+		return { ...defaultFilters };
+	}
 	try {
 		const raw = localStorage.getItem(FILTERS_KEY);
 		return raw
@@ -21,7 +23,9 @@ function loadFilters(): CalendarFilters {
 }
 
 function saveFilters(filters: CalendarFilters) {
-	if (typeof localStorage === 'undefined') return;
+	if (typeof localStorage === 'undefined') {
+		return;
+	}
 	try {
 		localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
 	} catch {

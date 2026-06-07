@@ -1,7 +1,16 @@
-<script>
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	// Duration in seconds for a full loop
-	/** @type {{time?: number, pauseOnHover?: boolean, small?: boolean, children?: import('svelte').Snippet}} */
-	let { time = 50, pauseOnHover = true, small = false, children } = $props();
+	interface CarouselProps {
+		time?: number;
+		pauseOnHover?: boolean;
+		small?: boolean;
+		children?: Snippet;
+	}
+
+	const { time = 50, pauseOnHover = true, small = false, children }: CarouselProps =
+		$props();
 </script>
 
 <div class="w-full h-full">
@@ -15,7 +24,7 @@
 			The inner track duplicates the slot content to create an infinite marquee.
 			CSS handles width via max-content, avoiding JS measurements that can be flaky in Firefox.
 		-->
-		<div class="flex carousel-inner" style={`--duration: ${time}s`}>
+		<div class="flex carousel-inner" style={`--duration: ${String(time)}s`}>
 			<div class="flex items-center h-full gap-8">
 				{@render children?.()}
 			</div>

@@ -1,10 +1,17 @@
-<script>
-	import { run } from 'svelte/legacy';
-
+<script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	// If true, animation will run only the first time it becomes visible
-	/** @type {{target?: number, duration?: number, prefix?: string, suffix?: string, locale?: string, decimals?: number, once?: boolean}} */
-	let {
+	interface AnimatedNumberProps {
+		target?: number;
+		duration?: number;
+		prefix?: string;
+		suffix?: string;
+		locale?: Intl.LocalesArgument;
+		decimals?: number;
+		once?: boolean;
+	}
+
+	const {
 		target = 0,
 		duration = 2000,
 		prefix = '',
@@ -12,21 +19,21 @@
 		locale = 'fr-FR',
 		decimals = 0,
 		once = true
-	} = $props();
+	}: AnimatedNumberProps = $props();
 
 	let display = $state('');
-	let raf;
-	let el = $state();
+	let raf: number | null = null;
+	let el = $state<HTMLDivElement | null>(null);
 	let visible = $state(false);
-	let observer;
+	let observer: IntersectionObserver | null = null;
 
-	const fmt = (v) => {
+	const fmt = (v: number) => {
 		// If decimals > 0 keep decimal places, otherwise round
 		const opts = { maximumFractionDigits: decimals };
 		return new Intl.NumberFormat(locale, opts).format(decimals > 0 ? v : Math.round(v));
 	};
 
-	function easeOutCubic(t) {
+	function easeOutCubic(t: number) {
 		return 1 - Math.pow(1 - t, 3);
 	}
 
@@ -35,21 +42,21 @@
 		const start = performance.now();
 		const from = 0;
 
-		function step(now) {
+		function step(now: number) {
 			const elapsed = now - start;
 			const t = Math.min(1, elapsed / ms);
 			const eased = easeOutCubic(t);
 			const current = from + (to - from) * eased;
 			display = fmt(current);
-			if (t < 1) raf = requestAnimationFrame(step);
-			else display = fmt(to);
+			if (t < 1) {raf = requestAnimationFrame(step);}
+			else {display = fmt(to);}
 		}
 
 		raf = requestAnimationFrame(step);
 	}
 
 	function cancel() {
-		if (raf) cancelAnimationFrame(raf);
+		if (raf) {cancelAnimationFrame(raf);}
 		raf = null;
 	}
 
@@ -67,7 +74,7 @@
 		observer = new IntersectionObserver(
 			(entries) => {
 				const e = entries[0];
-				if (e && e.isIntersecting) {
+				if (e?.isIntersecting) {
 					visible = true;
 					animate(target, duration);
 					if (once && observer) {
@@ -79,7 +86,7 @@
 			{ threshold: 0.1 }
 		);
 
-		if (el) observer.observe(el);
+		if (el) {observer.observe(el);}
 	});
 
 	onDestroy(() => {
@@ -91,14 +98,12 @@
 	});
 
 	// restart when target or duration changes, but only if visible
-	run(() => {
-		if (typeof target === 'number') {
-			if (visible) {
-				animate(target, duration);
-			} else {
-				// ensure it shows the initial state until visible
-				display = fmt(0);
-			}
+	$effect(() => {
+		if (visible) {
+			animate(target, duration);
+		} else {
+			// ensure it shows the initial state until visible
+			display = fmt(0);
 		}
 	});
 </script>

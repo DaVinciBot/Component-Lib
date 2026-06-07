@@ -1,11 +1,13 @@
 <script lang="ts">
-	type HeadingProps = {
+	import type { Snippet } from 'svelte';
+
+	interface HeadingProps {
 		depth?: number;
 		text?: string;
-		children?: import('svelte').Snippet;
-	};
+		children?: Snippet;
+	}
 
-	let { depth = 1, text = '', children }: HeadingProps = $props();
+	const { depth = 1, text = '', children }: HeadingProps = $props();
 </script>
 
 {#if depth === 1}

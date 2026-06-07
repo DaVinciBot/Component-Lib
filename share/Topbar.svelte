@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { userdata } from '$lib/store';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
@@ -8,18 +9,18 @@
 	import CTAButton from '../utils/CTAButton.svelte';
 	import DvbLogo from './Logo/DVBLogo.svelte';
 
-	type TopbarProps = {
+	interface TopbarProps {
 		loginRedirect?: string;
-	};
+	}
 
-	let { loginRedirect = '/admin' }: TopbarProps = $props();
+	const { loginRedirect = '/admin' }: TopbarProps = $props();
 
-	let user = $state();
+	let user = $state<Record<string, unknown> | null>(null);
 	let sidebarOpen = $state(false);
 	let onMobile = $state(false);
 	let resizeHandler: (() => void) | null = null;
 
-	let dropdown = $state({
+	const dropdown = $state({
 		projects: false,
 		infos: false
 	});
@@ -28,18 +29,20 @@
 	let infosDropdownEl = $state<HTMLElement | null>(null);
 
 	const unsubscribeUserdata = userdata.subscribe((value) => {
-		user = value || null;
+		user = value ?? null;
 	});
 
 	function setupDropdown(dropdownEl: HTMLElement, activatorEl: HTMLElement) {
 		// set position of the popup just below the button
 		const rect = activatorEl.getBoundingClientRect();
-		dropdownEl.style.top = 'calc(' + rect.bottom + 'px + 2rem)';
-		dropdownEl.style.left = 'calc(' + rect.left + 'px + 0rem)';
+		dropdownEl.style.top = `calc(${String(rect.bottom)}px + 2rem)`;
+		dropdownEl.style.left = `calc(${String(rect.left)}px + 0rem)`;
 	}
 
 	function initDropdown(el: HTMLElement | null, activatorId: string) {
-		if (!el) return;
+		if (!el) {
+			return;
+		}
 
 		// Remove from current parent if not body
 		if (el.parentNode !== document.body) {
@@ -52,23 +55,19 @@
 		}
 
 		if (!el.dataset.clickOutsideBound) {
-			try {
-				hideOnClickOutside(
-					el,
-					() => {
-						dropdown.projects = false;
-						dropdown.infos = false;
-					},
-					true
-				);
-				el.dataset.clickOutsideBound = 'true';
-			} catch (e) {
-				console.error('Failed to bind outside click for dropdown:', e);
-			}
+			hideOnClickOutside(
+				el,
+				() => {
+					dropdown.projects = false;
+					dropdown.infos = false;
+				},
+				true
+			);
+			el.dataset.clickOutsideBound = 'true';
 		}
 	}
 
-	onMount(async () => {
+	onMount(() => {
 		onMobile = window.innerWidth < 768;
 
 		initDropdown(projectsDropdownEl, 'ProjectsButton');
@@ -79,8 +78,12 @@
 			// reposition dropdowns
 			const projectsButton = document.getElementById('ProjectsButton');
 			const assosButton = document.getElementById('AssosButton');
-			if (projectsDropdownEl && projectsButton) setupDropdown(projectsDropdownEl, projectsButton);
-			if (infosDropdownEl && assosButton) setupDropdown(infosDropdownEl, assosButton);
+			if (projectsDropdownEl && projectsButton) {
+				setupDropdown(projectsDropdownEl, projectsButton);
+			}
+			if (infosDropdownEl && assosButton) {
+				setupDropdown(infosDropdownEl, assosButton);
+			}
 		};
 		window.addEventListener('resize', resizeHandler);
 	});
@@ -96,16 +99,23 @@
 		dropdown.projects = false;
 		dropdown.infos = false;
 
+		unsubscribeUserdata();
+
+		if (typeof document === 'undefined' || typeof window === 'undefined') {
+			return;
+		}
+
 		// Remove dropdowns from body
-		if (projectsDropdownEl && projectsDropdownEl.parentNode === document.body) {
+		if (projectsDropdownEl?.parentNode === document.body) {
 			projectsDropdownEl.parentNode.removeChild(projectsDropdownEl);
 		}
-		if (infosDropdownEl && infosDropdownEl.parentNode === document.body) {
+		if (infosDropdownEl?.parentNode === document.body) {
 			infosDropdownEl.parentNode.removeChild(infosDropdownEl);
 		}
 
-		unsubscribeUserdata();
-		if (resizeHandler) window.removeEventListener('resize', resizeHandler);
+		if (resizeHandler) {
+			window.removeEventListener('resize', resizeHandler);
+		}
 	});
 
 	function closeSidebar() {
@@ -153,19 +163,19 @@
 					</svg>
 					<span class="sr-only">Toggle sidebar</span>
 				</button>
-				<a href="/" class="mr-4 flex items-center justify-between">
+				<a href={resolve('/')} class="mr-4 flex items-center justify-between">
 					<DvbLogo size="h-12" />
 				</a>
 			</div>
 			<div class="hidden items-center md:flex">
 				<ul class="flex gap-10">
 					<li>
-						<a href="/blog" class="text-gray-400 hover:text-white">Actus</a>
+						<a href={resolve('/blog')} class="text-gray-400 hover:text-white">Actus</a>
 					</li>
 					<li>
 						<button
 							id="ProjectsButton"
-							onclick={(e) => {
+							onclick={(e: MouseEvent) => {
 								e.stopPropagation();
 								dropdown.projects = !dropdown.projects;
 								dropdown.infos = false;
@@ -197,19 +207,19 @@
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
 									<a
-										href="/project/coupe-de-robotique"
+										href={resolve('/project/coupe-de-robotique')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">La CDR</a
 									>
 								</li>
 								<li>
 									<a
-										href="/project/exodus"
+										href={resolve('/project/exodus')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Exodus</a
 									>
 								</li>
 								<li>
 									<a
-										href="/project/cohoma"
+										href={resolve('/project/cohoma')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">CoHoMa</a
 									>
 								</li>
@@ -229,7 +239,7 @@
 					<li>
 						<button
 							id="AssosButton"
-							onclick={(e) => {
+							onclick={(e: MouseEvent) => {
 								e.stopPropagation();
 								dropdown.infos = !dropdown.infos;
 								dropdown.projects = false;
@@ -260,13 +270,15 @@
 						>
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
-									<a href="/a-propos" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
-										>L'association</a
+									<a
+										href={resolve('/a-propos')}
+										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">L'association</a
 									>
 								</li>
 								<li>
-									<a href="/nos-ecoles" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
-										>Nos écoles</a
+									<a
+										href={resolve('/nos-ecoles')}
+										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Nos écoles</a
 									>
 								</li>
 								<li>
@@ -283,15 +295,17 @@
 						</div>
 					</li>
 					<li>
-						<a href="/sponsors" class="text-gray-400 hover:text-white">Partenaires</a>
+						<a href={resolve('/sponsors')} class="text-gray-400 hover:text-white">Partenaires</a>
 					</li>
 
 					<li>
-						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
+						<a href={resolve('/formation' as '/')} class="text-gray-400 hover:text-white"
+							>Formation</a
+						>
 					</li>
 
 					<li>
-						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
+						<a href={resolve('/contact')} class="text-gray-400 hover:text-white">Contact</a>
 					</li>
 				</ul>
 			</div>
@@ -309,13 +323,14 @@
 	{#if onMobile}
 		<button
 			type="button"
-			class="fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black bg-opacity-40 {!sidebarOpen
-				? 'hidden'
-				: ''}"
+			class="bg-opacity-40 fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black"
+			class:hidden={!sidebarOpen}
 			aria-label="Close sidebar"
 			onclick={closeSidebar}
-			onkeydown={(e) => {
-				if (e.key === 'Escape') closeSidebar();
+			onkeydown={(e: KeyboardEvent) => {
+				if (e.key === 'Escape') {
+					closeSidebar();
+				}
 			}}
 		></button>
 

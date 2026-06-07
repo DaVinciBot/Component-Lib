@@ -1,8 +1,16 @@
-<script>
+<script lang="ts">
 	import Icon from '../share/Icon.svelte';
 
-	/** @type {{steps?: any}} */
-	let {
+	interface Step {
+		done?: boolean;
+		icon?: string;
+	}
+
+	interface StepperProps {
+		steps?: Step[];
+	}
+
+	const {
 		steps = [
 			{
 				done: true,
@@ -17,7 +25,7 @@
 				icon: 'done'
 			}
 		]
-	} = $props();
+	}: StepperProps = $props();
 </script>
 
 <ol class="flex w-full justify-center">
@@ -33,7 +41,7 @@
 				class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full lg:h-12 lg:w-12
 					{step.icon === 'cancel' ? 'bg-red-500' : step.done ? 'bg-primary-500' : 'bg-gray-700'}"
 			>
-				<Icon name={step.icon} size="6" fill={'gray-100'} />
+				<Icon name={step.icon} size="6" fill="gray-100" />
 			</span>
 		</li>
 	{/each}

@@ -10,7 +10,7 @@
 
 <div class="mt-4 grid gap-4 min-[1040px]:hidden">
 	{#each registrations as reg (reg.member_id)}
-		<div class="rounded-2xl border border-light-blue/20 bg-blue-gray/10 p-4">
+		<div class="border-light-blue/20 bg-blue-gray/10 rounded-2xl border p-4">
 			<div class="flex items-start justify-between gap-3">
 				<div class="flex items-center gap-3">
 					{#if reg.member_avatar_url}
@@ -25,7 +25,7 @@
 							{reg.member_username ?? 'Membre'}
 						</p>
 						{#if reg.to_excuse}
-							<span class="inline-flex text-[0.6rem] tracking-[0.25em] text-waiting uppercase">
+							<span class="text-waiting inline-flex text-[0.6rem] tracking-[0.25em] uppercase">
 								Excuse demandée
 							</span>
 						{/if}
@@ -41,7 +41,7 @@
 					{reg.status === 'registered' ? 'Inscrit·e' : 'En attente'}
 				</span>
 			</div>
-			<div class="mt-3 flex items-center justify-between text-xs text-light-blue/70">
+			<div class="text-light-blue/70 mt-3 flex items-center justify-between text-xs">
 				<span>{reg.remote ? 'Distanciel' : 'Présentiel'}</span>
 			</div>
 			{#if reg.status === 'registered'}
@@ -52,8 +52,10 @@
 							null,
 							reg.present
 						)}`}
-						disabled={reg.status !== 'registered' || isSaving(reg.member_id)}
-						onclick={() => onPresenceChange(reg.member_id, null)}
+						disabled={isSaving(reg.member_id)}
+						onclick={() => {
+							onPresenceChange(reg.member_id, null);
+						}}
 					>
 						<Users class="size-3" />
 						Non renseigné
@@ -64,8 +66,10 @@
 							true,
 							reg.present
 						)}`}
-						disabled={reg.status !== 'registered' || isSaving(reg.member_id)}
-						onclick={() => onPresenceChange(reg.member_id, true)}
+						disabled={isSaving(reg.member_id)}
+						onclick={() => {
+							onPresenceChange(reg.member_id, true);
+						}}
 					>
 						<CircleCheck class="size-3" />
 						Présent
@@ -76,8 +80,10 @@
 							false,
 							reg.present
 						)}`}
-						disabled={reg.status !== 'registered' || isSaving(reg.member_id)}
-						onclick={() => onPresenceChange(reg.member_id, false)}
+						disabled={isSaving(reg.member_id)}
+						onclick={() => {
+							onPresenceChange(reg.member_id, false);
+						}}
 					>
 						<CircleX class="size-3" />
 						Absent

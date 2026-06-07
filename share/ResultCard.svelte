@@ -1,15 +1,28 @@
-<script>
-	/** @type {{title?: string, rank_and_points?: string, image?: string, logo: any, marginLeft?: string, marginBottom?: string}} */
-	let {
+<script lang="ts">
+	import type { Component } from 'svelte';
+
+	interface ResultCardProps {
+		title?: string;
+		rank_and_points?: string;
+		image?: string;
+		logo: Component<Record<string, unknown>>;
+		marginLeft?: string;
+		marginBottom?: string;
+	}
+
+	const {
 		title = '',
 		rank_and_points = '',
 		image = '',
 		logo,
 		marginLeft = '',
 		marginBottom = ''
-	} = $props();
+	}: ResultCardProps = $props();
 
 	const SvelteComponent = $derived(logo);
+	const transformStyle = $derived(
+		`transform: translate(${String(Number(marginLeft || 0))}px, ${String(-Number(marginBottom || 0))}px)`
+	);
 </script>
 
 <div
@@ -21,7 +34,7 @@
 	</div>
 	<div id="" class="flex flex-row h-28 items-center">
 		<img src={image} alt={title} class="h-28 aspect-auto" />
-		<div class="flex items-center" style="transform: translate({marginLeft}px, {-marginBottom}px)">
+		<div class="flex items-center" style={transformStyle}>
 			<SvelteComponent class="h-28" sizeW="163px" sizeH="185px" />
 		</div>
 	</div>

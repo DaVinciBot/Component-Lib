@@ -1,15 +1,17 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 
-	type CtaButtonProps = Omit<HTMLButtonAttributes, 'size'> & {
+	type CtaButtonProps = Omit<HTMLButtonAttributes, 'class' | 'size'> & {
 		variant?: 'primary' | 'secondary' | 'disabled' | 'peps' | 'peps-outline' | 'deep';
 		href?: string;
 		size?: 'xs' | 'sm' | 'md' | 'lg';
 		fullWidth?: boolean;
-		children?: import('svelte').Snippet;
+		class?: string;
+		children?: Snippet;
 	};
 
-	let {
+	const {
 		variant = 'primary',
 		href = '',
 		size = 'md',
@@ -21,9 +23,9 @@
 		...rest
 	}: CtaButtonProps = $props();
 
-	let widthClass = $derived(fullWidth ? 'w-full' : '');
+	const widthClass = $derived(fullWidth ? 'w-full' : '');
 
-	let sizeClasses = $derived(
+	const sizeClasses = $derived(
 		{
 			xs: 'text-xs py-1 px-2',
 			sm: 'text-sm py-1.5 px-3',
@@ -32,7 +34,7 @@
 		}[size]
 	);
 
-	let classes = $derived(
+	const classes = $derived(
 		{
 			primary: 'bg-dark-light-blue text-dark-blue border-dark-light-blue',
 			secondary: 'bg-transparent text-dark-light-blue border-dark-light-blue',
@@ -50,11 +52,13 @@
 </script>
 
 {#if href}
+	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<a {href} class={`inline-block ${widthClass} no-underline`}>
 		<button class={buttonClass} {type} disabled={computedDisabled} {...rest}>
 			{@render children?.()}
 		</button>
 	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 {:else}
 	<button class={buttonClass} {type} disabled={computedDisabled} {...rest}>
 		{@render children?.()}

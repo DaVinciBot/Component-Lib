@@ -1,27 +1,29 @@
 <script lang="ts">
-	type CardProps = {
+	interface CardProps {
 		title?: string;
 		description?: string;
 		image?: string;
 		link?: string;
-	};
+	}
 
-	let { title = '', description = '', image = '', link = '' }: CardProps = $props();
+	const { title = '', description = '', image = '', link = '' }: CardProps = $props();
 </script>
 
 <div
-	class="rounded-xl border-[3.5px] border-dark-light-blue p-4 w-[450px] flex flex-col gap-2 min-w-96"
+	class="border-dark-light-blue flex w-112.5 min-w-96 flex-col gap-2 rounded-xl border-[3.5px] p-4"
 >
 	<div class="flex justify-between">
-		<h1 class="text-2xl font-bold title-2lines">{title}</h1>
+		<h1 class="title-2lines text-2xl font-bold">{title}</h1>
 	</div>
 	<div class="flex items-start gap-5">
-		<div class="flex flex-col justify-between max-w-[50%] h-28 overflow-hidden">
-			<p class="mb-2 text-sm text-justify text-dark-blue-gray line-clamp-4">{description}</p>
+		<div class="flex h-28 max-w-[50%] flex-col justify-between overflow-hidden">
+			<p class="text-dark-blue-gray mb-2 line-clamp-4 text-justify text-sm">{description}</p>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -->
 			<a href={link} class=" text-dark-light-blue">Lire la suite...</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
 		<div id="img-mask" class="h-28">
-			<img src={image} alt={title} class="h-28 aspect-auto" />
+			<img src={image} alt={title} class="aspect-auto h-28" />
 		</div>
 	</div>
 </div>

@@ -1,6 +1,4 @@
-<script>
-	import { run } from 'svelte/legacy';
-
+<script lang="ts">
 	import AislerLogo from '$lib/components/share/Logo/Aisler.svelte';
 	import AlstomLogo from '$lib/components/share/Logo/Alstom.svelte';
 	import FaulhaberLogo from '$lib/components/share/Logo/Faulhaber.svelte';
@@ -15,15 +13,26 @@
 	import Kurokesu from '../share/Logo/Kurokesu.svelte';
 	import Carousel from './Carousel.svelte';
 
-	/** @type {{time?: number, pauseOnHover?: boolean, small?: boolean}} */
-	let { time = 60, pauseOnHover = true, small = $bindable(false) } = $props();
+	interface SponsorsCarouselProps {
+		time?: number;
+		pauseOnHover?: boolean;
+		small?: boolean;
+	}
+
+	let {
+		small = $bindable(false),
+		...props
+	}: SponsorsCarouselProps = $props();
+	props = { ...props };
+	const time = props.time ?? 60;
+	const pauseOnHover = props.pauseOnHover ?? true;
 
 	let isMobile = $state(false);
 	let add_padding = $state(false);
 	if (typeof window !== 'undefined') {
 		isMobile = window.innerWidth <= 768;
 	}
-	run(() => {
+	$effect(() => {
 		if (isMobile && small) {
 			small = false;
 			add_padding = true;

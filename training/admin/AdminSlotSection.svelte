@@ -8,6 +8,9 @@
 	import CTAButton from '$lib/components/utils/CTAButton.svelte';
 	import type { TrainingListItem, TrainingSlotListItem } from '$lib/services/training';
 
+	const noop = () => undefined;
+	const noopSlot: (slot: TrainingSlotListItem) => void = () => undefined;
+
 	export let slots: TrainingSlotListItem[] = [];
 	export let statusOptions: { value: string; text: string }[] = [];
 	export let slotDbInfo: DBInfo;
@@ -15,8 +18,8 @@
 	export let slotFilters: Filter[] = [];
 	export let slotTableTopic = '';
 	export let parseSlotItems: ParseItems;
-	export let onAddSlot = () => {};
-	export let onEditSlot = (slot: TrainingSlotListItem) => {};
+	export let onAddSlot: () => void = noop;
+	export let onEditSlot: (slot: TrainingSlotListItem) => void = noopSlot;
 	export let formatSlotDate: (value: string) => string;
 	export let findTrainingName: (trainingId: number, trainings: TrainingListItem[]) => string;
 	export let trainings: TrainingListItem[] = [];
@@ -63,7 +66,7 @@
 								</div>
 								<button
 									class="text-xs tracking-[0.2em] text-light-blue/70 uppercase hover:text-white"
-									onclick={() => onEditSlot(slot)}
+									onclick={() => { onEditSlot(slot); }}
 								>
 									Editer
 								</button>
@@ -73,14 +76,14 @@
 									{#if slot.trainer_avatar_url}
 										<img
 											src={slot.trainer_avatar_url}
-											alt={slot.trainer_username || 'Formateur·ice'}
+											alt={slot.trainer_username ?? 'Formateur·ice'}
 											class="h-6 w-6 rounded-full"
 										/>
 									{/if}
-									<span>{slot.trainer_username || 'A definir'}</span>
+									<span>{slot.trainer_username ?? 'A definir'}</span>
 								</div>
 								<span class="rounded-full border border-light-blue/20 px-3 py-1 text-xs uppercase">
-									{statusOptions.find((opt) => opt.value === slot.status)?.text || slot.status}
+									{statusOptions.find((opt) => opt.value === slot.status)?.text ?? slot.status}
 								</span>
 							</div>
 						</article>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	type MenuItem = Record<string, any> & {
+	type MenuItem = Record<string, unknown> & {
 		title: string;
 		icon?: string;
 		uri?: string | null;
@@ -9,25 +9,25 @@
 		sub?: MenuItem[];
 	};
 
-	type SideBarProps = {
+	interface SideBarProps {
 		menu?: MenuItem[];
 		open?: boolean;
 		close?: () => void;
 		noicon?: boolean;
 		bgClass?: string;
 		activeClass?: string;
-	};
+	}
 
-	let {
+	const {
 		menu = $bindable([{ title: 'fill me', icon: 'timer', uri: '/admin' }]),
 		open = false,
-		close = () => {},
+		close = () => undefined,
 		noicon = false,
 		bgClass = 'bg-gray-800',
 		activeClass = 'hover:bg-gray-700'
 	}: SideBarProps = $props();
 
-	let buttons_state = $state<Record<string, boolean>>({});
+	const buttons_state = $state<Record<string, boolean>>({});
 
 	const sidebarMenu = $derived(
 		menu.map((item: MenuItem) => ({
@@ -35,6 +35,10 @@
 			active: item.uri === page.route.id
 		}))
 	);
+
+	function resolveMenuUri(uri: string | null | undefined) {
+		return uri ?? '#';
+	}
 </script>
 
 <section>
@@ -53,9 +57,7 @@
 								type="button"
 								class="group flex w-full items-center rounded-lg p-2 text-base font-medium text-white transition duration-75 {activeClass}"
 								onclick={() => {
-									if (buttons_state[item.title] === undefined) {
-										buttons_state[item.title] = false;
-									}
+									buttons_state[item.title] ??= false;
 									buttons_state[item.title] = !buttons_state[item.title];
 								}}
 							>
@@ -81,33 +83,42 @@
 							<ul class="{buttons_state[item.title] ? '' : 'hidden'} space-y-2 py-2">
 								{#each item.sub as sub_item (sub_item.title)}
 									<li>
-										<a
-											href={sub_item.uri}
+										<svelte:element
+											this={'a'}
+											href={resolveMenuUri(sub_item.uri)}
+											role="link"
+											tabindex="0"
 											class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium text-white transition duration-75 hover:bg-gray-700"
 											onclick={() => {
-												if (typeof close === 'function') close();
-											}}>{sub_item.title}</a
-										>
+												if (typeof close === 'function') {
+													close();
+												}
+											}}>{sub_item.title}</svelte:element>
 									</li>
 								{/each}
 							</ul>
 						</li>
 					{:else}
 						<li>
-							<a
-								href={item.uri}
+							<svelte:element
+								this={'a'}
+								href={resolveMenuUri(item.uri)}
+								role="link"
+								tabindex="0"
 								class="group flex items-center rounded-lg p-2 text-base font-medium text-white hover:bg-gray-700 {item.active
 									? 'bg-gray-700'
 									: ''}"
 								onclick={() => {
-									if (typeof close === 'function') close();
+									if (typeof close === 'function') {
+										close();
+									}
 								}}
 							>
 								{#if !noicon || !item.icon}
 									<ion-icon name={item.icon} class="text-2xl"></ion-icon>
 								{/if}
 								<span class="ml-3">{item.title}</span>
-							</a>
+							</svelte:element>
 						</li>
 					{/if}
 				{/each}

@@ -1,12 +1,14 @@
 <script lang="ts">
 	import CTAButton from '$lib/components/utils/CTAButton.svelte';
 
+	const noop = () => undefined;
+
 	export let trainingsCount = 0;
 	export let upcomingCount = 0;
 	export let draftCount = 0;
 	export let slotRangeDays = 0;
-	export let onAddTraining = () => {};
-	export let onAddSlot = () => {};
+	export let onAddTraining: () => void = noop;
+	export let onAddSlot: () => void = noop;
 </script>
 
 <header

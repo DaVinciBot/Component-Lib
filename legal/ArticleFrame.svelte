@@ -1,9 +1,25 @@
-<script>
+<script lang="ts">
+	import { resolve } from '$app/paths';
 	import Footer from '$lib/components/share/Footer.svelte';
 	import Topbar from '$lib/components/share/Topbar.svelte';
+	import type { Snippet } from 'svelte';
 
-	/** @type {{title?: string, intro?: string, updatedAt?: string, badge?: string, sections?: any, redirectToLegalHome?: boolean, children?: import('svelte').Snippet}} */
-	let {
+	interface ArticleSection {
+		id: string;
+		label: string;
+	}
+
+	interface ArticleFrameProps {
+		title?: string;
+		intro?: string;
+		updatedAt?: string;
+		badge?: string;
+		sections?: ArticleSection[];
+		redirectToLegalHome?: boolean;
+		children?: Snippet;
+	}
+
+	const {
 		title = '',
 		intro = '',
 		updatedAt = '',
@@ -11,24 +27,30 @@
 		sections = [],
 		redirectToLegalHome = false,
 		children
-	} = $props();
+	}: ArticleFrameProps = $props();
 
-	const formatDate = (value) => {
-		if (!value) return null;
-		try {
-			return new Intl.DateTimeFormat('fr-FR', {
-				day: '2-digit',
-				month: 'long',
-				year: 'numeric'
-			}).format(new Date(value));
-		} catch (error) {
-			console.warn('Invalid date provided to ArticleFrame', error);
+	const getValidDate = (value: string) => {
+		if (!value) {
 			return null;
 		}
+		const date = new Date(value);
+		return Number.isNaN(date.getTime()) ? null : date;
 	};
 
-	let formattedDate = $derived(formatDate(updatedAt));
-	let isoDate = $derived(updatedAt ? new Date(updatedAt).toISOString() : null);
+	const formatDate = (value: string) => {
+		const date = getValidDate(value);
+		if (!date) {
+			return null;
+		}
+		return new Intl.DateTimeFormat('fr-FR', {
+			day: '2-digit',
+			month: 'long',
+			year: 'numeric'
+		}).format(date);
+	};
+
+	const formattedDate = $derived(formatDate(updatedAt));
+	const isoDate = $derived(getValidDate(updatedAt)?.toISOString() ?? null);
 </script>
 
 <Topbar />
@@ -44,7 +66,7 @@
 		<div class="px-6 md:px-96">
 			<div class="max-w-3xl space-y-5">
 				<a
-					href="/legal"
+					href={resolve('/legal')}
 					class="flex items-center gap-3 text-xs font-semibold tracking-[0.35em] uppercase text-dark-light-blue/80"
 				>
 					{#if redirectToLegalHome}
@@ -82,7 +104,7 @@
 				<article class="shrink-0 w-full max-w-3xl prose legal-article prose-invert md-article">
 					{@render children?.()}
 				</article>
-				{#if (sections ?? []).length}
+				{#if sections.length}
 					<aside
 						class="order-first w-full p-5 mb-6 space-y-4 text-white border md:mt-12 md:order-last legal-summary rounded-2xl border-white/10 bg-white/5 lg:sticky lg:top-32 lg:mt-0 lg:w-80 lg:flex-none"
 						aria-label="Sommaire de la page"

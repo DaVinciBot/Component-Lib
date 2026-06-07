@@ -1,14 +1,24 @@
 <script lang="ts">
 	import Node from './Node.svelte';
-	interface Props {
-		tree?: any;
+	interface MarkdownNode {
+		id?: string | number;
+		type: string;
+		children?: MarkdownNode[];
 	}
 
-	let { tree = null }: Props = $props();
+	interface Props {
+		tree?: MarkdownNode | null;
+	}
+
+	const { tree = null }: Props = $props();
+
+	function nodeKey(child: MarkdownNode, index: number) {
+		return child.id === undefined ? `${child.type}-${String(index)}` : String(child.id);
+	}
 </script>
 
 {#if tree && Array.isArray(tree.children)}
-	{#each tree.children as child (child.id)}
+	{#each tree.children as child, index (nodeKey(child, index))}
 		<Node {child} />
 	{/each}
 {/if}

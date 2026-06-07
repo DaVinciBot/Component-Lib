@@ -2,7 +2,7 @@
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 
-	type TrainingRegistrationPopupProps = {
+	interface TrainingRegistrationPopupProps {
 		open?: boolean;
 		trainingName?: string;
 		showExcuse?: boolean;
@@ -10,26 +10,29 @@
 		confirmDisabled?: boolean;
 		onConfirm?: (toExcuse: boolean) => void;
 		onCancel?: () => void;
-	};
+	}
 
-	let {
+	const noop = () => undefined;
+	const noopConfirm: (toExcuse: boolean) => void = () => undefined;
+
+	const {
 		open = false,
 		trainingName = 'Titre',
 		showExcuse = true,
 		confirmLabel = "S'inscrire",
 		confirmDisabled = false,
-		onConfirm = () => {},
-		onCancel = () => {}
+		onConfirm = noopConfirm,
+		onCancel = noop
 	}: TrainingRegistrationPopupProps = $props();
 
 	let toExcuse = $state(false);
 
 	$effect(() => {
-		if (!open) toExcuse = false;
+		if (!open) {toExcuse = false;}
 	});
 
 	function handleConfirm() {
-		onConfirm?.(toExcuse);
+		onConfirm(toExcuse);
 	}
 </script>
 

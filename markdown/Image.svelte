@@ -1,6 +1,11 @@
-<script>
-	/** @type {{href?: string, title?: any, text?: string}} */
-	let { href = '', title = undefined, text = '' } = $props();
+<script lang="ts">
+	interface ImageProps {
+		href?: string;
+		title?: string;
+		text?: string;
+	}
+
+	const { href = '', title = '', text = '' }: ImageProps = $props();
 </script>
 
 <div class="flex flex-col justify-center w-full py-4">

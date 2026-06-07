@@ -1,6 +1,9 @@
-<script>
-	/** @type {{small?: boolean}} */
-	let { small = false } = $props();
+<script lang="ts">
+	interface LogoProps {
+		small?: boolean;
+	}
+
+	const { small = false }: LogoProps = $props();
 </script>
 
 <a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer" aria-label="Mouser">

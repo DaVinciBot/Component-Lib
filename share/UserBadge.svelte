@@ -1,22 +1,23 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { hasAnyPermission } from '$lib/permissions';
 	import { userdata } from '$lib/store';
-	import { supabase } from '$lib/supabaseClient';
+	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 	import { hideOnClickOutside } from '$lib/utils';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
-	type UserBadgeUser = {
+	interface UserBadgeUser {
 		name: string;
 		email: string;
 		avatar: string;
 		permissions?: string[];
-		[key: string]: any;
-	};
+		[key: string]: unknown;
+	}
 
-	type UserBadgeProps = {
+	interface UserBadgeProps {
 		user?: UserBadgeUser | null;
 		fixed?: boolean;
-	};
+	}
 
 	const fallbackUser: UserBadgeUser = {
 		name: 'DVB',
@@ -24,15 +25,42 @@
 		avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
 	};
 
-	let { user = $bindable(fallbackUser), fixed = true }: UserBadgeProps = $props();
+	let {
+		user = $bindable<UserBadgeUser | null>(fallbackUser),
+		...props
+	}: UserBadgeProps = $props();
+	props = { ...props };
+	const fixed = props.fixed ?? true;
 
 	let skip = false;
 	let resizeHandler: (() => void) | null = null;
-	let displayUser = $derived(user ?? fallbackUser);
+	const displayUser = $derived(user ?? fallbackUser);
 
-	userdata.subscribe((value) => {
+	function readString(value: Record<string, unknown>, key: string, fallback: string) {
+		return typeof value[key] === 'string' ? value[key] : fallback;
+	}
+
+	function readPermissions(value: Record<string, unknown>) {
+		const permissions = value.permissions;
+		return Array.isArray(permissions)
+			? permissions.filter((permission): permission is string => typeof permission === 'string')
+			: undefined;
+	}
+
+	function toUserBadgeUser(value: Record<string, unknown>): UserBadgeUser {
+		const email = readString(value, 'email', fallbackUser.email);
+		return {
+			...value,
+			name: readString(value, 'name', email.split('@')[0] ?? fallbackUser.name),
+			email,
+			avatar: readString(value, 'avatar', fallbackUser.avatar),
+			permissions: readPermissions(value)
+		};
+	}
+
+	const unsubscribe = userdata.subscribe((value) => {
 		if (value) {
-			user = value as UserBadgeUser;
+			user = toUserBadgeUser(value);
 			skip = true;
 		} else {
 			user = null;
@@ -47,15 +75,15 @@
 		// set position of the popup just below the button
 		const dropdown = getDropdown();
 		const button = document.getElementById('user-menu-button');
-		if (!dropdown || !button) return;
+		if (!dropdown || !button) {return;}
 		const rect = button.getBoundingClientRect();
-		dropdown.style.top = 'calc(' + rect.bottom + 'px - 0.25rem)';
-		dropdown.style.left = 'calc(' + rect.left + 'px - 12.05rem)';
+		dropdown.style.top = `calc(${String(rect.bottom)}px - 0.25rem)`;
+		dropdown.style.left = `calc(${String(rect.left)}px - 12.05rem)`;
 	}
 
 	onMount(() => {
 		const dropdown = getDropdown();
-		if (!dropdown) return;
+		if (!dropdown) {return;}
 		setupDropdown();
 		document.body.appendChild(dropdown);
 
@@ -64,12 +92,12 @@
 		};
 		window.addEventListener('resize', resizeHandler);
 
-		if (skip) return;
+		if (skip) {return;}
 	});
 
 	const LogOut = async () => {
 		try {
-			await supabase.auth.signOut();
+			await getSupabaseBrowserClient().auth.signOut();
 		} catch {
 			// ignore
 		}
@@ -77,6 +105,13 @@
 		userdata.set(null);
 		window.location.href = `/`;
 	};
+
+	onDestroy(() => {
+		unsubscribe();
+		if (resizeHandler) {
+			window.removeEventListener('resize', resizeHandler);
+		}
+	});
 </script>
 
 <button
@@ -84,9 +119,9 @@
 	class="mx-3 flex rounded-full bg-gray-800 text-sm focus:ring-3 focus:ring-gray-700 md:mr-0"
 	id="user-menu-button"
 	aria-expanded="false"
-	onclick={(e) => {
+	onclick={(e: MouseEvent) => {
 		const dropdown = getDropdown();
-		if (!dropdown) return;
+		if (!dropdown) {return;}
 		dropdown.classList.toggle('hidden');
 		e.stopPropagation();
 		hideOnClickOutside(dropdown);
@@ -109,7 +144,7 @@
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
 			<a
-				href="/admin/profile"
+				href={resolve('/admin/profile' as '/')}
 				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Profil</a
 			>
 		</li>
@@ -119,7 +154,7 @@
 		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 			<li>
 				<a
-					href="/admin/"
+					href={resolve('/admin/' as '/')}
 					class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
 					>Pannel Admin</a
 				>
@@ -131,7 +166,9 @@
 			<button
 				type="button"
 				class="bg-opacity-80 hover:bg-opacity-50 block w-full px-4 py-2 text-left text-sm hover:bg-red-700 hover:text-white"
-				onclick={LogOut}>Déconnexion</button
+				onclick={() => {
+					void LogOut();
+				}}>Déconnexion</button
 			>
 		</li>
 	</ul>

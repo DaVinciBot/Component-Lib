@@ -1,6 +1,9 @@
-<script>
-	/** @type {{size?: string}} */
-	let { size = 'h-20 md:h-28' } = $props();
+<script lang="ts">
+	interface LogoProps {
+		size?: string;
+	}
+
+	const { size = 'h-20 md:h-28' }: LogoProps = $props();
 </script>
 
 <svg

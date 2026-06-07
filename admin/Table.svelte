@@ -9,61 +9,82 @@
 
 	import type { Component } from 'svelte';
 
-	export type FilterOption = {
+	export interface FilterOption {
 		name: string;
 		value: string;
 		active: boolean;
-	};
+	}
 
-	export type Filter = {
+	export interface Filter {
 		category: string;
 		value: string;
 		wide?: boolean;
 		options: FilterOption[];
-	};
+	}
 
-	export type Action = {
+	export interface Action {
 		type: string;
 		title: string;
 		handler: (e: Event) => void;
-	};
+	}
 
-	export type DBInfo = {
+	export interface DBInfo {
 		table: string;
 		key: string;
 		ordering?: string;
-	};
+	}
 
-	export type TableCell = {
+	export interface TableCell {
 		value?: unknown;
 		data?: string | number | null;
 		warn?: boolean;
 		avatar?: string | null;
-		component?: Component<any>;
+		component?: Component<Record<string, unknown>>;
 		props?: Record<string, unknown>;
-	};
+	}
 
 	export type TableRow = TableCell[];
 	export type ParseItems = (data: unknown[]) => TableRow[] | Promise<TableRow[]>;
 
-	type SupabaseFilterQuery = {
+	interface SupabaseFilterQuery {
 		filter: (column: string, operator: string, value: string) => SupabaseFilterQuery;
 		order: (column: string, options: { ascending: boolean }) => SupabaseFilterQuery;
 		range: (
 			from: number,
 			to: number
 		) => Promise<{ data: unknown[] | null; error: unknown; count: number | null }>;
-	};
+	}
 
-	type TableRefreshPayload = {
+	interface TableRefreshPayload {
 		resetPage?: boolean;
-	};
+	}
 
 	function isTableRefreshPayload(payload: unknown): payload is TableRefreshPayload {
 		return typeof payload === 'object' && payload !== null;
 	}
 
-	type TableProps = {
+	function isFilter(value: unknown): value is Filter {
+		return (
+			typeof value === 'object' &&
+			value !== null &&
+			'category' in value &&
+			'value' in value &&
+			'options' in value &&
+			typeof value.category === 'string' &&
+			typeof value.value === 'string' &&
+			Array.isArray(value.options)
+		);
+	}
+
+	function isFilterArray(value: unknown): value is Filter[] {
+		return Array.isArray(value) && value.every(isFilter);
+	}
+
+	function formatDataAttribute(value: TableCell['data']) {
+		return value === null || value === undefined ? '' : String(value);
+	}
+
+	interface TableProps {
 		actions?: Action[];
 		headers?: string[];
 		filters?: Filter[];
@@ -80,26 +101,25 @@
 		showToolbar?: boolean;
 		showPagination?: boolean;
 		emptyMessage?: string;
-	};
+	}
 
-	let {
-		actions = [],
-		headers = ['Nom', 'Email', 'Rôle', 'Actions'],
-		filters = $bindable<Filter[]>([]),
-		dbInfo,
-		searchable = 'username',
-		type = 'élément',
-		type_accord = 'un',
-		parseItems = null,
-		size = 15,
-		can_load = true,
-		clickable = false,
-		addNew = null,
-		refreshTopic = undefined,
-		showToolbar = true,
-		showPagination = true,
-		emptyMessage = 'Aucun résultat'
-	}: TableProps = $props();
+	let { filters = $bindable<Filter[]>([]), ...props }: TableProps = $props();
+
+	const actions = $derived(props.actions ?? []);
+	const headers = $derived(props.headers ?? ['Nom', 'Email', 'Rôle', 'Actions']);
+	const dbInfo = $derived(props.dbInfo);
+	const searchable = $derived(props.searchable ?? 'username');
+	const type = $derived(props.type ?? 'élément');
+	const type_accord = $derived(props.type_accord ?? 'un');
+	const parseItems = $derived(props.parseItems ?? null);
+	const size = $derived(props.size ?? 15);
+	const can_load = $derived(props.can_load ?? true);
+	const clickable = $derived(props.clickable ?? false);
+	const addNew = $derived(props.addNew ?? null);
+	const refreshTopic = $derived(props.refreshTopic);
+	const showToolbar = $derived(props.showToolbar ?? true);
+	const showPagination = $derived(props.showPagination ?? true);
+	const emptyMessage = $derived(props.emptyMessage ?? 'Aucun résultat');
 
 	// State
 	let search = $state('');
@@ -108,17 +128,19 @@
 	let total_items = $state(0);
 
 	// derived pagination helpers
-	let totalPages = $derived(Math.max(1, Math.ceil((total_items || 0) / size)));
-	let pages = $derived(Array.from({ length: totalPages }, (_, i) => i + 1));
-	let showingFrom = $derived(items.length ? current_page * size + 1 : 0);
-	let showingTo = $derived(current_page * size + items.length);
+	const totalPages = $derived(Math.max(1, Math.ceil(total_items / size)));
+	const pages = $derived(Array.from({ length: totalPages }, (_, i) => i + 1));
+	const showingFrom = $derived(items.length ? current_page * size + 1 : 0);
+	const showingTo = $derived(current_page * size + items.length);
 
 	$effect(() => {
-		if (current_page >= totalPages) current_page = Math.max(0, totalPages - 1);
+		if (current_page >= totalPages) {
+			current_page = Math.max(0, totalPages - 1);
+		}
 	});
 
 	function getFiltersSignature(filters: Filter[]) {
-		return (filters || []).map((filter) => ({
+		return filters.map((filter) => ({
 			category: filter.category,
 			value: filter.value,
 			wide: filter.wide,
@@ -139,13 +161,15 @@
 	);
 	let can_update_settings = $state(false);
 	const filtersStore = writable<Filter[]>(filters);
-	let hasWideFilter = $derived(filters.some((f) => f.wide));
-	let hasFilters = $derived(filters.some((filter) => filter.category !== 'hidden'));
-	let viewAction = $derived(actions.find((action) => action.type === 'view') ?? null);
+	const hasWideFilter = $derived(filters.some((f) => f.wide));
+	const hasFilters = $derived(filters.some((filter) => filter.category !== 'hidden'));
+	const viewAction = $derived(actions.find((action) => action.type === 'view') ?? null);
 
 	$effect.pre(() => {
 		filtersStore.set(filters);
-		if (can_update_settings) saveSettings(hash, filters);
+		if (can_update_settings) {
+			saveSettings(hash, filters);
+		}
 	});
 
 	function getFiltersString(filters: Filter[]) {
@@ -156,53 +180,100 @@
 				out += `${filter.value}:in:("${activeOptions.map((option) => option.value).join('","')}")&`;
 			}
 		});
-		if (search) out += `${searchable}:ilike:%${search}%&`;
+		if (search) {
+			out += `${searchable}:ilike:%${search}%&`;
+		}
 		return out.slice(0, -1);
 	}
 
 	function applyFilters(query: SupabaseFilterQuery, filter: string) {
-		if (!filter) return query;
+		if (!filter) {
+			return query;
+		}
 		const parts = filter.split('&').filter(Boolean);
 		for (const p of parts) {
 			const [column, operator, ...valueParts] = p.split(':');
 			const value = valueParts.join(':');
-			if (!column || !operator || !value) continue;
+			if (!column || !operator || !value) {
+				continue;
+			}
 			query = query.filter(column, operator, value);
 		}
 		return query;
 	}
 
+	function toggleFilterDropdown(event: MouseEvent) {
+		const el = document.getElementById('filterDropdown-' + hash);
+		el?.classList.toggle('hidden');
+		event.stopPropagation();
+		if (el) {
+			hideOnClickOutside(el);
+		}
+	}
+
+	function handleRowClick(event: MouseEvent) {
+		if (clickable) {
+			event.preventDefault();
+			viewAction?.handler(event);
+		}
+	}
+
+	function handleViewClick(event: MouseEvent) {
+		event.stopPropagation();
+		viewAction?.handler(event);
+	}
+
+	async function changePage(event: MouseEvent, nextPage: number) {
+		event.preventDefault();
+		current_page = Math.max(0, Math.min(pages.length - 1, nextPage));
+		await reload();
+	}
+
+	function handlePageClick(event: MouseEvent, nextPage: number) {
+		void changePage(event, nextPage);
+	}
+
 	async function loadPage(page: number, filter = '', step = size) {
-		if (!can_load || !dbInfo) return [];
+		if (!can_load || !dbInfo) {
+			return [];
+		}
 		let query = getSupabaseBrowserClient()
 			.from(dbInfo.table)
 			.select(dbInfo.key, { count: 'exact', head: false }) as unknown as SupabaseFilterQuery;
 		query = applyFilters(query, filter);
 		if (dbInfo.ordering) {
 			const [col, dir] = dbInfo.ordering.split(':');
-			if (col) query = query.order(col, { ascending: dir === 'asc' });
+			if (col) {
+				query = query.order(col, { ascending: dir === 'asc' });
+			}
 		}
 
 		const { data, error, count } = await query.range(page * step, (page + 1) * step - 1);
 		if (error) {
-			console.error(error);
 			return [];
 		}
 		total_items = count ?? 0;
-		if (!parseItems) return (data || []) as TableRow[];
-		return await parseItems(data || []);
+		const rows = data ?? [];
+		if (!parseItems) {
+			return rows as TableRow[];
+		}
+		return await parseItems(rows);
 	}
 
 	// Public API: refresh current page (optionally reset to first page)
 	export async function reload({ resetPage = false } = {}) {
-		if (resetPage) current_page = 0;
+		if (resetPage) {
+			current_page = 0;
+		}
 		items = await loadPage(current_page, getFiltersString(filters));
 	}
 
 	let mounted = false;
-	filtersStore.subscribe(async () => {
-		if (!mounted) return;
-		await reload({ resetPage: true });
+	filtersStore.subscribe(() => {
+		if (!mounted) {
+			return;
+		}
+		void reload({ resetPage: true });
 	});
 
 	$effect.pre(() => {
@@ -215,7 +286,9 @@
 	$effect(() => {
 		void search;
 		void filters;
-		if (!mounted) return;
+		if (!mounted) {
+			return;
+		}
 		void reload({ resetPage: true });
 	});
 
@@ -224,8 +297,10 @@
 
 	onMount(async () => {
 		mounted = true;
-		const saved = loadSettings(hash);
-		if (Array.isArray(saved) && saved.length > 0) filters = saved as Filter[];
+		const saved: unknown = loadSettings(hash);
+		if (isFilterArray(saved) && saved.length > 0) {
+			filters = saved;
+		}
 		await reload({ resetPage: true });
 
 		if (showToolbar) {
@@ -243,13 +318,15 @@
 
 		// Subscribe to global refresh events
 		if (refreshTopic) {
-			unsub = tableRefresh.subscribe(async (evt) => {
-				if (!evt || !evt.topic) return;
+			unsub = tableRefresh.subscribe((evt) => {
+				if (!evt.topic) {
+					return;
+				}
 				if (evt.topic === refreshTopic) {
 					// If payload asks for reset, honor it
 					const payload: unknown = evt.payload;
 					const resetPage = isTableRefreshPayload(payload) && payload.resetPage === true;
-					await reload({ resetPage });
+					void reload({ resetPage });
 				}
 			});
 		}
@@ -258,8 +335,10 @@
 	function setupDropdown() {
 		// set position of the popup just below the button
 		const dropdown = document.querySelector<HTMLElement>('#filterDropdown-' + hash);
-		const button = document.getElementById(`filterDropdownButton-${hash}`) as HTMLElement | null;
-		if (!dropdown || !button) return;
+		const button = document.getElementById(`filterDropdownButton-${hash}`);
+		if (!dropdown || !button) {
+			return;
+		}
 
 		const wasHidden = dropdown.classList.contains('hidden');
 		if (wasHidden) {
@@ -273,10 +352,10 @@
 		}
 
 		const rect = button.getBoundingClientRect();
-		dropdown.style.top = 'calc(' + rect.bottom + 'px + 0.5rem)';
+		dropdown.style.top = `calc(${String(rect.bottom)}px + 0.5rem)`;
 		if (window.innerWidth < 768) {
-			dropdown.style.left = rect.left + 'px';
-			dropdown.style.width = rect.width + 'px';
+			dropdown.style.left = `${String(rect.left)}px`;
+			dropdown.style.width = `${String(rect.width)}px`;
 		} else if (hasWideFilter) {
 			const margin = 16;
 			const centeredLeft = rect.left + rect.width / 2 - width / 2;
@@ -284,10 +363,10 @@
 				margin,
 				Math.min(centeredLeft, window.innerWidth - width - margin)
 			);
-			dropdown.style.left = clampedLeft + 'px';
+			dropdown.style.left = `${String(clampedLeft)}px`;
 			dropdown.style.removeProperty('width');
 		} else {
-			dropdown.style.left = 'calc(' + rect.left + 'px - 1.5rem)';
+			dropdown.style.left = `calc(${String(rect.left)}px - 1.5rem)`;
 			dropdown.style.removeProperty('width');
 		}
 	}
@@ -295,14 +374,18 @@
 	onDestroy(() => {
 		try {
 			const dropdown = document.querySelector<HTMLElement>('#filterDropdown-' + hash);
-			if (dropdown) document.body.removeChild(dropdown);
-		} catch (e) {
-			if (!(e instanceof ReferenceError)) {
-				console.error(e);
-			} // else the el is prerendered
+			if (dropdown) {
+				document.body.removeChild(dropdown);
+			}
+		} catch {
+			// The dropdown can already be detached during route teardown.
 		}
-		if (resizeHandler) window.removeEventListener('resize', resizeHandler);
-		if (typeof unsub === 'function') unsub();
+		if (resizeHandler) {
+			window.removeEventListener('resize', resizeHandler);
+		}
+		if (typeof unsub === 'function') {
+			unsub();
+		}
 	});
 </script>
 
@@ -335,7 +418,7 @@
 								<input
 									id="simple-search"
 									type="text"
-									class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 pl-10 text-sm text-white placeholder-gray-400 focus:border-primary-500"
+									class="focus:border-primary-500 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 pl-10 text-sm text-white placeholder-gray-400"
 									placeholder="Search"
 									bind:value={search}
 								/>
@@ -350,7 +433,7 @@
 							<button
 								type="button"
 								id="addNewButton"
-								class="flex items-center justify-center rounded-lg bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-primary-800 focus:ring-4 focus:ring-primary-800 focus:outline-none"
+								class="bg-primary-700 hover:bg-primary-800 focus:ring-primary-800 flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white focus:ring-4 focus:outline-none"
 								onclick={addNew}
 							>
 								<svg
@@ -377,12 +460,7 @@
 								id={'filterDropdownButton-' + hash}
 								type="button"
 								class="flex w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:z-10 focus:ring-4 focus:ring-gray-700 focus:outline-none md:w-auto"
-								onclick={(e) => {
-									const el = document.getElementById('filterDropdown-' + hash);
-									el?.classList.toggle('hidden');
-									e.stopPropagation();
-									if (el) hideOnClickOutside(el);
-								}}
+								onclick={toggleFilterDropdown}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -418,7 +496,7 @@
 							>
 								<div class={hasWideFilter ? 'grid grid-cols-1 gap-4 md:grid-cols-2' : ''}>
 									{#each filters as filter, i (i)}
-										{#if filter.category != 'hidden'}
+										{#if filter.category !== 'hidden'}
 											{#if !hasWideFilter && i > 0}
 												<hr class="my-3 border-gray-600" />
 											{/if}
@@ -463,7 +541,9 @@
 						<button
 							type="button"
 							class="flex items-center justify-center rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:ring-4 focus:ring-gray-700 focus:outline-none"
-							onclick={() => reload()}
+							onclick={() => {
+								void reload();
+							}}
 							aria-label="Rafraîchir"
 						>
 							<svg
@@ -510,19 +590,14 @@
 						{#each items as row, i (i)}
 							<tr
 								class="border-b border-gray-700 {clickable ? 'cursor-pointer' : ''} max-w-52"
-								onclick={clickable
-									? (e) => {
-											e.preventDefault();
-											viewAction?.handler(e);
-										}
-									: null}
+								onclick={clickable ? handleRowClick : undefined}
 							>
 								{#each row as cell, j (j)}
 									{#if j === 0}
 										<th
 											scope="row"
 											class="flex items-center px-2 py-2 font-medium whitespace-nowrap text-white sm:px-4 sm:py-3"
-											data-utils={cell.data || ''}
+											data-utils={formatDataAttribute(cell.data)}
 										>
 											{#if cell.warn}
 												<svg
@@ -545,16 +620,19 @@
 											{/if}
 											{#if cell.component}
 												{@const CellComponent = cell.component}
-												<CellComponent {...cell.props || {}} />
+												<CellComponent {...cell.props ?? {}} />
 											{:else}
 												{cell.value}
 											{/if}
 										</th>
 									{:else}
-										<td class="px-2 py-2 sm:px-4 sm:py-3" data-utils={cell.data || ''}>
+										<td
+											class="px-2 py-2 sm:px-4 sm:py-3"
+											data-utils={formatDataAttribute(cell.data)}
+										>
 											{#if cell.component}
 												{@const CellComponent = cell.component}
-												<CellComponent {...cell.props || {}} />
+												<CellComponent {...cell.props ?? {}} />
 											{:else}
 												{cell.value}
 											{/if}
@@ -566,7 +644,7 @@
 										<button
 											type="button"
 											class="inline-flex cursor-pointer items-center rounded-lg p-0.5 text-center text-sm font-medium text-gray-400 hover:text-gray-100 focus:outline-none"
-											onclick={(e) => viewAction?.handler(e)}
+											onclick={handleViewClick}
 											aria-label="View"
 										>
 											<svg
@@ -609,11 +687,10 @@
 								class="ml-0 flex h-full items-center justify-center rounded-l-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-gray-400 hover:bg-gray-700 hover:text-white"
 								aria-disabled={current_page === 0}
 								class:opacity-50={current_page === 0}
-								onclick={async (e) => {
-									e.preventDefault();
-									if (current_page === 0) return;
-									current_page = Math.max(0, current_page - 1);
-									await reload();
+								onclick={(event: MouseEvent) => {
+									if (current_page !== 0) {
+										handlePageClick(event, current_page - 1);
+									}
 								}}
 							>
 								<span class="sr-only">Previous</span>
@@ -647,10 +724,8 @@
 										<button
 											type="button"
 											class="flex items-center justify-center border border-gray-700 bg-gray-800 px-3 py-2 text-sm leading-tight text-gray-400 hover:bg-gray-700 hover:text-white"
-											onclick={async (e) => {
-												e.preventDefault();
-												current_page = p - 1;
-												await reload();
+											onclick={(event: MouseEvent) => {
+												handlePageClick(event, p - 1);
 											}}>{p}</button
 										>
 									</li>
@@ -662,10 +737,8 @@
 									<button
 										type="button"
 										class="flex items-center justify-center border border-gray-700 bg-gray-800 px-3 py-2 text-sm leading-tight text-gray-400 hover:bg-gray-700 hover:text-white"
-										onclick={async (e) => {
-											e.preventDefault();
-											current_page = 0;
-											await reload();
+										onclick={(event: MouseEvent) => {
+											handlePageClick(event, 0);
 										}}>1</button
 									>
 								</li>
@@ -683,10 +756,8 @@
 									<button
 										type="button"
 										class="flex items-center justify-center border border-gray-700 bg-gray-800 px-3 py-2 text-sm leading-tight text-gray-400 hover:bg-gray-700 hover:text-white"
-										onclick={async (e) => {
-											e.preventDefault();
-											current_page = pages.length - 1;
-											await reload();
+										onclick={(event: MouseEvent) => {
+											handlePageClick(event, pages.length - 1);
 										}}>{pages.length}</button
 									>
 								</li>
@@ -698,11 +769,10 @@
 								class="flex h-full items-center justify-center rounded-r-lg border border-gray-700 bg-gray-800 px-3 py-1.5 leading-tight text-gray-400 hover:bg-gray-700 hover:text-white"
 								aria-disabled={current_page >= pages.length - 1}
 								class:opacity-50={current_page >= pages.length - 1}
-								onclick={async (e) => {
-									e.preventDefault();
-									if (current_page >= pages.length - 1) return;
-									current_page = Math.min(pages.length - 1, current_page + 1);
-									await reload();
+								onclick={(event: MouseEvent) => {
+									if (current_page < pages.length - 1) {
+										handlePageClick(event, current_page + 1);
+									}
 								}}
 							>
 								<span class="sr-only">Next</span>

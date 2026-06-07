@@ -9,14 +9,14 @@
 		start: Date | string;
 	};
 
-	type TrainingCardProps = {
+	interface TrainingCardProps {
 		slot: TrainingSlotView;
 		status: TrainingCardStatus;
 		className?: string;
 		variant?: 'default' | 'compact';
-	};
+	}
 
-	let {
+	const {
 		slot,
 		status,
 		className = '',

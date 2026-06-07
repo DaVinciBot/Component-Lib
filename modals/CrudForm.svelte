@@ -1,33 +1,124 @@
 <script lang="ts">
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
 
-	/** @type {{type?: string, type_accord?: string, action?: string, fields?: any, id?: string, title?: any, submitLabel?: string, submitLoadingLabel?: string, submitting?: boolean, onSubmit?: any, onClose?: (event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) => any}} */
-	let {
-		type = 'Utilisateur',
-		type_accord = 'un',
-		action = 'Ajouter',
-		fields = $bindable([]),
-		id = 'CrudModal',
-		title = `${action} ${type_accord} ${type}`,
-		submitLabel = title,
-		submitLoadingLabel = 'Chargement...',
-		submitting = false,
-		onSubmit = async (e: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) => {
-			console.log('Submit');
-		},
-		onClose = (e: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) => {}
-	} = $props();
+	type SubmitEventHandler = (event: MouseEvent) => void | Promise<void>;
+	type CloseEventHandler = (event: MouseEvent) => void | Promise<void>;
+	type FieldValue = string | number | boolean | File | DocumentPreview[] | null | undefined;
+	type MaybePromise<T> = T | Promise<T>;
 
-	let autocompleteValues: Record<string, string> = $state({});
-	let autocompleteCompletions: Record<string, any[]> = $state({});
-	let autocompleteImages: Record<string, string | null> = $state({});
-	let autocompleteRequestIds: Record<string, number> = $state({});
+	interface SelectOption {
+		value: string;
+		text: string;
+		selected?: boolean;
+		data?: string | number | null;
+	}
 
-	type DocumentPreview = {
+	interface AutocompleteCompletion {
+		id?: string | number;
+		value: string;
+		text: string;
+		subtext?: string;
+		image?: string | null;
+	}
+
+	interface CrudField {
+		id?: string;
+		name: string;
+		type: string;
+		wide?: boolean;
+		data?: string;
+		text?: string;
+		required?: boolean;
+		readonly?: boolean;
+		autoselect?: boolean;
+		value?: FieldValue;
+		options?: SelectOption[];
+		placeholder?: string;
+		min?: number;
+		max?: number;
+		step?: number;
+		multiple?: boolean;
+		onChange?: (event: Event) => MaybePromise<AutocompleteCompletion[] | undefined>;
+		onRemove?: (event: MouseEvent, name: string) => void | Promise<void>;
+		onSelect?: (value: string) => void | Promise<void>;
+		completion?: AutocompleteCompletion[];
+		image?: string | null;
+		checked?: boolean;
+	}
+
+	interface CrudFormProps {
+		type?: string;
+		type_accord?: string;
+		action?: string;
+		fields?: CrudField[];
+		id?: string;
+		title?: string;
+		submitLabel?: string;
+		submitLoadingLabel?: string;
+		submitting?: boolean;
+		onSubmit?: SubmitEventHandler;
+		onClose?: CloseEventHandler;
+	}
+
+	interface DocumentPreview {
+		id?: string | number;
 		name: string;
 		type: string;
 		value: string;
-	};
+	}
+
+	let { fields = $bindable<CrudField[]>([]), ...props }: CrudFormProps = $props();
+	props = { ...props };
+
+	const type = props.type ?? 'Utilisateur';
+	const type_accord = props.type_accord ?? 'un';
+	const action = props.action ?? 'Ajouter';
+	const id = props.id ?? 'CrudModal';
+	const title = props.title ?? `${action} ${type_accord} ${type}`;
+	const submitLabel = props.submitLabel ?? title;
+	const submitLoadingLabel = props.submitLoadingLabel ?? 'Chargement...';
+	const submitting = props.submitting ?? false;
+	const onSubmit = props.onSubmit ?? (() => undefined);
+	const onClose = props.onClose ?? (() => undefined);
+
+	let autocompleteValues: Record<string, string> = $state({});
+	let autocompleteCompletions: Record<string, AutocompleteCompletion[]> = $state({});
+	let autocompleteImages: Record<string, string | null> = $state({});
+	let autocompleteRequestIds: Record<string, number> = $state({});
+
+	function fieldId(field: CrudField): string {
+		return field.id ?? field.name.toLowerCase();
+	}
+
+	function stringValue(value: FieldValue): string {
+		if (typeof value === 'string') {
+			return value;
+		}
+		if (typeof value === 'number' || typeof value === 'boolean') {
+			return String(value);
+		}
+		return '';
+	}
+
+	function inputValue(value: FieldValue): string | number {
+		return typeof value === 'number' ? value : stringValue(value);
+	}
+
+	function documentPreviews(value: FieldValue): DocumentPreview[] {
+		return Array.isArray(value) ? value : [];
+	}
+
+	function fileName(value: FieldValue): string {
+		return value instanceof File ? value.name : '';
+	}
+
+	function completionKey(completion: AutocompleteCompletion): string {
+		return String(completion.id ?? completion.value);
+	}
+
+	function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
+		return typeof value === 'object' && value !== null && 'then' in value;
+	}
 </script>
 
 <div
@@ -70,40 +161,40 @@
 				<!-- Modal body -->
 				<form action="#">
 					<div class="mb-4 grid gap-4 sm:grid-cols-2">
-						{#each fields as field (field.id || field.name)}
+						{#each fields as field (fieldId(field))}
 							<div class={field.wide ? 'col-span-2' : ''}>
-								{#if field.type == 'document' || field.type == 'img'}
+								{#if field.type === 'document' || field.type === 'img'}
 									<p
 										class="mb-2 block text-sm font-medium text-white"
-										data-utils={field.data || ''}
+										data-utils={field.data ?? ''}
 									>
 										{field.name}
 									</p>
 								{:else if field.type !== 'duplicate' && field.type !== 'info'}
 									<div
 										class="mb-2 block text-sm font-medium text-white"
-										data-utils={field.data || ''}
+										data-utils={field.data ?? ''}
 									>
 										{field.name}{field.required ? ' *' : ''}
 									</div>
 								{/if}
 								{#if field.type === 'select'}
 									<select
-										id={field.id || field.name.toLowerCase()}
-										name={field.id || field.name.toLowerCase()}
-										class="almarai-regular block w-full cursor-pointer rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-										onchange={field.onChange || null}
-										disabled={field.readonly || false}
+										id={fieldId(field)}
+										name={fieldId(field)}
+										class="almarai-regular focus:border-primary-500 focus:ring-primary-500 block w-full cursor-pointer rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
+										onchange={field.onChange ?? null}
+										disabled={field.readonly ?? false}
 									>
-										{#if (field.readonly || false) == false && !field.required}<option
+										{#if !field.readonly && !field.required}<option
 												selected={!field.autoselect}
 												value="NULL">----------</option
 											>
 										{/if}
-										{#each field.options as option (option.value)}
+										{#each field.options ?? [] as option (option.value)}
 											<option
 												value={option.value}
-												data-utils={option.data || ''}
+												data-utils={option.data ?? ''}
 												selected={option.selected}>{option.text}</option
 											>
 										{/each}
@@ -117,56 +208,58 @@
 								{:else if field.type === 'number'}
 									<input
 										type="number"
-										name={field.id || field.name.toLowerCase()}
-										id={field.id || field.name.toLowerCase()}
-										class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-										placeholder={field.placeholder || field.name.toLowerCase()}
+										name={fieldId(field)}
+										id={fieldId(field)}
+										class=" focus:border-primary-500 focus:ring-primary-500 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
+										placeholder={field.placeholder ?? field.name.toLowerCase()}
 										required={field.required}
-										value={field.value || ''}
-										min={field.min || 0}
-										max={field.max || 2000}
-										step={field.step || 1}
-										readonly={field.readonly || false}
+										value={inputValue(field.value)}
+										min={field.min ?? 0}
+										max={field.max ?? 2000}
+										step={field.step ?? 1}
+										readonly={field.readonly ?? false}
 									/>
 								{:else if field.type === 'textarea'}
 									<textarea
-										name={field.id || field.name.toLowerCase()}
-										id={field.id || field.name.toLowerCase()}
-										class=" block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-										placeholder={field.placeholder || field.name.toLowerCase()}
+										name={fieldId(field)}
+										id={fieldId(field)}
+										class=" focus:border-primary-500 focus:ring-primary-500 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
+										placeholder={field.placeholder ?? field.name.toLowerCase()}
 										required={field.required}
-										value={field.value || ''}
-										readonly={field.readonly || false}
+										value={stringValue(field.value)}
+										readonly={field.readonly ?? false}
 									></textarea>
 								{:else if field.type === 'img'}
 									<input
 										type="file"
-										name={field.id || field.name.toLowerCase()}
-										id={field.id || field.name.toLowerCase()}
+										name={fieldId(field)}
+										id={fieldId(field)}
 										accept="image/png, image/jpeg"
 										class="hidden"
-										onchange={field.onChange ||
+										onchange={field.onChange ??
 											((e) => {
-												const target = e.target as HTMLInputElement;
+												const target = e.currentTarget;
 												const file = target.files?.[0];
 												if (file) {
 													const reader = new FileReader();
 													reader.onload = (fileEvent) => {
-														const fileTarget = fileEvent.target as FileReader;
-														field.value = fileTarget.result;
+														const result = fileEvent.target?.result;
+														if (typeof result === 'string') {
+															field.value = result;
+														}
 													};
 													reader.readAsDataURL(file);
 												}
 											})}
 									/>
 									<label
-										for={field.id || field.name.toLowerCase()}
-										class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+										for={fieldId(field)}
+										class="focus:border-primary-500 focus:ring-primary-500 flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
 									>
 										{#if field.value}
 											<img
 												id="svelte_breffffffffff"
-												src={field.value}
+												src={stringValue(field.value)}
 												alt={field.name}
 												class="h-full w-full rounded-lg object-contain"
 											/>
@@ -188,7 +281,7 @@
 										<div
 											class="mb-2 flex w-full flex-col items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 										>
-											{#each field.value as doc (doc.id)}
+											{#each documentPreviews(field.value) as doc (doc.id ?? doc.name)}
 												<div class="flex w-full items-center gap-2 border-gray-600 py-1">
 													<svg
 														aria-hidden="true"
@@ -209,13 +302,15 @@
 													</p>
 													<button
 														type="button"
-														aria-label="Remove {doc.name}"
+														aria-label={`Remove ${doc.name}`}
 														class="hover: ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
 														onclick={async (e: MouseEvent) => {
-															field.value = field.value.filter(
-																(el: { name: string }) => el.name != doc.name
+															field.value = documentPreviews(field.value).filter(
+																(el) => el.name !== doc.name
 															);
-															if (field.onRemove) await field.onRemove(e, doc.name);
+															if (field.onRemove) {
+																await field.onRemove(e, doc.name);
+															}
 														}}
 													>
 														<svg
@@ -239,14 +334,14 @@
 									{/if}
 									<input
 										type="file"
-										name={field.id || field.name.toLowerCase()}
-										id={field.id || field.name.toLowerCase()}
-										multiple={field.multiple || false}
+										name={fieldId(field)}
+										id={fieldId(field)}
+										multiple={field.multiple ?? false}
 										accept="image/png, image/jpeg, application/pdf, application/octet-stream"
 										class="hidden"
-										onchange={field.onChange ||
+										onchange={field.onChange ??
 											((e) => {
-												const target = e.target as HTMLInputElement;
+												const target = e.currentTarget;
 												const selectedFiles = [...(target.files ?? [])];
 												if (selectedFiles.length) {
 													if (field.multiple) {
@@ -259,24 +354,28 @@
 															if (preview && file && preview.type.split('/')[0] === 'image') {
 																const reader = new FileReader();
 																reader.onload = (fileEvent) => {
-																	const fileTarget = fileEvent.target as FileReader;
-																	if (typeof fileTarget.result === 'string') {
-																		preview.value = fileTarget.result;
+																	const result = fileEvent.target?.result;
+																	if (typeof result === 'string') {
+																		preview.value = result;
 																	}
 																};
 																reader.readAsDataURL(file);
 															}
 														}
-														field.value = [...field.value, ...temp_arr];
+														field.value = [...documentPreviews(field.value), ...temp_arr];
 													} else {
 														const file = selectedFiles[0];
-														if (!file) return;
+														if (!file) {
+															return;
+														}
 														field.data = file.type.split('/')[0];
 														if (field.data === 'image') {
 															const reader = new FileReader();
 															reader.onload = (fileEvent) => {
-																const fileTarget = fileEvent.target as FileReader;
-																field.value = fileTarget.result;
+																const result = fileEvent.target?.result;
+																if (typeof result === 'string') {
+																	field.value = result;
+																}
 															};
 															reader.readAsDataURL(file);
 														} else {
@@ -287,19 +386,19 @@
 											})}
 									/>
 									<label
-										for={field.id || field.name.toLowerCase()}
-										class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+										for={fieldId(field)}
+										class="focus:border-primary-500 focus:ring-primary-500 flex h-12 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
 									>
 										{#if field.value && field.data === 'image' && !field.multiple}
 											<img
 												id="svelte_breffffffffff"
-												src={field.value}
+												src={stringValue(field.value)}
 												alt={field.name}
 												class="h-full w-full rounded-lg object-contain"
 											/>
 										{:else if field.value && field.data === 'application' && !field.multiple}
 											<p>
-												{field.value.name}
+												{fileName(field.value)}
 											</p>
 										{:else}
 											<svg
@@ -318,17 +417,23 @@
 									<!--Duplicate is a + btn to replicate the last collumn -->
 									<button
 										type="button"
-										class="flex h-8 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+										class="focus:border-primary-500 focus:ring-primary-500 flex h-8 w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
 										onclick={() => {
-											const clean_filter = fields.filter((el) => el.type != 'duplicate');
-											let lasts = []; // get the last full row, 1 if wide, 2 if not
+											const clean_filter = fields.filter((el) => el.type !== 'duplicate');
+											let lasts: CrudField[] = []; // get the last full row, 1 if wide, 2 if not
 											for (let i = clean_filter.length - 1; i >= 0; i--) {
-												if (lasts.length == 2) break;
-												if (clean_filter[i].wide) {
-													lasts.push({ ...clean_filter[i] });
+												if (lasts.length === 2) {
+													break;
+												}
+												const fieldToClone = clean_filter[i];
+												if (!fieldToClone) {
+													continue;
+												}
+												if (fieldToClone.wide) {
+													lasts.push({ ...fieldToClone });
 													break;
 												} else {
-													lasts.push({ ...clean_filter[i] });
+													lasts.push({ ...fieldToClone });
 												}
 											}
 
@@ -337,11 +442,12 @@
 												el.value = '';
 												el.data = '';
 												// add number at the end of the id
-												const num = parseInt(el.id.match(/\d+/g));
-												if (num) {
-													el.id = el.id.replace(/\d+/g, num + 1);
+												const match = el.id?.match(/\d+/g)?.[0];
+												const num = match ? Number.parseInt(match, 10) : 0;
+												if (num && el.id) {
+													el.id = el.id.replace(/\d+/g, String(num + 1));
 												} else {
-													el.id = el.id + '_1';
+													el.id = `${el.id ?? fieldId(el)}_1`;
 												}
 												return el;
 											});
@@ -349,19 +455,19 @@
 											fields = [
 												...clean_filter,
 												...lasts.reverse(),
-												{ type: 'duplicate', wide: true }
+												{ name: 'duplicate', type: 'duplicate', wide: true }
 											];
 										}}
 										>+
 									</button>
 								{:else if field.type === 'autocomplete'}
-									{@const fieldKey = field.id || field.name.toLowerCase()}
+									{@const fieldKey = fieldId(field)}
 									{@const inputValue = autocompleteValues[fieldKey] ?? field.value ?? ''}
 									{@const completion = autocompleteCompletions[fieldKey] ?? field.completion ?? []}
 									{@const displayImage = autocompleteImages[fieldKey] ?? field.image}
 									<div class="relative w-full">
 										<div
-											class="flex w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
+											class="focus:border-primary-500 focus:ring-primary-500 flex w-full items-center justify-center rounded-lg border border-gray-600 bg-gray-700 text-sm text-white placeholder-gray-400"
 										>
 											{#if displayImage}
 												<img
@@ -372,61 +478,67 @@
 											{/if}
 											<input
 												type="text"
-												id={field.id || field.name.toLowerCase()}
-												class=" bordertext-sm block w-full rounded-lg border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-												placeholder={field.placeholder || field.name.toLowerCase()}
+												id={fieldId(field)}
+												class=" bordertext-sm focus:border-primary-500 focus:ring-primary-500 block w-full rounded-lg border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400"
+												placeholder={field.placeholder ?? field.name.toLowerCase()}
 												required={field.required}
-												value={inputValue}
-												readonly={field.readonly || false}
-												name={field.id || field.name.toLowerCase()}
+												value={stringValue(inputValue)}
+												readonly={field.readonly ?? false}
+												name={fieldId(field)}
 												oninput={(e) => {
-													const target = e.target as HTMLInputElement;
-													if (target) {
-														const nextValue = target.value;
-														autocompleteValues = {
-															...autocompleteValues,
-															[fieldKey]: nextValue
+													const target = e.currentTarget;
+													const nextValue = target.value;
+													autocompleteValues = {
+														...autocompleteValues,
+														[fieldKey]: nextValue
+													};
+													field.value = nextValue;
+													const result = field.onChange?.(e);
+													if (isPromiseLike<AutocompleteCompletion[] | undefined>(result)) {
+														const requestId = (autocompleteRequestIds[fieldKey] ?? 0) + 1;
+														autocompleteRequestIds = {
+															...autocompleteRequestIds,
+															[fieldKey]: requestId
 														};
-														field.value = nextValue;
-														const result = field.onChange ? field.onChange(e) : [];
-														if (result && typeof result.then === 'function') {
-															const requestId = (autocompleteRequestIds[fieldKey] || 0) + 1;
-															autocompleteRequestIds = {
-																...autocompleteRequestIds,
-																[fieldKey]: requestId
-															};
-															result
-																.then((completion: any[]) => {
-																	if (autocompleteRequestIds[fieldKey] !== requestId) return;
-																	autocompleteCompletions = {
-																		...autocompleteCompletions,
-																		[fieldKey]: completion || []
-																	};
-																})
-																.catch((error: any) => {
-																	console.error('[admin][trainer-search] onChange failed', error);
-																});
-														} else {
-															autocompleteCompletions = {
-																...autocompleteCompletions,
-																[fieldKey]: (result as any[]) || []
-															};
-														}
+														result
+															.then((completion) => {
+																if (autocompleteRequestIds[fieldKey] !== requestId) {
+																	return;
+																}
+																autocompleteCompletions = {
+																	...autocompleteCompletions,
+																	[fieldKey]: completion ?? []
+																};
+															})
+															.catch(() => {
+																if (autocompleteRequestIds[fieldKey] !== requestId) {
+																	return;
+																}
+																autocompleteCompletions = {
+																	...autocompleteCompletions,
+																	[fieldKey]: []
+																};
+															});
+													} else {
+														autocompleteCompletions = {
+															...autocompleteCompletions,
+															[fieldKey]: result ?? []
+														};
 													}
 												}}
 											/>
 										</div>
-										{#if completion?.length > 0}
+										{#if completion.length > 0}
 											<div
-												class="almarai-regular absolute top-full left-0 z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white focus:border-primary-500 focus:ring-primary-500"
+												class="almarai-regular focus:border-primary-500 focus:ring-primary-500 absolute top-full left-0 z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-600 bg-gray-700 p-2 pl-4 text-sm text-white"
 											>
-												{#each completion as c (c.id)}
+												{#each completion as c (completionKey(c))}
 													<button
 														type="button"
 														class="almarai-regular flex w-full items-center rounded-lg border-b border-gray-700 {c.image
 															? 'p-1'
 															: ''} cursor-pointer"
-														onclick={async (e) => {
+														onclick={async () => {
 															field.value = c.text;
 															field.data = c.value;
 															field.completion = [];
@@ -436,16 +548,10 @@
 															}
 															autocompleteImages = {
 																...autocompleteImages,
-																[fieldKey]: c.image || null
+																[fieldKey]: c.image ?? null
 															};
 															// call onSelect function if exists
-															if (
-																field.onSelect &&
-																field.onSelect.constructor.name == 'AsyncFunction'
-															)
-																await field.onSelect(c.value);
-															if (field.onSelect && field.onSelect.constructor.name == 'Function')
-																field.onSelect(c.value);
+															await field.onSelect?.(c.value);
 															autocompleteValues = {
 																...autocompleteValues,
 																[fieldKey]: c.text
@@ -478,18 +584,18 @@
 									</div>
 								{:else if field.type === 'checkbox'}
 									<label
-										for={field.id || field.name.toLowerCase()}
+										for={fieldId(field)}
 										class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-600 bg-gray-700 p-2 text-sm text-white"
 									>
 										<Checkbox
-											id={field.id || field.name.toLowerCase()}
-											name={field.id || field.name.toLowerCase()}
-											value={field.value ?? ''}
+											id={fieldId(field)}
+											name={fieldId(field)}
+											value={stringValue(field.value)}
 											required={field.required}
 											className="size-4"
-											disabled={field.readonly || false}
+											disabled={field.readonly ?? false}
 											checked={field.checked ?? false}
-											onchange={(event) => {
+											onchange={(event: Event) => {
 												const target = event.currentTarget as HTMLInputElement | null;
 												field.checked = target?.checked === true;
 												fields = [...fields];
@@ -505,13 +611,13 @@
 								{:else}
 									<input
 										type={field.type}
-										name={field.id || field.name.toLowerCase()}
-										id={field.id || field.name.toLowerCase()}
-										class="block w-full cursor-text rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-										placeholder={field.placeholder || field.name.toLowerCase()}
+										name={fieldId(field)}
+										id={fieldId(field)}
+										class="focus:border-primary-500 focus:ring-primary-500 block w-full cursor-text rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
+										placeholder={field.placeholder ?? field.name.toLowerCase()}
 										required={field.required}
-										value={field.value || ''}
-										readonly={field.readonly || false}
+										value={inputValue(field.value)}
+										readonly={field.readonly ?? false}
 									/>
 								{/if}
 							</div>
@@ -519,13 +625,15 @@
 					</div>
 					<button
 						type="submit"
-						class={`inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:ring-primary-800 focus:outline-none ${
+						class={`bg-primary-600 focus:ring-primary-800 inline-flex items-center rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:outline-none ${
 							submitting ? 'cursor-not-allowed opacity-60' : 'hover:bg-primary-700'
 						}`}
 						disabled={submitting}
 						onclick={(e) => {
-							if (submitting) return;
-							onSubmit(e);
+							if (submitting) {
+								return;
+							}
+							void onSubmit(e);
 						}}
 					>
 						<svg

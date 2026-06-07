@@ -1,68 +1,106 @@
-<script>
-	/** @type {{title?: string, permissionCategories?: any, permissionPackages?: any, projectOptions?: any, initialPermissions?: any, initialProject?: string, onSubmit?: any, onClose?: any}} */
-	let {
+<script lang="ts">
+	interface Permission {
+		value: string;
+		label: string;
+	}
+
+	interface PermissionPackage {
+		label: string;
+		perms: string[];
+	}
+
+	interface ProjectOption {
+		name: string;
+		value: string;
+	}
+
+	interface ImportUser {
+		name: string;
+		email: string;
+		project: string;
+	}
+
+	interface SubmitPayload {
+		permissions: string[];
+		project: string;
+		users: ImportUser[];
+	}
+
+	interface UserImportModalProps {
+		title?: string;
+		permissionCategories?: Record<string, Permission[]>;
+		permissionPackages?: PermissionPackage[];
+		projectOptions?: ProjectOption[];
+		initialPermissions?: string[];
+		initialProject?: string;
+		onSubmit?: (payload: SubmitPayload) => Promise<void> | void;
+		onClose?: (() => void) | null;
+	}
+
+	const {
 		title = 'Ajouter des utilisateurs',
 		permissionCategories = {},
 		permissionPackages = [],
 		projectOptions = [],
 		initialPermissions = [],
 		initialProject = '',
-		onSubmit = async (_) => {},
+		onSubmit = () => Promise.resolve(),
 		onClose = null
-	} = $props();
+	}: UserImportModalProps = $props();
 
 	const tabs = [
 		{ id: 'simple', label: 'Simple' },
 		{ id: 'bulk', label: 'Bulk' },
 		{ id: 'csv', label: 'CSV' }
-	];
+	] as const;
 
-	let activeTab = $state('simple');
-	let selectedPermissions = $derived(
-		Array.isArray(initialPermissions) ? [...initialPermissions] : []
-	);
-	let selectedProject = $derived(initialProject);
-	let simpleUser = $derived({ name: '', email: '', project: initialProject || '' });
-	let bulkUsers = $derived([{ name: '', email: '', project: initialProject || '' }]);
-	let csvUsers = $state([]);
-	let csvInput = $state();
+	let activeTab = $state<(typeof tabs)[number]['id']>('simple');
+	let selectedPermissions = $state([...initialPermissions]);
+	let selectedProject = $state(initialProject);
+	const simpleUser = $state<ImportUser>({ name: '', email: '', project: initialProject });
+	let bulkUsers = $state<ImportUser[]>([{ name: '', email: '', project: initialProject }]);
+	let csvUsers = $state<ImportUser[]>([]);
+	let csvInput = $state<HTMLInputElement | null>(null);
 	let errorMessage = $state('');
 	let isSubmitting = $state(false);
 	let recentCsvName = $state('');
 
 	function close() {
-		if (typeof onClose === 'function') onClose();
+		if (typeof onClose === 'function') {
+			onClose();
+		}
 	}
 
 	function addBulkUser() {
-		bulkUsers = [...bulkUsers, { name: '', email: '', project: selectedProject || '' }];
+		bulkUsers = [...bulkUsers, { name: '', email: '', project: selectedProject }];
 	}
 
-	function duplicateBulkUser(index) {
-		const cloned = { ...bulkUsers[index] };
-		bulkUsers = [
-			...bulkUsers,
-			{ name: cloned.name, email: cloned.email, project: cloned.project || '' }
-		];
+	function duplicateBulkUser(index: number) {
+		const cloned = bulkUsers[index];
+		if (!cloned) {
+			return;
+		}
+		bulkUsers = [...bulkUsers, { name: cloned.name, email: cloned.email, project: cloned.project }];
 	}
 
-	function removeBulkUser(index) {
+	function removeBulkUser(index: number) {
 		if (bulkUsers.length === 1) {
-			bulkUsers = [{ name: '', email: '', project: selectedProject || '' }];
+			bulkUsers = [{ name: '', email: '', project: selectedProject }];
 			return;
 		}
 		bulkUsers = bulkUsers.filter((_, i) => i !== index);
 	}
 
-	function validateEmail(email) {
+	function validateEmail(email: string) {
 		const re = /[^@\s]+@[^@\s]+\.[^@\s]+/;
 		return re.test(email);
 	}
 
-	function sanitizeHeader(label) {
-		if (!label) return '';
+	function sanitizeHeader(label: string | undefined) {
+		if (!label) {
+			return '';
+		}
 		return label
-			.toString()
 			.trim()
 			.toLowerCase()
 			.normalize('NFD')
@@ -70,10 +108,11 @@
 			.replace(/[^a-z0-9]+/g, '');
 	}
 
-	function normalizeValue(value) {
-		if (!value) return '';
+	function normalizeValue(value: string | undefined) {
+		if (!value) {
+			return '';
+		}
 		return value
-			.toString()
 			.trim()
 			.toLowerCase()
 			.normalize('NFD')
@@ -81,13 +120,17 @@
 			.replace(/[^a-z0-9]+/g, '');
 	}
 
-	function inferProjectFromStatuses(rawStatuses, fallbackProject = '') {
-		if (!rawStatuses) return fallbackProject;
+	function inferProjectFromStatuses(rawStatuses: string, fallbackProject = '') {
+		if (!rawStatuses) {
+			return fallbackProject;
+		}
 		const tokens = rawStatuses.split(/[;,]/).map(normalizeValue).filter(Boolean);
 		const joinedStatuses = normalizeValue(rawStatuses);
 		for (const option of projectOptions) {
 			const normalizedOption = normalizeValue(option.name);
-			if (!normalizedOption) continue;
+			if (!normalizedOption) {
+				continue;
+			}
 			if (tokens.includes(normalizedOption) || joinedStatuses.includes(normalizedOption)) {
 				return option.value;
 			}
@@ -95,12 +138,12 @@
 		return fallbackProject;
 	}
 
-	function parseCsvRow(row) {
-		const cells = [];
+	function parseCsvRow(row: string) {
+		const cells: string[] = [];
 		let current = '';
 		let inQuotes = false;
 		for (let i = 0; i < row.length; i += 1) {
-			const char = row[i];
+			const char = row[i] ?? '';
 			if (char === '"') {
 				if (inQuotes && row[i + 1] === '"') {
 					current += '"';
@@ -119,12 +162,16 @@
 		return cells.map((value) => value.trim());
 	}
 
-	function parseCsv(content, fallbackProject = '') {
+	function parseCsv(content: string, fallbackProject = ''): ImportUser[] {
 		const trimmed = content.replace(/^\uFEFF/, '').trim();
-		if (!trimmed) return [];
+		if (!trimmed) {
+			return [];
+		}
 		const lines = trimmed.split(/\r?\n/).filter((line) => line.trim().length > 0);
-		if (lines.length === 0) return [];
-		const headers = parseCsvRow(lines[0]).map(sanitizeHeader);
+		if (lines.length === 0) {
+			return [];
+		}
+		const headers = parseCsvRow(lines[0] ?? '').map(sanitizeHeader);
 
 		const firstNameIdx = headers.findIndex((h) => ['prenom', 'firstname', 'first'].includes(h));
 		const lastNameIdx = headers.findIndex((h) => ['nom', 'lastname', 'last'].includes(h));
@@ -141,17 +188,19 @@
 			);
 		}
 
-		const imported = [];
+		const imported: ImportUser[] = [];
 		for (let i = 1; i < lines.length; i += 1) {
-			const cells = parseCsvRow(lines[i]);
-			const email = (cells[emailIdx] || '').trim();
-			if (!email) continue;
-			const firstName = firstNameIdx !== -1 ? (cells[firstNameIdx] || '').trim() : '';
-			const lastName = lastNameIdx !== -1 ? (cells[lastNameIdx] || '').trim() : '';
-			const statuses = statusIdx !== -1 ? cells[statusIdx] || '' : '';
+			const cells = parseCsvRow(lines[i] ?? '');
+			const email = (cells[emailIdx] ?? '').trim();
+			if (!email) {
+				continue;
+			}
+			const firstName = firstNameIdx !== -1 ? (cells[firstNameIdx] ?? '').trim() : '';
+			const lastName = lastNameIdx !== -1 ? (cells[lastNameIdx] ?? '').trim() : '';
+			const statuses = statusIdx !== -1 ? (cells[statusIdx] ?? '') : '';
 			let name = `${firstName} ${lastName}`.trim();
 			if (!name) {
-				const localPart = email.split('@')[0] || '';
+				const localPart = email.split('@')[0] ?? '';
 				name = localPart.replace(/\W+/g, ' ').trim();
 			}
 			const project = inferProjectFromStatuses(statuses, fallbackProject);
@@ -165,42 +214,47 @@
 		return imported;
 	}
 
-	function handleCsvChange(event) {
+	function handleCsvChange(event: Event) {
 		errorMessage = '';
 		recentCsvName = '';
-		const file = event?.target?.files?.[0];
-		if (!file) return;
+		const input = event.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) {
+			return;
+		}
 		if (!/(csv|plain|text)$/i.test(file.type) && !file.name.toLowerCase().endsWith('.csv')) {
 			errorMessage = 'Le fichier doit être un CSV.';
-			event.target.value = '';
+			input.value = '';
 			return;
 		}
 		const reader = new FileReader();
 		reader.onload = () => {
 			try {
 				const text = typeof reader.result === 'string' ? reader.result : '';
-				const importedUsers = parseCsv(text, selectedProject || '');
+				const importedUsers = parseCsv(text, selectedProject);
 				const existing = csvUsers.filter((u) => u.name || u.email || u.project);
 				csvUsers = [...existing, ...importedUsers];
 				recentCsvName = file.name;
 				errorMessage = '';
 			} catch (err) {
-				errorMessage = err?.message || 'Impossible de lire le fichier CSV.';
+				errorMessage = err instanceof Error ? err.message : 'Impossible de lire le fichier CSV.';
 			}
-			event.target.value = '';
+			input.value = '';
 		};
 		reader.onerror = () => {
 			errorMessage = 'Impossible de lire le fichier CSV.';
-			event.target.value = '';
+			input.value = '';
 		};
 		reader.readAsText(file, 'utf-8');
 	}
 
 	function triggerCsvDialog() {
-		if (csvInput) csvInput.click();
+		if (csvInput) {
+			csvInput.click();
+		}
 	}
 
-	function removeCsvUser(index) {
+	function removeCsvUser(index: number) {
 		csvUsers = csvUsers.filter((_, i) => i !== index);
 	}
 
@@ -209,27 +263,19 @@
 		recentCsvName = '';
 	}
 
-	async function submit(e) {
+	async function submit(e: SubmitEvent) {
 		e.preventDefault();
 		errorMessage = '';
 
-		const trimmedProject = (selectedProject ?? '').toString().trim();
-		const finalPermissions = Array.isArray(selectedPermissions)
-			? selectedPermissions.filter(Boolean)
-			: [];
-		let sourceUsers = [];
-		if (activeTab === 'simple') {
-			sourceUsers = [simpleUser];
-		} else if (activeTab === 'bulk') {
-			sourceUsers = bulkUsers;
-		} else {
-			sourceUsers = csvUsers;
-		}
+		const trimmedProject = selectedProject.trim();
+		const finalPermissions = selectedPermissions.filter(Boolean);
+		const sourceUsers =
+			activeTab === 'simple' ? [simpleUser] : activeTab === 'bulk' ? bulkUsers : csvUsers;
 		const preparedUsers = sourceUsers
 			.map((u) => ({
-				name: (u.name || '').trim(),
-				email: (u.email || '').trim(),
-				project: (u.project || '').toString().trim()
+				name: u.name.trim(),
+				email: u.email.trim(),
+				project: u.project.trim()
 			}))
 			.filter((u) => u.name || u.email);
 
@@ -264,7 +310,8 @@
 			});
 			close();
 		} catch (err) {
-			errorMessage = err?.message || "Une erreur est survenue lors de l'import.";
+			errorMessage =
+				err instanceof Error ? err.message : "Une erreur est survenue lors de l'import.";
 		} finally {
 			isSubmitting = false;
 		}
@@ -272,20 +319,20 @@
 </script>
 
 <div
-	class="fixed inset-0 z-50 flex items-center justify-center w-full h-full overflow-y-auto bg-black/40 backdrop-blur-sm"
+	class="fixed inset-0 z-50 flex h-full w-full items-center justify-center overflow-y-auto bg-black/40 backdrop-blur-sm"
 >
 	<div class="relative w-full max-w-3xl p-4">
-		<div class="relative p-6 bg-gray-800 rounded-lg shadow-xl">
-			<div class="flex items-center justify-between mb-6">
+		<div class="relative rounded-lg bg-gray-800 p-6 shadow-xl">
+			<div class="mb-6 flex items-center justify-between">
 				<h3 class="text-lg font-semibold text-white">{title}</h3>
 				<button
 					type="button"
-					class="text-gray-400 transition-colors rounded-lg hover:text-white"
+					class="rounded-lg text-gray-400 transition-colors hover:text-white"
 					onclick={close}
 					aria-label="Fermer"
 				>
 					<svg
-						class="w-5 h-5"
+						class="h-5 w-5"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
@@ -302,12 +349,12 @@
 			<form class="space-y-6" onsubmit={submit}>
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div class="col-span-2 sm:col-span-1">
-						<label class="block mb-2 text-sm font-medium text-white" for="permissions-details">
+						<label class="mb-2 block text-sm font-medium text-white" for="permissions-details">
 							Permissions
 						</label>
-						<details id="permissions-details" class="border border-gray-600 rounded-lg bg-gray-700">
+						<details id="permissions-details" class="rounded-lg border border-gray-600 bg-gray-700">
 							<summary
-								class="flex w-full items-center justify-between cursor-pointer select-none p-2.5"
+								class="flex w-full cursor-pointer items-center justify-between p-2.5 select-none"
 							>
 								<span class="text-sm font-medium text-white">Sélectionner des permissions</span>
 								<span class="text-xs text-gray-400"
@@ -315,26 +362,26 @@
 								>
 							</summary>
 							<div class="mt-3 max-h-64 overflow-y-auto pr-1">
-								<div class="flex items-center justify-end mb-3">
+								<div class="mb-3 flex items-center justify-end">
 									<button
 										type="button"
-										class="text-xs text-red-300 hover:text-red-200 underline"
+										class="text-xs text-red-300 underline hover:text-red-200"
 										onclick={() => (selectedPermissions = [])}
 									>
 										Tout décocher
 									</button>
 								</div>
-								{#if permissionPackages && permissionPackages.length > 0}
+								{#if permissionPackages.length > 0}
 									<div
-										class="flex flex-wrap gap-2 mb-4 p-3 mx-2.5 bg-gray-800 border border-gray-600 rounded-lg"
+										class="mx-2.5 mb-4 flex flex-wrap gap-2 rounded-lg border border-gray-600 bg-gray-800 p-3"
 									>
-										<p class="w-full text-xs text-gray-400 font-semibold mb-1">
+										<p class="mb-1 w-full text-xs font-semibold text-gray-400">
 											Packs prédéfinis :
 										</p>
-										{#each permissionPackages as pack}
+										{#each permissionPackages as pack (pack.label)}
 											<button
 												type="button"
-												class="px-2 py-1 text-xs text-white bg-gray-700 hover:bg-primary-600 hover:text-white transition-colors border border-gray-500 rounded-md"
+												class="hover:bg-primary-600 rounded-md border border-gray-500 bg-gray-700 px-2 py-1 text-xs text-white transition-colors hover:text-white"
 												onclick={() => (selectedPermissions = [...pack.perms])}
 											>
 												{pack.label}
@@ -343,24 +390,25 @@
 									</div>
 								{/if}
 
-								{#if Object.keys(permissionCategories || {}).length > 0}
-									<div class="grid grid-cols-1 gap-4 mb-2.5">
-										{#each Object.entries(permissionCategories) as [catName, perms]}
-											<div class="bg-gray-800 mx-2.5 p-3 rounded-lg border border-gray-700">
+								{#if Object.keys(permissionCategories).length > 0}
+									<div class="mb-2.5 grid grid-cols-1 gap-4">
+										{#each Object.entries(permissionCategories) as [catName, perms] (catName)}
+											<div class="mx-2.5 rounded-lg border border-gray-700 bg-gray-800 p-3">
 												<h4
-													class="text-white text-sm font-semibold mb-3 border-b border-gray-700 pb-1"
+													class="mb-3 border-b border-gray-700 pb-1 text-sm font-semibold text-white"
 												>
 													{catName}
 												</h4>
 												<div class="flex flex-col gap-2">
-													{#each perms as perm}
-														<label class="inline-flex items-center group cursor-pointer">
+													{#each perms as perm (perm.value)}
+														<label class="group inline-flex cursor-pointer items-center">
 															<input
 																type="checkbox"
 																value={perm.value}
 																checked={selectedPermissions.includes(perm.value)}
 																onchange={(e) => {
-																	if (e.target.checked) {
+																	const input = e.currentTarget;
+																	if (input.checked) {
 																		if (!selectedPermissions.includes(perm.value)) {
 																			selectedPermissions = [...selectedPermissions, perm.value];
 																		}
@@ -370,10 +418,10 @@
 																		);
 																	}
 																}}
-																class="form-checkbox h-4 w-4 text-primary-600 bg-gray-900 border-gray-500 rounded focus:ring-primary-600 focus:ring-2 transition duration-200 cursor-pointer"
+																class="form-checkbox text-primary-600 focus:ring-primary-600 h-4 w-4 cursor-pointer rounded border-gray-500 bg-gray-900 transition duration-200 focus:ring-2"
 															/>
 															<span
-																class="ml-2 text-sm text-gray-300 group-hover:text-white transition-colors"
+																class="ml-2 text-sm text-gray-300 transition-colors group-hover:text-white"
 																>{perm.label}</span
 															>
 														</label>
@@ -390,30 +438,30 @@
 					</div>
 
 					<div class="col-span-2 sm:col-span-1">
-						<label class="block mb-2 text-sm font-medium text-white" for="bulk-project"
+						<label class="mb-2 block text-sm font-medium text-white" for="bulk-project"
 							>Projet</label
 						>
 						<select
 							id="bulk-project"
-							class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+							class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 							bind:value={selectedProject}
 						>
 							<option value="">Sélectionner un projet</option>
-							{#each projectOptions as option}
+							{#each projectOptions as option (option.value)}
 								<option value={option.value}>{option.name}</option>
 							{/each}
 						</select>
 					</div>
 				</div>
 
-				<div class="p-4 border border-gray-600 border-dashed rounded-lg bg-gray-900/50">
-					<div class="flex flex-wrap items-center gap-2 mb-4 border-b border-gray-700">
-						{#each tabs as tab}
+				<div class="rounded-lg border border-dashed border-gray-600 bg-gray-900/50 p-4">
+					<div class="mb-4 flex flex-wrap items-center gap-2 border-b border-gray-700">
+						{#each tabs as tab (tab.id)}
 							<button
 								type="button"
-								class={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+								class={`rounded-t-lg px-4 py-2 text-sm font-medium transition-colors ${
 									activeTab === tab.id
-										? 'text-white bg-gray-700 border border-gray-600 border-b-transparent'
+										? 'border border-gray-600 border-b-transparent bg-gray-700 text-white'
 										: 'text-gray-400 hover:text-white'
 								}`}
 								onclick={() => {
@@ -430,107 +478,107 @@
 						<div class="grid gap-4 sm:grid-cols-2">
 							<div class="sm:col-span-1">
 								<label
-									class="block mb-2 text-xs font-medium text-gray-400 uppercase"
+									class="mb-2 block text-xs font-medium text-gray-400 uppercase"
 									for="simple-name">Nom</label
 								>
 								<input
 									type="text"
 									id="simple-name"
-									class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+									class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 									bind:value={simpleUser.name}
 									placeholder="Nom de l'utilisateur"
 								/>
 							</div>
 							<div class="sm:col-span-1">
 								<label
-									class="block mb-2 text-xs font-medium text-gray-400 uppercase"
+									class="mb-2 block text-xs font-medium text-gray-400 uppercase"
 									for="simple-email">Email</label
 								>
 								<input
 									type="email"
 									id="simple-email"
-									class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+									class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 									bind:value={simpleUser.email}
 									placeholder="email@example.com"
 								/>
 							</div>
 							<div class="sm:col-span-2">
 								<label
-									class="block mb-2 text-xs font-medium text-gray-400 uppercase"
+									class="mb-2 block text-xs font-medium text-gray-400 uppercase"
 									for="simple-project">Projet</label
 								>
 								<select
 									id="simple-project"
-									class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+									class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 									bind:value={simpleUser.project}
 								>
 									<option value="">Sélectionner un projet</option>
-									{#each projectOptions as option}
+									{#each projectOptions as option (option.value)}
 										<option value={option.value}>{option.name}</option>
 									{/each}
 								</select>
 							</div>
 						</div>
 					{:else if activeTab === 'bulk'}
-						<div class="flex items-center justify-between gap-2 mb-4">
+						<div class="mb-4 flex items-center justify-between gap-2">
 							<p class="text-sm text-gray-300">Ajoutez plusieurs utilisateurs manuellement.</p>
 							<button
 								type="button"
-								class="px-3 py-1 text-sm font-medium text-white transition-colors rounded-md bg-primary-600 hover:bg-primary-700"
+								class="bg-primary-600 hover:bg-primary-700 rounded-md px-3 py-1 text-sm font-medium text-white transition-colors"
 								onclick={addBulkUser}
 							>
 								Ajouter une ligne
 							</button>
 						</div>
-						<div class="pr-1 space-y-4 overflow-y-auto max-h-80">
-							{#each bulkUsers as user, index}
+						<div class="max-h-80 space-y-4 overflow-y-auto pr-1">
+							{#each bulkUsers as user, index (`bulk-${String(index)}`)}
 								<div
-									class="grid items-end gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))_auto] grid-cols-1"
+									class="grid grid-cols-1 items-end gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))_auto]"
 								>
 									<div>
 										<label
-											class="block mb-2 text-xs font-medium text-gray-400 uppercase"
-											for={`bulk-name-${index}`}
+											class="mb-2 block text-xs font-medium text-gray-400 uppercase"
+											for={`bulk-name-${String(index)}`}
 										>
-											Nom {bulkUsers.length > 1 ? `#${index + 1}` : ''}
+											Nom {bulkUsers.length > 1 ? `#${String(index + 1)}` : ''}
 										</label>
 										<input
 											type="text"
-											id={`bulk-name-${index}`}
-											class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+											id={`bulk-name-${String(index)}`}
+											class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 											bind:value={user.name}
 											placeholder="Nom de l'utilisateur"
 										/>
 									</div>
 									<div>
 										<label
-											class="block mb-2 text-xs font-medium text-gray-400 uppercase"
-											for={`bulk-email-${index}`}
+											class="mb-2 block text-xs font-medium text-gray-400 uppercase"
+											for={`bulk-email-${String(index)}`}
 										>
-											Email {bulkUsers.length > 1 ? `#${index + 1}` : ''}
+											Email {bulkUsers.length > 1 ? `#${String(index + 1)}` : ''}
 										</label>
 										<input
 											type="email"
-											id={`bulk-email-${index}`}
-											class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+											id={`bulk-email-${String(index)}`}
+											class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 											bind:value={user.email}
 											placeholder="email@example.com"
 										/>
 									</div>
 									<div>
 										<label
-											class="block mb-2 text-xs font-medium text-gray-400 uppercase"
-											for={`bulk-project-${index}`}
+											class="mb-2 block text-xs font-medium text-gray-400 uppercase"
+											for={`bulk-project-${String(index)}`}
 										>
-											Projet {bulkUsers.length > 1 ? `#${index + 1}` : ''}
+											Projet {bulkUsers.length > 1 ? `#${String(index + 1)}` : ''}
 										</label>
 										<select
-											id={`bulk-project-${index}`}
-											class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+											id={`bulk-project-${String(index)}`}
+											class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 											bind:value={user.project}
 										>
 											<option value="">Sélectionner un projet</option>
-											{#each projectOptions as option}
+											{#each projectOptions as option (option.value)}
 												<option value={option.value}>{option.name}</option>
 											{/each}
 										</select>
@@ -538,16 +586,20 @@
 									<div class="flex items-center gap-2 sm:justify-end">
 										<button
 											type="button"
-											class="px-3 py-2 text-xs font-semibold tracking-wide text-white transition-colors border border-gray-600 rounded-md hover:bg-gray-700"
-											onclick={() => duplicateBulkUser(index)}
+											class="rounded-md border border-gray-600 px-3 py-2 text-xs font-semibold tracking-wide text-white transition-colors hover:bg-gray-700"
+											onclick={() => {
+												duplicateBulkUser(index);
+											}}
 										>
 											Dupliquer
 										</button>
 										{#if bulkUsers.length > 1}
 											<button
 												type="button"
-												class="px-3 py-2 text-xs font-semibold text-red-300 transition-colors border rounded-md border-red-400/40 hover:bg-red-500/20"
-												onclick={() => removeBulkUser(index)}
+												class="rounded-md border border-red-400/40 px-3 py-2 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/20"
+												onclick={() => {
+													removeBulkUser(index);
+												}}
 											>
 												Supprimer
 											</button>
@@ -557,7 +609,7 @@
 							{/each}
 						</div>
 					{:else}
-						<div class="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
+						<div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 							<div>
 								<p class="text-sm text-gray-300">
 									Importez un CSV et ajustez les données si nécessaire.
@@ -569,14 +621,14 @@
 							<div class="flex items-center gap-2">
 								<button
 									type="button"
-									class="px-3 py-1 text-sm font-medium text-white transition-colors border rounded-md border-primary-500/40 bg-primary-500/10 hover:bg-primary-600/40"
+									class="border-primary-500/40 bg-primary-500/10 hover:bg-primary-600/40 rounded-md border px-3 py-1 text-sm font-medium text-white transition-colors"
 									onclick={triggerCsvDialog}
 								>
 									Choisir un fichier
 								</button>
 								<button
 									type="button"
-									class="px-3 py-1 text-sm font-medium text-gray-300 transition-colors border border-gray-600 rounded-md hover:bg-gray-700"
+									class="rounded-md border border-gray-600 px-3 py-1 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
 									onclick={clearCsvUsers}
 									disabled={csvUsers.length === 0}
 								>
@@ -594,55 +646,55 @@
 						{#if csvUsers.length === 0}
 							<p class="text-sm text-gray-400">Aucun utilisateur importé pour le moment.</p>
 						{:else}
-							<div class="pr-1 space-y-4 overflow-y-auto max-h-80">
-								{#each csvUsers as user, index}
+							<div class="max-h-80 space-y-4 overflow-y-auto pr-1">
+								{#each csvUsers as user, index (`csv-${String(index)}`)}
 									<div
-										class="grid items-end gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))_auto] grid-cols-1"
+										class="grid grid-cols-1 items-end gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))_auto]"
 									>
 										<div>
 											<label
-												class="block mb-2 text-xs font-medium text-gray-400 uppercase"
-												for={`csv-name-${index}`}
+												class="mb-2 block text-xs font-medium text-gray-400 uppercase"
+												for={`csv-name-${String(index)}`}
 											>
 												Nom
 											</label>
 											<input
 												type="text"
-												id={`csv-name-${index}`}
-												class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+												id={`csv-name-${String(index)}`}
+												class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 												bind:value={user.name}
 												placeholder="Nom de l'utilisateur"
 											/>
 										</div>
 										<div>
 											<label
-												class="block mb-2 text-xs font-medium text-gray-400 uppercase"
-												for={`csv-email-${index}`}
+												class="mb-2 block text-xs font-medium text-gray-400 uppercase"
+												for={`csv-email-${String(index)}`}
 											>
 												Email
 											</label>
 											<input
 												type="email"
-												id={`csv-email-${index}`}
-												class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+												id={`csv-email-${String(index)}`}
+												class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 												bind:value={user.email}
 												placeholder="email@example.com"
 											/>
 										</div>
 										<div>
 											<label
-												class="block mb-2 text-xs font-medium text-gray-400 uppercase"
-												for={`csv-project-${index}`}
+												class="mb-2 block text-xs font-medium text-gray-400 uppercase"
+												for={`csv-project-${String(index)}`}
 											>
 												Projet
 											</label>
 											<select
-												id={`csv-project-${index}`}
-												class="w-full p-2.5 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:border-primary-500 focus:ring-primary-500"
+												id={`csv-project-${String(index)}`}
+												class="focus:border-primary-500 focus:ring-primary-500 w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white"
 												bind:value={user.project}
 											>
 												<option value="">Sélectionner un projet</option>
-												{#each projectOptions as option}
+												{#each projectOptions as option (option.value)}
 													<option value={option.value}>{option.name}</option>
 												{/each}
 											</select>
@@ -650,8 +702,10 @@
 										<div class="flex items-center gap-2 sm:justify-end">
 											<button
 												type="button"
-												class="px-3 py-2 text-xs font-semibold text-red-300 transition-colors border rounded-md border-red-400/40 hover:bg-red-500/20"
-												onclick={() => removeCsvUser(index)}
+												class="rounded-md border border-red-400/40 px-3 py-2 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/20"
+												onclick={() => {
+													removeCsvUser(index);
+												}}
 											>
 												Supprimer
 											</button>
@@ -670,19 +724,19 @@
 				<div class="flex items-center justify-end gap-3">
 					<button
 						type="button"
-						class="px-4 py-2 text-sm font-medium text-gray-300 transition-colors border border-gray-600 rounded-lg hover:bg-gray-700"
+						class="rounded-lg border border-gray-600 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
 						onclick={close}
 					>
 						Annuler
 					</button>
 					<button
 						type="submit"
-						class="inline-flex items-center px-5 py-2 text-sm font-medium text-white transition-colors rounded-lg bg-primary-600 hover:bg-primary-700 disabled:opacity-60 disabled:cursor-not-allowed"
+						class="bg-primary-600 hover:bg-primary-700 inline-flex items-center rounded-lg px-5 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
 						disabled={isSubmitting}
 					>
 						{#if isSubmitting}
 							<svg
-								class="w-4 h-4 mr-2 animate-spin"
+								class="mr-2 h-4 w-4 animate-spin"
 								viewBox="0 0 24 24"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"

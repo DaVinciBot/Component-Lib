@@ -1,7 +1,9 @@
 <script lang="ts">
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 
-	export let onRefresh = () => {};
+	const noop = () => undefined;
+
+	export let onRefresh: () => void = noop;
 	export let currentUserId: string | null = null;
 </script>
 

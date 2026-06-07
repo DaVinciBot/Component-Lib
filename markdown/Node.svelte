@@ -1,79 +1,106 @@
-<script>
+<script lang="ts">
 	import Heading from './Heading.svelte';
-	import Paragraph from './Paragraph.svelte';
-	import List from './List.svelte';
 	import Image from './Image.svelte';
+	import Link from './Link.svelte';
+	import List from './List.svelte';
+	import NodeComponent from './Node.svelte';
+	import Paragraph from './Paragraph.svelte';
 	import Table from './Table.svelte';
 	import TableCell from './TableCell.svelte';
-	import Link from './Link.svelte';
-	import { toString } from 'mdast-util-to-string';
-	import NodeComponent from './Node.svelte';
 
-	/** @type {{child: any}} */
-	let { child } = $props();
+	interface MarkdownNode {
+		type: string;
+		value?: string;
+		depth?: number;
+		ordered?: boolean;
+		start?: number;
+		spread?: boolean;
+		url?: string;
+		title?: string | null;
+		alt?: string | null;
+		children?: MarkdownNode[];
+	}
 
-	const isNode = (n) => n && typeof n === 'object' && 'type' in n;
+	interface NodeProps {
+		child?: MarkdownNode | null;
+	}
+
+	const { child = null }: NodeProps = $props();
+
+	function nodeText(node: MarkdownNode): string {
+		if (typeof node.value === 'string') {
+			return node.value;
+		}
+		return node.children?.map(nodeText).join('') ?? '';
+	}
+
+	function nodeKey(node: MarkdownNode, index: number): string {
+		const stablePart = node.value ?? node.url ?? nodeText(node).slice(0, 24);
+		return `${node.type}-${String(index)}-${stablePart}`;
+	}
 </script>
 
-{#if isNode(child)}
+{#if child}
 	{#if child.type === 'heading'}
-		<Heading depth={child.depth} text={toString(child)} />
+		<Heading depth={child.depth ?? 1} text={nodeText(child)} />
 	{:else if child.type === 'paragraph'}
 		<Paragraph>
-			{#each child.children as inline}
+			{#each child.children ?? [] as inline, index (nodeKey(inline, index))}
 				{#if inline.type === 'text'}
-					{@html inline.value}
+					<!-- eslint-disable svelte/no-at-html-tags -->
+					{@html inline.value ?? ''}
+					<!-- eslint-enable svelte/no-at-html-tags -->
 				{:else if inline.type === 'link'}
-					<Link href={inline.url} title={inline.title}>
-						{#each inline.children as sub}
-							{#if sub.type === 'text'}{sub.value}{:else}<NodeComponent child={sub} />{/if}
+					<Link href={inline.url ?? ''} title={inline.title ?? undefined}>
+						{#each inline.children ?? [] as sub, subIndex (nodeKey(sub, subIndex))}
+							{#if sub.type === 'text'}{sub.value ?? ''}{:else}<NodeComponent child={sub} />{/if}
 						{/each}
 					</Link>
 				{:else if inline.type === 'emphasis'}
-					<em>{toString(inline)}</em>
+					<em>{nodeText(inline)}</em>
 				{:else if inline.type === 'strong'}
-					<strong>{toString(inline)}</strong>
+					<strong>{nodeText(inline)}</strong>
 				{:else if inline.type === 'inlineCode'}
-					<code>{inline.value}</code>
+					<code>{inline.value ?? ''}</code>
 				{:else}
 					<NodeComponent child={inline} />
 				{/if}
 			{/each}
 		</Paragraph>
 	{:else if child.type === 'list'}
-		<List ordered={!!child.ordered} start={child.start ?? 1} loose={!!child.spread}>
-			{#each child.children as li}
-				<li class="pl-4 list-outside">
-					{#each li.children as inner}
+		<List ordered={child.ordered ?? false} start={child.start ?? 1} loose={child.spread ?? false}>
+			{#each child.children ?? [] as li, index (nodeKey(li, index))}
+				<li class="list-outside pl-4">
+					{#each li.children ?? [] as inner, innerIndex (nodeKey(inner, innerIndex))}
 						<NodeComponent child={inner} />
 					{/each}
 				</li>
 			{/each}
 		</List>
 	{:else if child.type === 'image'}
-		<Image href={child.url} title={child.title} text={child.alt || ''} />
+		<Image href={child.url ?? ''} title={child.title ?? undefined} text={child.alt ?? ''} />
 	{:else if child.type === 'code'}
-		<Paragraph pre={true}>{child.value}</Paragraph>
+		<Paragraph pre={true}>{child.value ?? ''}</Paragraph>
 	{:else if child.type === 'table'}
 		<Table>
 			<thead>
 				<tr>
-					{#each child.children?.[0]?.children || [] as cell}
-						<TableCell header={true} text={toString(cell)} />
+					{#each child.children?.[0]?.children ?? [] as cell, index (nodeKey(cell, index))}
+						<TableCell header={true} text={nodeText(cell)} />
 					{/each}
 				</tr>
 			</thead>
 			<tbody>
-				{#each child.children?.slice(1) || [] as row}
+				{#each child.children?.slice(1) ?? [] as row, rowIndex (nodeKey(row, rowIndex))}
 					<tr>
-						{#each row.children || [] as cell}
-							<TableCell text={toString(cell)} />
+						{#each row.children ?? [] as cell, cellIndex (nodeKey(cell, cellIndex))}
+							<TableCell text={nodeText(cell)} />
 						{/each}
 					</tr>
 				{/each}
 			</tbody>
 		</Table>
-	{:else if toString(child)}
-		<Paragraph>{toString(child)}</Paragraph>
+	{:else if nodeText(child)}
+		<Paragraph>{nodeText(child)}</Paragraph>
 	{/if}
 {/if}

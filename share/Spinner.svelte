@@ -1,10 +1,12 @@
 <script lang="ts">
-	type SpinnerProps = {
-		divClass?: string;
-		children?: import('svelte').Snippet;
-	};
+	import type { Snippet } from 'svelte';
 
-	let { divClass = '', children }: SpinnerProps = $props();
+	interface SpinnerProps {
+		divClass?: string;
+		children?: Snippet;
+	}
+
+	const { divClass = '', children }: SpinnerProps = $props();
 </script>
 
 <div class="flex flex-col items-center justify-center gap-3 {divClass}">

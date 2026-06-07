@@ -1,6 +1,11 @@
 <script lang="ts">
-	/** @type {{text: string, color: string, className?: string}} */
-	let { text, color, className = '' } = $props();
+	interface BadgeProps {
+		text: string;
+		color: string;
+		className?: string;
+	}
+
+	const { text, color, className = '' }: BadgeProps = $props();
 
 	const badgeStyle: () => string = $derived(() =>
 		color ? `--badge-color: var(--color-${color});` : ''

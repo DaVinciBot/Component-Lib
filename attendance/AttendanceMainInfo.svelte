@@ -34,7 +34,7 @@
 				<div>
 					<p class="m-0 text-[0.6rem] tracking-[0.32em] text-dark-light-blue uppercase">Horaire</p>
 					<p class="m-0 text-sm font-semibold text-light-blue">
-						{formatTimeRange(selectedSlot.start, selectedSlot.duration_hours ?? 1)}
+						{formatTimeRange(selectedSlot.start, selectedSlot.duration_hours)}
 					</p>
 				</div>
 			</div>

@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	import SponsorsCarousel from '../others/SponsorsCarousel.svelte';
 	import FooterEl from './FooterEl.svelte';
 	import DVBLogo from './Logo/DVBLogo.svelte';
 
-	let items = [
+	const items = [
 		[
 			{ text: "L'association", href: '/a-propos' },
 			{ text: 'Nos écoles', href: '/nos-ecoles' },
@@ -26,11 +26,11 @@
 			}
 		]
 	];
-	let title = ['À Propos', 'Nos Projets', 'Légal', 'Retrouvez-nous'];
+	const title = ['À Propos', 'Nos Projets', 'Légal', 'Retrouvez-nous'];
 </script>
 
 <footer
-	class="grid grid-cols-2 gap-x-2 gap-y-8 bg-dark-blue px-6 pt-5 text-center backdrop-blur-lg md:grid-cols-5 md:gap-10 md:px-16 lg:px-32"
+	class="bg-dark-blue grid grid-cols-2 gap-x-2 gap-y-8 px-6 pt-5 text-center backdrop-blur-lg md:grid-cols-5 md:gap-10 md:px-16 lg:px-32"
 	id="footer"
 >
 	<!--Changer les ref des liens en dessous-->
@@ -45,9 +45,14 @@
 	<div class="order-3 col-span-2 flex w-80 flex-col gap-4 py-5 md:pt-0">
 		<h1 class="text-left font-bold uppercase">Suivez Nous</h1>
 		<div class="flex flex-row justify-between">
-			<a href="https://www.linkedin.com/company/davincibot/" target="_blank" aria-label="LinkedIn">
+			<a
+				href="https://www.linkedin.com/company/davincibot/"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="LinkedIn"
+			>
 				<svg
-					class="h-10 fill-dark-light-blue md:h-12"
+					class="fill-dark-light-blue h-10 md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -56,9 +61,14 @@
 					/>
 				</svg>
 			</a>
-			<a href="https://www.instagram.com/davincibot_pulv/" target="_blank" aria-label="Instagram">
+			<a
+				href="https://www.instagram.com/davincibot_pulv/"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="Instagram"
+			>
 				<svg
-					class="h-10 fill-dark-light-blue md:h-12"
+					class="fill-dark-light-blue h-10 md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -67,9 +77,14 @@
 					/>
 				</svg>
 			</a>
-			<a href="https://github.com/DaVinciBot" target="_blank" aria-label="GitHub">
+			<a
+				href="https://github.com/DaVinciBot"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="GitHub"
+			>
 				<svg
-					class="h-10 fill-dark-light-blue md:h-12"
+					class="fill-dark-light-blue h-10 md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -92,9 +107,14 @@
 					</defs>
 				</svg>
 			</a>
-			<a href="https://www.facebook.com/DaVinciBotPULV/" target="_blank" aria-label="Facebook">
+			<a
+				href="https://www.facebook.com/DaVinciBotPULV/"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="Facebook"
+			>
 				<svg
-					class="h-10 fill-dark-light-blue md:h-12"
+					class="fill-dark-light-blue h-10 md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>
@@ -103,9 +123,14 @@
 					/>
 				</svg>
 			</a>
-			<a href="https://www.youtube.com/@davincibot-pulv" target="_blank" aria-label="YouTube">
+			<a
+				href="https://www.youtube.com/@davincibot-pulv"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="YouTube"
+			>
 				<svg
-					class="h-10 fill-dark-light-blue md:h-12"
+					class="fill-dark-light-blue h-10 md:h-12"
 					viewBox="0 0 80 80"
 					xmlns="http://www.w3.org/2000/svg"
 				>

@@ -1,21 +1,23 @@
 <script lang="ts">
-	type ListProps = {
+	import type { Snippet } from 'svelte';
+
+	interface ListProps {
 		ordered?: boolean;
 		start?: number;
 		loose?: boolean;
-		children?: import('svelte').Snippet;
-	};
+		children?: Snippet;
+	}
 
-	let { ordered = false, start = 1, loose = false, children }: ListProps = $props();
+	const { ordered = false, start = 1, loose = false, children }: ListProps = $props();
 </script>
 
 <div class="py-2 pl-4">
 	{#if ordered}
-		<ol class="list-decimal list-inside">
+		<ol class="list-decimal list-inside" {start} class:space-y-2={loose}>
 			{@render children?.()}
 		</ol>
 	{:else}
-		<ul class="list-disc list-inside">
+		<ul class="list-disc list-inside" class:space-y-2={loose}>
 			{@render children?.()}
 		</ul>
 	{/if}

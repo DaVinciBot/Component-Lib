@@ -2,25 +2,71 @@
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onMount } from 'svelte';
 
-	import { supabase } from '$lib/supabaseClient';
+	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 
 	import Stepper from '../admin/Stepper.svelte';
 
-	type ReadModalProps = {
-		values?: any;
+	interface ReadHeader {
+		title: string;
+		sub?: string;
+		stepper?: unknown[] | boolean;
+	}
+
+	interface ReadItem {
+		id?: string | number;
+		name: string;
+		quantity?: string | number;
+		price?: string | number;
+		link?: string;
+	}
+
+	type ReadBodyValue = string | number | boolean | null | undefined | ReadItem[];
+
+	interface ReadBodyEntry {
+		label: string;
+		value: ReadBodyValue;
+		type?: string;
+	}
+
+	interface ReadValues {
+		header: ReadHeader;
+		body: ReadBodyEntry[];
+	}
+
+	interface SelectorOption {
+		name: string;
+		value: string;
+	}
+
+	interface SelectorAction {
+		type: 'selector';
+		title: SelectorOption[];
+		handler: (event: Event) => void;
+	}
+
+	interface ButtonAction {
+		type: 'edit' | 'validate' | 'delete';
+		title: string;
+		handler: (event: Event) => void;
+	}
+
+	type ReadAction = SelectorAction | ButtonAction;
+
+	interface ReadModalProps {
+		values?: ReadValues;
 		files?: string[] | null;
-		actions?: any;
+		actions?: ReadAction[];
 		id?: string;
 		onClose?: (e: Event | Element | null) => void;
-	};
+	}
 
-	type ReadFile = {
+	interface ReadFile {
 		mime: string;
 		url: string;
 		name: string;
-	};
+	}
 
-	let {
+	const {
 		values = {
 			header: {
 				title: 'Pas de détails',
@@ -60,18 +106,19 @@
 		files = [],
 		actions = [],
 		id = 'readModal',
-		onClose = (_e: Event | Element | null) => {}
+		onClose
 	}: ReadModalProps = $props();
+	const closeModal = onClose ?? (() => undefined);
 
 	let current_file = $state('');
 	let current_file_index = $state(0);
 	let scroll_body: HTMLDivElement | null = $state(null);
 
 	let isMobile = $state(false);
-	let files_array = $state<ReadFile[]>([]);
+	const files_array = $state<ReadFile[]>([]);
 
-	let __onClose = (e: Event | Element | null) => {
-		onClose(e);
+	const __onClose = (e: Event | Element | null) => {
+		closeModal(e);
 	};
 
 	function attachmentPaths() {
@@ -79,10 +126,42 @@
 	}
 
 	function isPendingCdp() {
-		return (
-			values.body.find((el: { label?: string; type?: string }) => el.label == 'Status')?.type ==
-			'pending_cdp'
-		);
+		return values.body.find((el) => el.label === 'Status')?.type === 'pending_cdp';
+	}
+
+	function actionKey(action: ReadAction, index: number) {
+		const title =
+			typeof action.title === 'string'
+				? action.title
+				: action.title.map((option) => option.value).join('-');
+		return `${action.type}-${String(index)}-${title}`;
+	}
+
+	function itemKey(item: ReadItem, index: number) {
+		return item.id === undefined ? `${item.name}-${String(index)}` : String(item.id);
+	}
+
+	function formatItemData(item: ReadItem) {
+		return item.id === undefined ? '' : String(item.id);
+	}
+
+	async function removeItem(item: ReadItem) {
+		if (item.id === undefined) {
+			return;
+		}
+		const { error } = await getSupabaseBrowserClient()
+			.from('items')
+			.delete()
+			.match({ id: item.id })
+			.select()
+			.single();
+
+		if (error) {
+			return;
+		}
+
+		const tr = document.querySelector(`tr[data-utils="${String(item.id)}"]`);
+		tr?.remove();
 	}
 
 	function getNameFromUrl(url: string) {
@@ -99,18 +178,21 @@
 		const paths = attachmentPaths();
 		const nextIndex = current_file_index + direction;
 		const nextFile = files_array[nextIndex];
-		if (nextIndex < 0 || nextIndex >= paths.length || !nextFile || !scroll_body) return;
+		if (nextIndex < 0 || nextIndex >= paths.length || !nextFile || !scroll_body) {
+			return;
+		}
 
 		current_file_index = nextIndex;
 		current_file = nextFile.name;
-		scroll_body.style.transform = `translateX(-${
-			(scroll_body.scrollWidth / paths.length) * current_file_index
-		}px)`;
+		const offset = (scroll_body.scrollWidth / paths.length) * current_file_index;
+		scroll_body.style.transform = `translateX(-${String(offset)}px)`;
 	}
 
 	onMount(async () => {
-		const popup = document.querySelector(`#popup-${id}`);
-		if (popup) hideOnClickOutside(popup, __onClose);
+		const popup = document.querySelector<HTMLElement>(`#popup-${id}`);
+		if (popup) {
+			hideOnClickOutside(popup, __onClose);
+		}
 		// check if mobile
 		if (window.innerWidth < 768) {
 			isMobile = true;
@@ -120,34 +202,33 @@
 		const paths = attachmentPaths();
 		if (paths.length > 0) {
 			// get the all signed url from supabase
-			const { data: urls } = await supabase.storage.from('proof').createSignedUrls(paths, 600);
-			if (!urls) return;
+			const { data: urls } = await getSupabaseBrowserClient()
+				.storage.from('proof')
+				.createSignedUrls(paths, 600);
+			if (!urls) {
+				return;
+			}
 
 			for (let i = 0; i < urls.length; i++) {
 				const signedUrl = urls[i];
 				if (!signedUrl || signedUrl.error) {
-					console.error(signedUrl?.error);
 					continue;
 				}
 				const fileUrl = signedUrl.signedUrl;
-				if (!fileUrl) continue;
+				if (!fileUrl) {
+					continue;
+				}
 				// get the blob from the url
 				const r = await fetch(fileUrl);
 				if (!r.ok) {
-					console.error('Error fetching blob:', r.statusText);
 					continue;
 				}
 				const b = await r.blob();
-				if (!b) {
-					console.error('Error getting blob:', r.statusText);
-					continue;
-				}
 				files_array[i] = {
 					mime: b.type,
 					url: fileUrl,
 					name: getNameFromUrl(fileUrl)
 				};
-				console.log(files_array[i]);
 			}
 			current_file = files_array[0]?.name ?? '';
 		}
@@ -262,12 +343,12 @@
 						</div>
 						<div class="flex aspect-[1/1.414] h-auto w-88 gap-2 overflow-x-hidden md:w-96">
 							<div class="flex rounded-lg" bind:this={scroll_body}>
-								{#each files_array as { mime, url, name }}
+								{#each files_array as { mime, url, name } (url)}
 									<div class="flex w-88 flex-col md:w-96">
 										<!-- <p class="text-white">{url?.split('/')[10].split('?')[0]}</p> -->
-										{#if mime == 'application/pdf' && !isMobile}
+										{#if mime === 'application/pdf' && !isMobile}
 											<iframe src={url} frameborder="0" class="h-full" title={name}></iframe>
-										{:else if mime == 'application/pdf' && isMobile}
+										{:else if mime === 'application/pdf' && isMobile}
 											<iframe
 												src="https://docs.google.com/viewer?url={url}&embedded=true"
 												frameborder="0"
@@ -285,9 +366,9 @@
 				{/if}
 
 				<dl>
-					{#each values.body as { label, value }}
+					{#each values.body as { label, value } (label)}
 						<dt class="mb-2 leading-none font-semibold text-white">{label}</dt>
-						{#if typeof value === 'object'}
+						{#if Array.isArray(value)}
 							<dd class="mb-4 ml-2 font-light text-gray-400 sm:mb-5">
 								<table class="w-full border-separate">
 									<thead class="font-bold">
@@ -301,9 +382,15 @@
 										</tr>
 									</thead>
 									<tbody>
-										{#each value as item}
-											<tr data-utils={item.id}>
-												<td class="p-2"><a href={item.link} target="_blank">{item.name}</a></td>
+										{#each value as item, index (itemKey(item, index))}
+											<tr data-utils={formatItemData(item)}>
+												<td class="p-2">
+													<!-- eslint-disable svelte/no-navigation-without-resolve -->
+													<a href={item.link ?? ''} target="_blank" rel="noopener noreferrer"
+														>{item.name}</a
+													>
+													<!-- eslint-enable svelte/no-navigation-without-resolve -->
+												</td>
 												<td>{item.quantity}</td>
 												<td>{item.price}</td>
 												{#if isPendingCdp()}
@@ -312,23 +399,8 @@
 															type="button"
 															aria-label="Supprimer {item.name}"
 															class="inline-flex items-center rounded-lg bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-600 focus:ring-4 focus:ring-red-900 focus:outline-none"
-															onclick={async () => {
-																// remove item from database
-																const { data, error } = await supabase
-																	.from('items')
-																	.delete()
-																	.match({ id: item.id })
-																	.select()
-																	.single();
-
-																if (error || !data) {
-																	console.error(error);
-																	return;
-																}
-
-																// remove item from list
-																const tr = document.querySelector(`tr[data-utils="${item.id}"]`);
-																tr?.remove();
+															onclick={() => {
+																void removeItem(item);
 															}}
 														>
 															<svg
@@ -362,23 +434,23 @@
 				</dl>
 			</div>
 			<div class="flex items-center justify-between">
-				{#each actions as { title, type, handler }}
-					{#if type == 'selector'}
+				{#each actions as action, index (actionKey(action, index))}
+					{#if action.type === 'selector'}
 						<select
-							class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500"
-							onchange={handler}
+							class="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white placeholder-gray-400"
+							onchange={action.handler}
 						>
 							<option value="" disabled selected>Choisir une option</option>
-							{#each title as { name, value }}
+							{#each action.title as { name, value } (value)}
 								<option {value}>{name}</option>
 							{/each}
 						</select>
 					{/if}
-					{#if type == 'edit'}
+					{#if action.type === 'edit'}
 						<button
 							type="button"
-							class="inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 focus:ring-4 focus:ring-primary-800 focus:outline-none"
-							onclick={handler}
+							class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-800 inline-flex items-center rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:outline-none"
+							onclick={action.handler}
 						>
 							<svg
 								aria-hidden="true"
@@ -394,14 +466,14 @@
 									clip-rule="evenodd"
 								></path></svg
 							>
-							{title}
+							{action.title}
 						</button>
 					{/if}
-					{#if type == 'validate'}
+					{#if action.type === 'validate'}
 						<button
 							type="button"
-							class="inline-flex items-center rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-700 focus:ring-4 focus:ring-primary-800 focus:outline-none"
-							onclick={handler}
+							class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-800 inline-flex items-center rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:outline-none"
+							onclick={action.handler}
 						>
 							<svg
 								aria-hidden="true"
@@ -415,14 +487,14 @@
 									clip-rule="evenodd"
 								></path></svg
 							>
-							{title}
+							{action.title}
 						</button>
 					{/if}
-					{#if type == 'delete'}
+					{#if action.type === 'delete'}
 						<button
 							type="button"
 							class="inline-flex items-center rounded-lg bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-600 focus:ring-4 focus:ring-red-900 focus:outline-none"
-							onclick={handler}
+							onclick={action.handler}
 						>
 							<svg
 								aria-hidden="true"
@@ -436,7 +508,7 @@
 									clip-rule="evenodd"
 								></path></svg
 							>
-							{title}
+							{action.title}
 						</button>
 					{/if}
 				{/each}

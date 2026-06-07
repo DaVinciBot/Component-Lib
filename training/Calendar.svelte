@@ -26,7 +26,7 @@
 		cardStatus?: TrainingCardStatus;
 	};
 
-	type CalendarProps = {
+	interface CalendarProps {
 		slots?: CalendarSlot[];
 		initialDate?: Date;
 		onSelectSlot?: (slot: CalendarSlot) => void;
@@ -38,9 +38,9 @@
 		isLoading?: boolean;
 		errorMessage?: string | null;
 		onRetry?: () => void;
-	};
+	}
 
-	let {
+	const {
 		slots = [],
 		initialDate = new Date(),
 		onSelectSlot,
@@ -71,9 +71,13 @@
 	});
 
 	$effect(() => {
-		if (!filtersReady) return;
+		if (!filtersReady) {
+			return;
+		}
 		calendarFilters.update((current) => {
-			if (current.inPerson === isInPerson && current.online === isOnline) return current;
+			if (current.inPerson === isInPerson && current.online === isOnline) {
+				return current;
+			}
 			return { inPerson: isInPerson, online: isOnline };
 		});
 	});
@@ -83,8 +87,12 @@
 			hasSeenCalendarLoading = true;
 			return;
 		}
-		if (!hasSeenCalendarLoading) return;
-		if (!autoAdvanceToNextWeek) return;
+		if (!hasSeenCalendarLoading) {
+			return;
+		}
+		if (!autoAdvanceToNextWeek) {
+			return;
+		}
 		if (errorMessage) {
 			autoAdvanceToNextWeek = null;
 			return;
@@ -105,18 +113,24 @@
 			isOnline = value.online;
 		});
 		filtersReady = true;
-		return () => unsubscribe();
+		return () => {
+			unsubscribe();
+		};
 	});
 
 	onMount(async () => {
-		if (typeof window === 'undefined') return;
-		if (!window.matchMedia('(max-width: 1023px)').matches) return;
+		if (typeof window === 'undefined') {
+			return;
+		}
+		if (!window.matchMedia('(max-width: 1023px)').matches) {
+			return;
+		}
 		await tick();
-		todayRow?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+		scrollTodayRowIntoView();
 	});
 
 	const weekStart = $derived(() => getWeekStart(viewDate));
-	const weekLabel = $derived(() => `Semaine ${getWeekNumber(viewDate)}`);
+	const weekLabel = $derived(() => `Semaine ${String(getWeekNumber(viewDate))}`);
 
 	const allSlotsByDay = $derived(() => groupSlotsByDay(slots));
 	const saturdayKey = $derived(() =>
@@ -128,6 +142,9 @@
 		return showSaturday() ? days : days.slice(0, 5);
 	});
 	const calendarDaysCount = $derived(() => calendarDays().length);
+	const calendarGridTemplate = $derived(
+		() => `grid-template-columns: repeat(${String(calendarDaysCount())}, minmax(0, 1fr));`
+	);
 
 	const filteredSlots = $derived(() =>
 		filterSlotsByFormat(slots, { inPerson: isInPerson, online: isOnline })
@@ -144,13 +161,19 @@
 		const today = getParisDateUtc(new Date()) ?? new Date();
 		const todayWeekStart = getWeekStart(today);
 		const viewedWeekStart = getWeekStart(date);
-		if (todayWeekStart.getTime() !== viewedWeekStart.getTime()) return false;
+		if (todayWeekStart.getTime() !== viewedWeekStart.getTime()) {
+			return false;
+		}
 
 		const todayKey = toDateKey(today);
 		for (const slot of slots) {
 			const slotDate = new Date(slot.start);
-			if (Number.isNaN(slotDate.getTime())) continue;
-			if (toDateKey(slotDate) >= todayKey) return false;
+			if (Number.isNaN(slotDate.getTime())) {
+				continue;
+			}
+			if (toDateKey(slotDate) >= todayKey) {
+				return false;
+			}
 		}
 
 		return true;
@@ -173,10 +196,22 @@
 	}
 
 	async function scrollToToday() {
-		if (typeof window === 'undefined') return;
-		if (!window.matchMedia('(max-width: 1023px)').matches) return;
+		if (typeof window === 'undefined') {
+			return;
+		}
+		if (!window.matchMedia('(max-width: 1023px)').matches) {
+			return;
+		}
 		await tick();
-		todayRow?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+		scrollTodayRowIntoView();
+	}
+
+	function scrollTodayRowIntoView() {
+		const row = todayRow;
+		if (!row) {
+			return;
+		}
+		row.scrollIntoView({ block: 'start', behavior: 'smooth' });
 	}
 
 	function handleSlotSelect(slot: CalendarSlot) {
@@ -366,7 +401,7 @@
 	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
 		<div
 			class="grid rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
-			style={`grid-template-columns: repeat(${calendarDaysCount()}, minmax(0, 1fr));`}
+			style={calendarGridTemplate()}
 		>
 			{#each calendarDays() as day, index (index)}
 				<button
@@ -374,7 +409,9 @@
 					class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
 						index !== calendarDaysCount() - 1 ? 'border-r' : ''
 					} ${day.isToday ? 'text-primary-400' : ''}`}
-					onclick={() => handleDaySelect(day.date)}
+					onclick={() => {
+						handleDaySelect(day.date);
+					}}
 				>
 					<span>{weekdayLabel(index).substring(0, 2)}</span>
 					<span>{formatParisDayShort(day.date)}</span>
@@ -398,7 +435,7 @@
 			{:else}
 				<div
 					class="grid min-h-full"
-					style={`grid-template-columns: repeat(${calendarDaysCount()}, minmax(0, 1fr));`}
+					style={calendarGridTemplate()}
 				>
 					{#each calendarDays() as day, index (index)}
 						<div
@@ -408,7 +445,13 @@
 						>
 							<div class="flex h-full flex-col gap-3 p-3">
 								{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
-									<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+									<button
+										type="button"
+										tabindex="0"
+										onclick={() => {
+											handleSlotSelect(slot);
+										}}
+									>
 										<TrainingCard {slot} status={slot.cardStatus ?? 'free'} />
 									</button>
 								{/each}
@@ -452,7 +495,9 @@
 								type="button"
 								class="flex h-14 w-full flex-col items-center justify-center rounded-[14px] border-primary-400/60 text-center tracking-[0.32em] text-primary-400
 								"
-								onclick={() => handleDaySelect(day.date)}
+								onclick={() => {
+									handleDaySelect(day.date);
+								}}
 							>
 								<span class="text-[0.72rem] uppercase">
 									{weekdayLabel(index)}
@@ -468,7 +513,13 @@
 									</div>
 								{:else}
 									{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
-										<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+										<button
+											type="button"
+											tabindex="0"
+											onclick={() => {
+												handleSlotSelect(slot);
+											}}
+										>
 											<TrainingCard
 												{slot}
 												status={slot.cardStatus ?? 'free'}
@@ -485,7 +536,9 @@
 							<button
 								type="button"
 								class="h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue not-last:flex"
-								onclick={() => handleDaySelect(day.date)}
+								onclick={() => {
+									handleDaySelect(day.date);
+								}}
 							>
 								<span class="text-[0.72rem] uppercase">
 									{weekdayLabel(index)}
@@ -501,7 +554,13 @@
 									</div>
 								{:else}
 									{#each slotsByDay().get(day.key) ?? [] as slot (slot.slot_id)}
-										<button type="button" tabindex="0" onclick={() => handleSlotSelect(slot)}>
+										<button
+											type="button"
+											tabindex="0"
+											onclick={() => {
+												handleSlotSelect(slot);
+											}}
+										>
 											<TrainingCard
 												{slot}
 												status={slot.cardStatus ?? 'free'}
