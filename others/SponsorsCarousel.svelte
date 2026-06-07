@@ -27,7 +27,7 @@
 	/* eslint-enable prefer-const */
 
 	let isMobile = $state(false);
-	let add_padding = $state(false);
+	let add_padding = $state<boolean>(false);
 	if (typeof window !== 'undefined') {
 		isMobile = window.innerWidth <= 768;
 	}

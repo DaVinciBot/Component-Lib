@@ -406,8 +406,11 @@
 																type="checkbox"
 																value={perm.value}
 																checked={selectedPermissions.includes(perm.value)}
-																onchange={(e) => {
+																onchange={(e: Event) => {
 																	const input = e.currentTarget;
+																	if (!(input instanceof HTMLInputElement)) {
+																		return;
+																	}
 																	if (input.checked) {
 																		if (!selectedPermissions.includes(perm.value)) {
 																			selectedPermissions = [...selectedPermissions, perm.value];

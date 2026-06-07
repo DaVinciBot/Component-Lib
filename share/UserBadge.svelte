@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { Permission } from '$lib/permissions';
+	import { PERMISSIONS } from '$lib/permissions';
 	import { hasAnyPermission } from '$lib/permissions';
 	import { userdata } from '$lib/store';
 	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
@@ -10,7 +12,7 @@
 		name: string;
 		email: string;
 		avatar: string;
-		permissions?: string[];
+		permissions?: Permission[];
 		[key: string]: unknown;
 	}
 
@@ -40,7 +42,10 @@
 	function readPermissions(value: Record<string, unknown>) {
 		const permissions = value.permissions;
 		return Array.isArray(permissions)
-			? permissions.filter((permission): permission is string => typeof permission === 'string')
+			? permissions.filter(
+					(permission): permission is Permission =>
+						typeof permission === 'string' && PERMISSIONS.includes(permission as Permission)
+				)
 			: undefined;
 	}
 
@@ -178,5 +183,3 @@
 		</li>
 	</ul>
 </div>
-
-<style></style>

@@ -123,6 +123,11 @@
 	function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
 		return typeof value === 'object' && value !== null && 'then' in value;
 	}
+
+	function filesFromEvent(event: Event): File[] {
+		const target = event.currentTarget;
+		return target instanceof HTMLInputElement ? Array.from(target.files ?? []) : [];
+	}
 </script>
 
 <div
@@ -145,7 +150,7 @@
 					<button
 						type="button"
 						class="ml-auto inline-flex cursor-pointer items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-500 hover:bg-gray-600 hover:text-white"
-						onclick={(e) => onClose(e)}
+						onclick={(e: MouseEvent) => onClose(e)}
 					>
 						<svg
 							aria-hidden="true"
@@ -241,9 +246,8 @@
 										accept="image/png, image/jpeg"
 										class="hidden"
 										onchange={field.onChange ??
-											((e) => {
-												const target = e.currentTarget;
-												const file = target.files?.[0];
+											((e: Event) => {
+												const file = filesFromEvent(e)[0];
 												if (file) {
 													const reader = new FileReader();
 													reader.onload = (fileEvent) => {
@@ -344,9 +348,8 @@
 										accept="image/png, image/jpeg, application/pdf, application/octet-stream"
 										class="hidden"
 										onchange={field.onChange ??
-											((e) => {
-												const target = e.currentTarget;
-												const selectedFiles = [...(target.files ?? [])];
+											((e: Event) => {
+												const selectedFiles = filesFromEvent(e);
 												if (selectedFiles.length) {
 													if (field.multiple) {
 														const temp_arr: DocumentPreview[] = selectedFiles.map((file) => {
@@ -489,8 +492,15 @@
 												value={stringValue(inputValue)}
 												readonly={field.readonly ?? false}
 												name={fieldId(field)}
-												oninput={(e) => {
+												oninput={(
+													e: Event & {
+														currentTarget: EventTarget & HTMLInputElement;
+													}
+												) => {
 													const target = e.currentTarget;
+													if (!(target instanceof HTMLInputElement)) {
+														return;
+													}
 													const nextValue = target.value;
 													autocompleteValues = {
 														...autocompleteValues,
@@ -633,7 +643,7 @@
 							submitting ? 'cursor-not-allowed opacity-60' : 'hover:bg-primary-700'
 						}`}
 						disabled={submitting}
-						onclick={(e) => {
+						onclick={(e: MouseEvent) => {
 							if (submitting) {
 								return;
 							}

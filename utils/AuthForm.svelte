@@ -81,7 +81,7 @@
 		auth_type = AuthType.oauth;
 	}
 
-	let loading = $state(false);
+	let loading = $state<boolean>(false);
 	let email = $state('');
 	let password = $state('');
 	let password_confirm = $state('');
@@ -412,7 +412,7 @@
 				</h1>
 				<form
 					class="space-y-4 md:space-y-6"
-					onsubmit={(event) => {
+					onsubmit={(event: SubmitEvent) => {
 						event.preventDefault();
 						void handleAuth();
 					}}

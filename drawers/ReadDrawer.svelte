@@ -208,7 +208,7 @@
 	}: ReadDrawerProps = $props();
 	/* eslint-enable prefer-const */
 
-	let isEditing = $state(false);
+	let isEditing = $state<boolean>(false);
 	function handleSave(e: SubmitEvent) {
 		e.preventDefault();
 		void onSubmit(e, forms, fields);
@@ -220,10 +220,10 @@
 
 	let current_file = $state('');
 	let current_file_index = $state(0);
-	let scroll_body: HTMLDivElement | null = $state(null);
-	let isMobile = $state(false);
+	let scroll_body: HTMLDivElement | null = $state<HTMLDivElement | null>(null);
+	let isMobile = $state<boolean>(false);
 	const files_array: FilePreview[] = $state([{ mime: 'application/pdf', url: null }]);
-	let forms: HTMLFormElement | null = $state(null);
+	let forms: HTMLFormElement | null = $state<HTMLFormElement | null>(null);
 
 	// Resizing state for the right-anchored drawer (drag from left edge)
 	let width = $state(384); // default equals Tailwind w-96
@@ -346,6 +346,15 @@
 			}
 			return { ...currentField, value };
 		});
+	}
+
+	function updateFileScrollTransform(direction: 1 | -1): void {
+		const target = scroll_body;
+		if (!target || files.length === 0) {
+			return;
+		}
+		const offset = (target.scrollWidth / files.length) * current_file_index;
+		target.style.transform = `translateX(${direction === -1 ? '-' : ''}${String(offset)}px)`;
 	}
 
 	function parseValuesToFields() {
@@ -498,7 +507,7 @@
 	role="button"
 	tabindex="0"
 	onclick={__onClose}
-	onkeydown={(e) => {
+	onkeydown={(e: KeyboardEvent) => {
 		if (e.key === 'Enter' || e.key === ' ') {
 			__onClose(e);
 		}
@@ -520,11 +529,11 @@
 		type="button"
 		aria-label="Resize drawer"
 		class="group absolute top-0 left-0 h-full w-2 cursor-col-resize bg-transparent focus:outline-none"
-		onmousedown={(e) => {
+		onmousedown={(e: MouseEvent) => {
 			beginResize(e.clientX);
 		}}
 		ontouchstart={onResizeTouchStart}
-		onkeydown={(e) => {
+		onkeydown={(e: KeyboardEvent) => {
 			// keyboard resizing: arrow left increases width (drawer anchored right)
 			const step = e.shiftKey ? 40 : 10;
 			if (e.key === 'ArrowLeft') {
@@ -716,7 +725,7 @@
 													type="button"
 													aria-label="Remove document"
 													class="hover: ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-600 hover:text-white"
-													onclick={async (e) => {
+													onclick={async (e: MouseEvent) => {
 														field.value = documentPreviews(field.value).filter(
 															(el) => el.name !== doc.name
 														);
@@ -895,7 +904,11 @@
 										value={stringValue(field.value)}
 										readonly={field.readonly ?? false}
 										name={getFieldKey(field)}
-										oninput={async (e) => {
+										oninput={async (
+											e: Event & {
+												currentTarget: EventTarget & HTMLInputElement;
+											}
+										) => {
 											const completion = field.onChange?.(e);
 											field.completion = isPromiseLike<AutocompleteCompletion[] | undefined>(
 												completion
@@ -984,8 +997,15 @@
 										value={field.searchTerm ?? ''}
 										readonly={field.readonly ?? false}
 										name={getFieldKey(field)}
-										oninput={async (e) => {
+										oninput={async (
+											e: Event & {
+												currentTarget: EventTarget & HTMLInputElement;
+											}
+										) => {
 											const input = e.currentTarget;
+											if (!(input instanceof HTMLInputElement)) {
+												return;
+											}
 											field.searchTerm = input.value;
 											if (field.searchTerm.length > 0) {
 												const completion = field.onChange?.(e);
@@ -1011,7 +1031,7 @@
 														class="flex w-full items-center rounded-lg border-b border-gray-700 {c.image
 															? 'p-1'
 															: ''} cursor-pointer hover:bg-gray-600"
-														onclick={async (e) => {
+														onclick={async (e: MouseEvent) => {
 															// Add selected item to value array
 															field.value = [
 																...selectedItems,
@@ -1102,8 +1122,11 @@
 																name={field.id ?? 'permissions'}
 																value={perm.value}
 																checked={permissionValues.includes(perm.value)}
-																onchange={(e) => {
+																onchange={(e: Event) => {
 																	const input = e.currentTarget;
+																	if (!(input instanceof HTMLInputElement)) {
+																		return;
+																	}
 																	const currentValue = selectedPermissionValues(field.value);
 
 																	if (input.checked) {
@@ -1259,11 +1282,7 @@
 								if (current_file_index > 0) {
 									current_file_index--;
 									current_file = files_array[current_file_index]?.name ?? '';
-									if (scroll_body) {
-										scroll_body.style.transform = `translateX(${String(
-											(scroll_body.scrollWidth / files.length) * current_file_index
-										)}px)`;
-									}
+									updateFileScrollTransform(1);
 								}
 							}}
 						>
@@ -1285,11 +1304,7 @@
 								if (current_file_index < files.length - 1) {
 									current_file_index++;
 									current_file = files_array[current_file_index]?.name ?? '';
-									if (scroll_body) {
-										scroll_body.style.transform = `translateX(-${String(
-											(scroll_body.scrollWidth / files.length) * current_file_index
-										)}px)`;
-									}
+									updateFileScrollTransform(-1);
 								}
 							}}
 						>
