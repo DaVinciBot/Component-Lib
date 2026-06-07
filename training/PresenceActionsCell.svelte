@@ -29,7 +29,9 @@
 				present
 			)}`}
 			disabled={isSaving}
-			onclick={() => { onChange(memberId, null); }}
+			onclick={() => {
+				onChange(memberId, null);
+			}}
 		>
 			<Users class="size-3" />
 			NSP
@@ -41,7 +43,9 @@
 				present
 			)}`}
 			disabled={isSaving}
-			onclick={() => { onChange(memberId, true); }}
+			onclick={() => {
+				onChange(memberId, true);
+			}}
 		>
 			<CircleCheck class="size-3" />
 			Présent
@@ -53,12 +57,14 @@
 				present
 			)}`}
 			disabled={isSaving}
-			onclick={() => { onChange(memberId, false); }}
+			onclick={() => {
+				onChange(memberId, false);
+			}}
 		>
 			<CircleX class="size-3" />
 			Absent
 		</button>
 	</div>
 {:else}
-	<span class="text-xs text-light-blue/60">--</span>
+	<span class="text-light-blue/60 text-xs">--</span>
 {/if}

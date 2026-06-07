@@ -236,10 +236,10 @@
 </script>
 
 <section
-	class="flex h-full flex-col rounded-[26px] border border-light-blue/15 bg-blue-gray/15 p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
+	class="border-light-blue/15 bg-blue-gray/15 flex h-full flex-col rounded-[26px] border p-4 shadow-[0_18px_60px_rgba(2,10,60,0.45)] sm:p-6"
 >
 	<header
-		class="flex flex-col gap-2 rounded-[22px] border border-light-blue/30 bg-blue-gray/10 px-3 py-3 text-sm text-light-blue shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
+		class="border-light-blue/30 bg-blue-gray/10 text-light-blue flex flex-col gap-2 rounded-[22px] border px-3 py-3 text-sm shadow-[0_14px_40px_rgba(1,4,30,0.55)] lg:hidden"
 	>
 		<div class="grid grid-cols-3 gap-1">
 			<div class="wrap left-center inset-y-0 col-span-2 flex flex-row items-center gap-2">
@@ -247,7 +247,7 @@
 					type="button"
 					variant="secondary"
 					size="xs"
-					class="flex items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
+					class="border-light-blue/0 text-dark-light-blue flex items-center justify-center rounded-full"
 					fullWidth={false}
 					onclick={goPrev}
 					aria-label="Semaine précédente"
@@ -265,14 +265,14 @@
 						<path d="M7.5 2.5 4 6l3.5 3.5" />
 					</svg>
 				</CtaButton>
-				<span class="text-center text-[0.75rem] tracking-[0.3em] text-dark-light-blue uppercase">
+				<span class="text-dark-light-blue text-center text-[0.75rem] tracking-[0.3em] uppercase">
 					{weekLabel()}
 				</span>
 				<CtaButton
 					type="button"
 					variant="secondary"
 					size="xs"
-					class="flex items-center justify-center rounded-full border-light-blue/0 text-dark-light-blue"
+					class="border-light-blue/0 text-dark-light-blue flex items-center justify-center rounded-full"
 					fullWidth={false}
 					onclick={goNext}
 					aria-label="Semaine suivante"
@@ -294,7 +294,7 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				class="col-span-1 flex items-center justify-end rounded-full border-light-blue/0 text-[0.7rem] uppercase"
+				class="border-light-blue/0 col-span-1 flex items-center justify-end rounded-full text-[0.7rem] uppercase"
 				fullWidth={false}
 				size="sm"
 				onclick={goToday}
@@ -303,13 +303,13 @@
 		</div>
 		<div class="flex flex-row gap-3 pb-2">
 			<label
-				class="flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
+				class="text-dark-light-blue flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest uppercase"
 			>
 				<Checkbox bind:checked={isInPerson} name="filter_in_person" value="in-person" required />
 				Présentiel
 			</label>
 			<label
-				class="flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest text-dark-light-blue uppercase"
+				class="text-dark-light-blue flex cursor-pointer items-center gap-1.5 px-1 text-[0.62rem] tracking-widest uppercase"
 			>
 				<Checkbox bind:checked={isOnline} name="filter_online" value="online" />
 				En ligne
@@ -317,11 +317,11 @@
 		</div>
 	</header>
 	<header
-		class="hidden flex-wrap items-center justify-between gap-4 rounded-xl border border-light-blue/30 bg-blue-gray/10 px-4 py-3 text-sm text-light-blue lg:flex"
+		class="border-light-blue/30 bg-blue-gray/10 text-light-blue hidden flex-wrap items-center justify-between gap-4 rounded-xl border px-4 py-3 text-sm lg:flex"
 	>
 		<div class="flex flex-wrap items-center gap-6">
 			<label
-				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
+				class="text-dark-light-blue flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] uppercase"
 			>
 				<Checkbox
 					bind:checked={isInPerson}
@@ -333,7 +333,7 @@
 				Présentiel
 			</label>
 			<label
-				class="flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] text-dark-light-blue uppercase"
+				class="text-dark-light-blue flex cursor-pointer items-center gap-2 text-xs tracking-[0.28em] uppercase"
 			>
 				<Checkbox bind:checked={isOnline} name="filter_online" value="online" className="size-4" />
 				En ligne
@@ -342,13 +342,13 @@
 		<div
 			class="grid {canManageTraining
 				? 'grid-cols-[min-content_auto_min-content_min-content_auto]'
-				: 'grid-cols-[min-content_auto_min-content_min-content]'} items-center gap-3 text-xs tracking-[0.3em] text-dark-light-blue uppercase"
+				: 'grid-cols-[min-content_auto_min-content_min-content]'} text-dark-light-blue items-center gap-3 text-xs tracking-[0.3em] uppercase"
 		>
 			<CtaButton
 				type="button"
 				variant="secondary"
 				size="sm"
-				class="flex size-7 items-center justify-center border-light-blue/0 pr-1 pl-1"
+				class="border-light-blue/0 flex size-7 items-center justify-center pr-1 pl-1"
 				onclick={goPrev}
 				aria-label="Semaine précédente"
 			>
@@ -365,12 +365,12 @@
 					<path d="M7.5 2.5 4 6l3.5 3.5" />
 				</svg>
 			</CtaButton>
-			<span class="text-[0.8rem] text-dark-light-blue uppercase">{weekLabel()}</span>
+			<span class="text-dark-light-blue text-[0.8rem] uppercase">{weekLabel()}</span>
 			<CtaButton
 				type="button"
 				variant="secondary"
 				size="sm"
-				class="flex size-7 items-center justify-center border-light-blue/0 pr-1 pl-1"
+				class="border-light-blue/0 flex size-7 items-center justify-center pr-1 pl-1"
 				onclick={goNext}
 				aria-label="Semaine suivante"
 			>
@@ -390,7 +390,7 @@
 			<CtaButton
 				type="button"
 				variant="secondary"
-				class="flex size-7 items-center border-light-blue/0 pr-1 pl-1 uppercase"
+				class="border-light-blue/0 flex size-7 items-center pr-1 pl-1 uppercase"
 				size="sm"
 				onclick={goToday}
 				><CalendarSync class="size-4.5" />
@@ -400,13 +400,13 @@
 
 	<div class="mt-4 hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
 		<div
-			class="grid rounded-t-xl border border-light-blue/30 bg-blue-gray/25 text-sm tracking-[0.2em] text-light-blue uppercase"
+			class="border-light-blue/30 bg-blue-gray/25 text-light-blue grid rounded-t-xl border text-sm tracking-[0.2em] uppercase"
 			style={calendarGridTemplate()}
 		>
 			{#each calendarDays() as day, index (index)}
 				<button
 					type="button"
-					class={`flex items-center justify-center gap-2 border-light-blue/30 px-3 py-3 ${
+					class={`border-light-blue/30 flex items-center justify-center gap-2 px-3 py-3 ${
 						index !== calendarDaysCount() - 1 ? 'border-r' : ''
 					} ${day.isToday ? 'text-primary-400' : ''}`}
 					onclick={() => {
@@ -419,11 +419,11 @@
 			{/each}
 		</div>
 		<div
-			class="no-scrollbar relative min-h-0 flex-1 overflow-y-auto rounded-b-xl border-x border-b border-light-blue/30 bg-blue-gray/10"
+			class="no-scrollbar border-light-blue/30 bg-blue-gray/10 relative min-h-0 flex-1 overflow-y-auto rounded-b-xl border-x border-b"
 		>
 			{#if errorMessage}
 				<div class="flex min-h-full items-center justify-center p-6">
-					<div class="flex flex-col items-center gap-3 text-waiting">
+					<div class="text-waiting flex flex-col items-center gap-3">
 						<p class="text-sm tracking-wide">{errorMessage}</p>
 						{#if onRetry}
 							<CtaButton type="button" variant="peps" size="sm" onclick={onRetry}>
@@ -433,13 +433,10 @@
 					</div>
 				</div>
 			{:else}
-				<div
-					class="grid min-h-full"
-					style={calendarGridTemplate()}
-				>
+				<div class="grid min-h-full" style={calendarGridTemplate()}>
 					{#each calendarDays() as day, index (index)}
 						<div
-							class={`h-full overflow-hidden border-light-blue/30 ${
+							class={`border-light-blue/30 h-full overflow-hidden ${
 								index !== calendarDaysCount() - 1 ? 'border-r' : ''
 							}`}
 						>
@@ -461,7 +458,7 @@
 				</div>
 			{/if}
 			{#if isLoading}
-				<div class="absolute inset-0 flex items-center justify-center bg-dark-blue/70">
+				<div class="bg-dark-blue/70 absolute inset-0 flex items-center justify-center">
 					<Spinner
 						divClass="rounded-[22px] border border-light-blue/30 bg-dark-blue/80 px-5 py-4 text-light-blue/80"
 					>
@@ -473,11 +470,11 @@
 	</div>
 
 	<div
-		class="no-scrollbar relative mt-4 flex-1 overflow-y-auto rounded-2xl border border-light-blue/30 bg-blue-gray/20 p-3 lg:hidden"
+		class="no-scrollbar border-light-blue/30 bg-blue-gray/20 relative mt-4 flex-1 overflow-y-auto rounded-2xl border p-3 lg:hidden"
 	>
 		{#if errorMessage}
 			<div class="flex min-h-48 items-center justify-center px-3 py-8">
-				<div class="flex flex-col items-center gap-3 text-waiting">
+				<div class="text-waiting flex flex-col items-center gap-3">
 					<p class="text-sm tracking-wide">{errorMessage}</p>
 					{#if onRetry}
 						<CtaButton type="button" variant="peps" size="sm" onclick={onRetry}>
@@ -493,7 +490,7 @@
 						<div class="flex scroll-mt-4 flex-col gap-2" bind:this={todayRow}>
 							<button
 								type="button"
-								class="flex h-14 w-full flex-col items-center justify-center rounded-[14px] border-primary-400/60 text-center tracking-[0.32em] text-primary-400
+								class="border-primary-400/60 text-primary-400 flex h-14 w-full flex-col items-center justify-center rounded-[14px] text-center tracking-[0.32em]
 								"
 								onclick={() => {
 									handleDaySelect(day.date);
@@ -507,7 +504,7 @@
 							<div class="mb-5 flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
-										class="flex h-14 w-full items-center justify-center rounded-lg border border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+										class="border-light-blue/30 text-dark-light-blue flex h-14 w-full items-center justify-center rounded-lg border bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] uppercase"
 									>
 										Aucune formation
 									</div>
@@ -535,7 +532,7 @@
 						<div class="flex flex-col gap-2">
 							<button
 								type="button"
-								class="h-14 w-full flex-col items-center justify-center rounded-[14px] border-light-blue/30 text-center tracking-[0.32em] text-light-blue not-last:flex"
+								class="border-light-blue/30 text-light-blue h-14 w-full flex-col items-center justify-center rounded-[14px] text-center tracking-[0.32em] not-last:flex"
 								onclick={() => {
 									handleDaySelect(day.date);
 								}}
@@ -548,7 +545,7 @@
 							<div class="mb-4 flex flex-1 flex-col gap-2">
 								{#if (slotsByDay().get(day.key) ?? []).length === 0}
 									<div
-										class="flex h-14 w-full items-center justify-center rounded-lg border border-light-blue/30 bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] text-dark-light-blue uppercase"
+										class="border-light-blue/30 text-dark-light-blue flex h-14 w-full items-center justify-center rounded-lg border bg-[rgba(1,1,50,0.96)] px-2 text-[0.7rem] tracking-[0.24em] uppercase"
 									>
 										Aucune formation
 									</div>
@@ -577,7 +574,7 @@
 			</div>
 		{/if}
 		{#if isLoading}
-			<div class="absolute inset-0 flex items-center justify-center bg-dark-blue/70">
+			<div class="bg-dark-blue/70 absolute inset-0 flex items-center justify-center">
 				<Spinner
 					divClass="rounded-[22px] border border-light-blue/30 bg-dark-blue/80 px-5 py-4 text-light-blue/80"
 				>
@@ -588,14 +585,14 @@
 	</div>
 
 	<div class="flex flex-wrap gap-2 pt-2 pl-0.5 text-xs tracking-wide sm:gap-3 sm:pt-4 sm:text-sm">
-		<div class="rounded-2xl border border-light-blue px-2 py-0 text-light-blue">Libre</div>
-		<div class="rounded-2xl border border-registered px-2 py-0 text-registered">Inscrit·e</div>
-		<div class="rounded-2xl border border-waiting px-2 py-0 text-waiting">Sur liste d'attente</div>
-		<div class="rounded-2xl border border-primary-500 px-2 py-0 text-primary-500">Ma formation</div>
+		<div class="border-light-blue text-light-blue rounded-2xl border px-2 py-0">Libre</div>
+		<div class="border-registered text-registered rounded-2xl border px-2 py-0">Inscrit·e</div>
+		<div class="border-waiting text-waiting rounded-2xl border px-2 py-0">Sur liste d'attente</div>
+		<div class="border-primary-500 text-primary-500 rounded-2xl border px-2 py-0">Ma formation</div>
 		{#if canManageTraining}
-			<div class="rounded-2xl border border-complete px-2 py-0 text-complete">Complète</div>
+			<div class="border-complete text-complete rounded-2xl border px-2 py-0">Complète</div>
 			<div
-				class="rounded-2xl border border-dark-blue-gray px-2 py-0 text-dark-blue-gray opacity-55"
+				class="border-dark-blue-gray text-dark-blue-gray rounded-2xl border px-2 py-0 opacity-55"
 			>
 				Masquée
 			</div>

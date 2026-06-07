@@ -8,13 +8,13 @@
 
 <a
 	href="https://fr.rs-online.com/"
-	class="h-full aspect-square"
+	class="aspect-square h-full"
 	target="_blank"
 	rel="noopener noreferrer"
 	aria-label="RS Components"
 >
 	<svg
-		class={small ? 'aspect-square' : 'h-full aspect-square'}
+		class={small ? 'aspect-square' : 'aspect-square h-full'}
 		height={small ? 50 : 100}
 		viewBox="0 0 410 410"
 		fill="none"

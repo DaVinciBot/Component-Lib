@@ -8,9 +8,9 @@
 	const { href = '', title = '', text = '' }: ImageProps = $props();
 </script>
 
-<div class="flex flex-col justify-center w-full py-4">
-	<img src={href} {title} alt={text} class="self-center w-9/12 h-auto rounded-lg shadow-lg" />
+<div class="flex w-full flex-col justify-center py-4">
+	<img src={href} {title} alt={text} class="h-auto w-9/12 self-center rounded-lg shadow-lg" />
 	{#if title || text}
-		<p class="self-center ml-4 text-sm text-gray-500">{title || text}</p>
+		<p class="ml-4 self-center text-sm text-gray-500">{title || text}</p>
 	{/if}
 </div>

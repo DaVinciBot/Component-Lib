@@ -9,13 +9,12 @@
 		children?: Snippet;
 	}
 
-	const { time = 50, pauseOnHover = true, small = false, children }: CarouselProps =
-		$props();
+	const { time = 50, pauseOnHover = true, small = false, children }: CarouselProps = $props();
 </script>
 
-<div class="w-full h-full">
+<div class="h-full w-full">
 	<div
-		class="relative w-full h-full overflow-hidden carrousel"
+		class="carrousel relative h-full w-full overflow-hidden"
 		class:py-5={!small}
 		class:py-2={small}
 		class:pause-on-hover={pauseOnHover}
@@ -24,11 +23,11 @@
 			The inner track duplicates the slot content to create an infinite marquee.
 			CSS handles width via max-content, avoiding JS measurements that can be flaky in Firefox.
 		-->
-		<div class="flex carousel-inner" style={`--duration: ${String(time)}s`}>
-			<div class="flex items-center h-full gap-8">
+		<div class="carousel-inner flex" style={`--duration: ${String(time)}s`}>
+			<div class="flex h-full items-center gap-8">
 				{@render children?.()}
 			</div>
-			<div class="flex items-center h-full gap-8 pl-8" aria-hidden="true">
+			<div class="flex h-full items-center gap-8 pl-8" aria-hidden="true">
 				{@render children?.()}
 			</div>
 		</div>

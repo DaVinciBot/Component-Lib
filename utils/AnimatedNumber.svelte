@@ -48,15 +48,20 @@
 			const eased = easeOutCubic(t);
 			const current = from + (to - from) * eased;
 			display = fmt(current);
-			if (t < 1) {raf = requestAnimationFrame(step);}
-			else {display = fmt(to);}
+			if (t < 1) {
+				raf = requestAnimationFrame(step);
+			} else {
+				display = fmt(to);
+			}
 		}
 
 		raf = requestAnimationFrame(step);
 	}
 
 	function cancel() {
-		if (raf) {cancelAnimationFrame(raf);}
+		if (raf) {
+			cancelAnimationFrame(raf);
+		}
 		raf = null;
 	}
 
@@ -86,7 +91,9 @@
 			{ threshold: 0.1 }
 		);
 
-		if (el) {observer.observe(el);}
+		if (el) {
+			observer.observe(el);
+		}
 	});
 
 	onDestroy(() => {

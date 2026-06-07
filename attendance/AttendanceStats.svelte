@@ -6,8 +6,8 @@
 </script>
 
 <div class="mt-4 grid grid-cols-2 gap-4 xl:grid-cols-4">
-	<div class="rounded-2xl border border-light-blue/15 bg-blue-gray/10 p-4">
-		<p class="text-xs tracking-[0.25em] text-light-blue/60 uppercase">Inscrits</p>
+	<div class="border-light-blue/15 bg-blue-gray/10 rounded-2xl border p-4">
+		<p class="text-light-blue/60 text-xs tracking-[0.25em] uppercase">Inscrits</p>
 		<p class="mt-1 text-2xl/6 font-semibold text-white">{registeredCount}</p>
 	</div>
 	<div class="rounded-2xl border border-green-400/25 bg-green-400/10 p-4">
@@ -18,8 +18,8 @@
 		<p class="text-xs tracking-[0.25em] text-red-300 uppercase">Absents</p>
 		<p class="mt-1 text-2xl/6 font-semibold text-red-300">{absentCount}</p>
 	</div>
-	<div class="rounded-2xl border border-light-blue/20 bg-blue-400/5 p-4">
-		<p class="text-xs tracking-[0.25em] text-light-blue/60 uppercase">Non renseigné</p>
-		<p class="mt-1 text-2xl/6 font-semibold text-light-blue">{unknownCount}</p>
+	<div class="border-light-blue/20 rounded-2xl border bg-blue-400/5 p-4">
+		<p class="text-light-blue/60 text-xs tracking-[0.25em] uppercase">Non renseigné</p>
+		<p class="text-light-blue mt-1 text-2xl/6 font-semibold">{unknownCount}</p>
 	</div>
 </div>

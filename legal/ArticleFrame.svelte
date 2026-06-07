@@ -55,23 +55,23 @@
 
 <Topbar />
 
-<section class="relative text-white bg-dark-blue">
-	<div class="absolute inset-0 pointer-events-none opacity-30">
+<section class="bg-dark-blue relative text-white">
+	<div class="pointer-events-none absolute inset-0 opacity-30">
 		<div
-			class="w-full h-full bg-[radial-gradient(circle_at_top,rgba(7,31,84,0.8),rgba(1,1,40,0.95))]"
+			class="h-full w-full bg-[radial-gradient(circle_at_top,rgba(7,31,84,0.8),rgba(1,1,40,0.95))]"
 		></div>
 	</div>
 
-	<div class="relative pb-12 pt-28 md:pb-16">
+	<div class="relative pt-28 pb-12 md:pb-16">
 		<div class="px-6 md:px-96">
 			<div class="max-w-3xl space-y-5">
 				<a
 					href={resolve('/legal')}
-					class="flex items-center gap-3 text-xs font-semibold tracking-[0.35em] uppercase text-dark-light-blue/80"
+					class="text-dark-light-blue/80 flex items-center gap-3 text-xs font-semibold tracking-[0.35em] uppercase"
 				>
 					{#if redirectToLegalHome}
 						<svg
-							class="flex-none w-4 h-4"
+							class="h-4 w-4 flex-none"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"
@@ -87,7 +87,7 @@
 				</a>
 				<h1 class="text-3xl font-extrabold md:text-5xl">{title}</h1>
 				{#if intro}
-					<p class="text-base leading-relaxed text-dark-blue-gray md:text-lg">{intro}</p>
+					<p class="text-dark-blue-gray text-base leading-relaxed md:text-lg">{intro}</p>
 				{/if}
 				{#if formattedDate}
 					<p class="text-sm text-gray-400">
@@ -99,23 +99,23 @@
 	</div>
 
 	<div class="relative pb-16">
-		<div class="px-6 md:pl-96 md:pr-16">
-			<div class="flex flex-col items-start justify-between w-full mx-auto md:flex-row flex-nowrap">
-				<article class="shrink-0 w-full max-w-3xl prose legal-article prose-invert md-article">
+		<div class="px-6 md:pr-16 md:pl-96">
+			<div class="mx-auto flex w-full flex-col flex-nowrap items-start justify-between md:flex-row">
+				<article class="prose legal-article prose-invert md-article w-full max-w-3xl shrink-0">
 					{@render children?.()}
 				</article>
 				{#if sections.length}
 					<aside
-						class="order-first w-full p-5 mb-6 space-y-4 text-white border md:mt-12 md:order-last legal-summary rounded-2xl border-white/10 bg-white/5 lg:sticky lg:top-32 lg:mt-0 lg:w-80 lg:flex-none"
+						class="legal-summary order-first mb-6 w-full space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-white md:order-last md:mt-12 lg:sticky lg:top-32 lg:mt-0 lg:w-80 lg:flex-none"
 						aria-label="Sommaire de la page"
 					>
-						<p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Sommaire</p>
+						<p class="text-xs font-semibold tracking-[0.2em] text-white/70 uppercase">Sommaire</p>
 						<ol class="space-y-2 text-sm text-white/80" role="list">
 							{#each sections as section (section.id)}
 								<li>
 									<a
 										href={`#${section.id}`}
-										class="flex gap-2 px-3 py-2 transition rounded-xl hover:bg-white/10 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-white"
+										class="flex gap-2 rounded-xl px-3 py-2 transition hover:bg-white/10 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-white"
 									>
 										<span class="font-semibold text-white">{section.label}</span>
 									</a>

@@ -13,7 +13,7 @@
 	aria-label="Ker Juliette"
 >
 	<svg
-		class={small ? 'w-full' : 'w-full h-full'}
+		class={small ? 'w-full' : 'h-full w-full'}
 		height={small ? 50 : 100}
 		viewBox="0 0 458 358"
 		fill="none"

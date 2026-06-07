@@ -93,7 +93,8 @@
 												if (typeof close === 'function') {
 													close();
 												}
-											}}>{sub_item.title}</svelte:element>
+											}}>{sub_item.title}</svelte:element
+										>
 									</li>
 								{/each}
 							</ul>

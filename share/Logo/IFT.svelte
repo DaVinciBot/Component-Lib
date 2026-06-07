@@ -8,7 +8,7 @@
 
 <a
 	href="https://ift.devinci.fr/"
-	class="h-full aspect-square"
+	class="aspect-square h-full"
 	target="_blank"
 	rel="noopener noreferrer"
 	aria-label="Institute for Future Technologies"

@@ -386,7 +386,9 @@
 	function decodeEmail(token: string): string {
 		try {
 			const payload = token.split('.')[1];
-			if (!payload) {return '';}
+			if (!payload) {
+				return '';
+			}
 			const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
 			const decoded = atob(base64);
 			const data: unknown = JSON.parse(decoded);
@@ -398,15 +400,15 @@
 </script>
 
 <section class="">
-	<div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-		<a class="flex items-center mb-6 text-2xl font-semibold text-white" href={resolve('/')}>
-			<img class="h-20 mr-2" src="/white_logo.webp" alt="logo" />
+	<div class="mx-auto flex flex-col items-center justify-center px-6 py-8 md:h-screen lg:py-0">
+		<a class="mb-6 flex items-center text-2xl font-semibold text-white" href={resolve('/')}>
+			<img class="mr-2 h-20" src="/white_logo.webp" alt="logo" />
 		</a>
 		<div
-			class="w-full rounded-xl border-[3.5px] shadow border-dark-blue-gray md:mt-0 sm:max-w-md xl:p-0"
+			class="border-dark-blue-gray w-full rounded-xl border-[3.5px] shadow sm:max-w-md md:mt-0 xl:p-0"
 		>
-			<div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-				<h1 class="text-xl font-bold leading-tight tracking-tight text-white md:text-2xl">
+			<div class="space-y-4 p-6 sm:p-8 md:space-y-6">
+				<h1 class="text-xl leading-tight font-bold tracking-tight text-white md:text-2xl">
 					{auth_type}
 				</h1>
 				<form
@@ -417,19 +419,19 @@
 					}}
 				>
 					<div>
-						<label for="email" class="block mb-2 text-sm font-medium text-white">Votre email</label>
+						<label for="email" class="mb-2 block text-sm font-medium text-white">Votre email</label>
 						<input
 							type="email"
 							name="email"
 							id="email"
-							class="border-2 rounded-lg block w-full p-2.5 bg-transparent border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue focus:ring-blue-500 focus:border-blue-500"
+							class="border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue block w-full rounded-lg border-2 bg-transparent p-2.5 focus:border-blue-500 focus:ring-blue-500"
 							placeholder="davincibot@devinci.fr"
 							disabled={auth_type === AuthType.reset || auth_type === AuthType.register}
 							bind:value={email}
 						/>
 					</div>
 					<div>
-						<label for="password" class="block mb-2 text-sm font-medium text-white"
+						<label for="password" class="mb-2 block text-sm font-medium text-white"
 							>Votre mot de passe</label
 						>
 						<input
@@ -437,13 +439,13 @@
 							name="password"
 							id="password"
 							placeholder="••••••••"
-							class="border-2 rounded-lg block w-full p-2.5 bg-transparent border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue focus:ring-blue-500 focus:border-blue-500"
+							class="border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue block w-full rounded-lg border-2 bg-transparent p-2.5 focus:border-blue-500 focus:ring-blue-500"
 							bind:value={password}
 						/>
 					</div>
 					{#if auth_type === AuthType.reset || auth_type === AuthType.register}
 						<div>
-							<label for="password-confirm" class="block mb-2 text-sm font-medium text-white"
+							<label for="password-confirm" class="mb-2 block text-sm font-medium text-white"
 								>Confirmer votre mot de passe</label
 							>
 							<input
@@ -451,7 +453,7 @@
 								name="password-confirm"
 								id="password-confirm"
 								placeholder="••••••••"
-								class="border-2 rounded-lg block w-full p-2.5 bg-transparent border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue focus:ring-blue-500 focus:border-blue-500"
+								class="border-dark-blue-gray placeholder-dark-light-blue-faded text-dark-light-blue block w-full rounded-lg border-2 bg-transparent p-2.5 focus:border-blue-500 focus:ring-blue-500"
 								bind:value={password_confirm}
 							/>
 						</div>
@@ -460,14 +462,14 @@
 					<button
 						type="submit"
 						disabled={loading}
-						class="px-4 py-2 font-bold rounded-xl hover:bg-dark-light-blue hover:text-dark-blue text-dark-light-blue border-[3.25px] transition-all border-dark-light-blue w-full focus:outline-none text-center bg-transparent focus:ring-dark-blue-gray focus:ring-4 disabled:opacity-50"
+						class="hover:bg-dark-light-blue hover:text-dark-blue text-dark-light-blue border-dark-light-blue focus:ring-dark-blue-gray w-full rounded-xl border-[3.25px] bg-transparent px-4 py-2 text-center font-bold transition-all focus:ring-4 focus:outline-none disabled:opacity-50"
 						>{loading ? 'Chargement ...' : auth_type}</button
 					>
 				</form>
 			</div>
 			{#if auth_type === AuthType.login}
 				<div
-					class="flex items-center justify-center px-4 py-2 text-sm text-gray-400 border-t rounded-b-lg border-dark-blue-gray"
+					class="border-dark-blue-gray flex items-center justify-center rounded-b-lg border-t px-4 py-2 text-sm text-gray-400"
 				>
 					<a href={resolve('/auth/reset')} class="hover:underline">Mot de passe oublié ?</a>
 				</div>

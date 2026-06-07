@@ -8,7 +8,7 @@
 </script>
 
 {#if header}
-	<th class="px-4 py-2 border">{text}</th>
+	<th class="border px-4 py-2">{text}</th>
 {:else}
-	<td class="px-4 py-2 border">{text}</td>
+	<td class="border px-4 py-2">{text}</td>
 {/if}

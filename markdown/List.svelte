@@ -13,11 +13,11 @@
 
 <div class="py-2 pl-4">
 	{#if ordered}
-		<ol class="list-decimal list-inside" {start} class:space-y-2={loose}>
+		<ol class="list-inside list-decimal" {start} class:space-y-2={loose}>
 			{@render children?.()}
 		</ol>
 	{:else}
-		<ul class="list-disc list-inside" class:space-y-2={loose}>
+		<ul class="list-inside list-disc" class:space-y-2={loose}>
 			{@render children?.()}
 		</ul>
 	{/if}

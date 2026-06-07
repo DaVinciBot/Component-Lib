@@ -19,10 +19,7 @@
 		small?: boolean;
 	}
 
-	let {
-		small = $bindable(false),
-		...props
-	}: SponsorsCarouselProps = $props();
+	let { small = $bindable(false), ...props }: SponsorsCarouselProps = $props();
 	props = { ...props };
 	const time = props.time ?? 60;
 	const pauseOnHover = props.pauseOnHover ?? true;

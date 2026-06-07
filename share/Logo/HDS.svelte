@@ -13,7 +13,7 @@
 	aria-label="Hauts-de-Seine"
 >
 	<svg
-		class={small ? 'w-full' : 'w-full h-full'}
+		class={small ? 'w-full' : 'h-full w-full'}
 		height="50"
 		viewBox="0 0 233 48"
 		fill="none"

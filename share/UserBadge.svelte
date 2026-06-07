@@ -25,10 +25,7 @@
 		avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
 	};
 
-	let {
-		user = $bindable<UserBadgeUser | null>(fallbackUser),
-		...props
-	}: UserBadgeProps = $props();
+	let { user = $bindable<UserBadgeUser | null>(fallbackUser), ...props }: UserBadgeProps = $props();
 	props = { ...props };
 	const fixed = props.fixed ?? true;
 
@@ -75,7 +72,9 @@
 		// set position of the popup just below the button
 		const dropdown = getDropdown();
 		const button = document.getElementById('user-menu-button');
-		if (!dropdown || !button) {return;}
+		if (!dropdown || !button) {
+			return;
+		}
 		const rect = button.getBoundingClientRect();
 		dropdown.style.top = `calc(${String(rect.bottom)}px - 0.25rem)`;
 		dropdown.style.left = `calc(${String(rect.left)}px - 12.05rem)`;
@@ -83,7 +82,9 @@
 
 	onMount(() => {
 		const dropdown = getDropdown();
-		if (!dropdown) {return;}
+		if (!dropdown) {
+			return;
+		}
 		setupDropdown();
 		document.body.appendChild(dropdown);
 
@@ -92,7 +93,9 @@
 		};
 		window.addEventListener('resize', resizeHandler);
 
-		if (skip) {return;}
+		if (skip) {
+			return;
+		}
 	});
 
 	const LogOut = async () => {
@@ -121,7 +124,9 @@
 	aria-expanded="false"
 	onclick={(e: MouseEvent) => {
 		const dropdown = getDropdown();
-		if (!dropdown) {return;}
+		if (!dropdown) {
+			return;
+		}
 		dropdown.classList.toggle('hidden');
 		e.stopPropagation();
 		hideOnClickOutside(dropdown);

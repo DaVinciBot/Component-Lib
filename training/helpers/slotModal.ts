@@ -26,7 +26,9 @@ export interface SlotLike {
 }
 
 export function hasContent(value?: string | null) {
-	if (!value) {return false;}
+	if (!value) {
+		return false;
+	}
 	return value.trim().length > 0;
 }
 
@@ -43,13 +45,19 @@ export function formatTimeRange(startValue: Date | string, durationHours: number
 }
 
 export function resolveRemaining(seats?: number | null, remaining?: number | null) {
-	if (seats === null || seats === undefined) {return null;}
-	if (remaining === null || remaining === undefined) {return Math.max(seats, 0);}
+	if (seats === null || seats === undefined) {
+		return null;
+	}
+	if (remaining === null || remaining === undefined) {
+		return Math.max(seats, 0);
+	}
 	return Math.max(remaining, 0);
 }
 
 export function buildAvailability(slot: SlotLike | null): AvailabilityMode[] {
-	if (!slot) {return [];}
+	if (!slot) {
+		return [];
+	}
 	const modes: AvailabilityMode[] = [];
 
 	const onSiteRemaining = resolveRemaining(slot.on_site_seats, slot.on_site_remaining);
@@ -79,7 +87,9 @@ export function isRegistrationMode(
 	registration: RegistrationSummary | null,
 	modeKey: AvailabilityMode['key']
 ) {
-	if (!registration) {return false;}
+	if (!registration) {
+		return false;
+	}
 	return registration.remote ? modeKey === 'remote' : modeKey === 'on-site';
 }
 
@@ -92,7 +102,9 @@ export function buildActionButtons({
 	registration: RegistrationSummary | null;
 	availability: AvailabilityMode[];
 }): ActionButton[] {
-	if (slot?.cardStatus === 'hidden' || slot?.cardStatus === 'my') {return [];}
+	if (slot?.cardStatus === 'hidden' || slot?.cardStatus === 'my') {
+		return [];
+	}
 	if (registration) {
 		return [
 			{

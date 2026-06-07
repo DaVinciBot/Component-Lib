@@ -14,7 +14,7 @@
 	aria-label="Gotronic"
 >
 	<svg
-		class={small ? 'w-full' : 'w-full h-full'}
+		class={small ? 'w-full' : 'h-full w-full'}
 		height="50"
 		viewBox="0 0 310 76"
 		fill="none"

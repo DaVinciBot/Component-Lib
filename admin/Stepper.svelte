@@ -33,7 +33,7 @@
 		<li
 			class="flex items-center {i < steps.length - 1
 				? step.done
-					? "w-full text-primary-500 after:inline-block after:h-1 after:w-full after:border-4 after:border-b after:border-primary-400 after:content-['']"
+					? "text-primary-500 after:border-primary-400 w-full after:inline-block after:h-1 after:w-full after:border-4 after:border-b after:content-['']"
 					: " w-full after:inline-block after:h-1 after:w-full after:border-4 after:border-b after:border-gray-700 after:content-['']"
 				: ''}"
 		>

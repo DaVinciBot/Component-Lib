@@ -5,30 +5,29 @@
 		color?: string;
 	}
 
-	const { percentage = 0, message = '', color = 'bg-primary-500' }: LoadingBarProps =
-		$props();
+	const { percentage = 0, message = '', color = 'bg-primary-500' }: LoadingBarProps = $props();
 </script>
 
 <div>
 	<div class="relative pt-1">
-		<div class="flex mb-2 items-center justify-between">
+		<div class="mb-2 flex items-center justify-between">
 			<div>
 				<span
-					class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-white"
+					class="inline-block rounded-full px-2 py-1 text-xs font-semibold text-white uppercase"
 				>
 					{percentage}%
 				</span>
 			</div>
 			<div class="text-right">
-				<span class="text-xs font-semibold inline-block text-white">
+				<span class="inline-block text-xs font-semibold text-white">
 					{message}
 				</span>
 			</div>
 		</div>
-		<div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+		<div class="mb-4 flex h-2 overflow-hidden rounded bg-gray-200 text-xs">
 			<div
 				style="width: {percentage}%;"
-				class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center {color}"
+				class="flex flex-col justify-center text-center whitespace-nowrap text-white shadow-none {color}"
 			></div>
 		</div>
 	</div>

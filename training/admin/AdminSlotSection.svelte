@@ -25,18 +25,18 @@
 	export let trainings: TrainingListItem[] = [];
 </script>
 
-<section class="rounded-[28px] border border-light-blue/10 bg-dark-blue/80 p-5 sm:p-6">
+<section class="border-light-blue/10 bg-dark-blue/80 rounded-[28px] border p-5 sm:p-6">
 	<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 		<div>
 			<h2 class="text-xl font-semibold text-white">Sessions de formation</h2>
-			<p class="text-sm text-light-blue/70">Planifiez, suivez et ajustez les sessions.</p>
+			<p class="text-light-blue/70 text-sm">Planifiez, suivez et ajustez les sessions.</p>
 		</div>
 		<div class="flex flex-col sm:w-40 sm:flex-row sm:flex-wrap">
 			<CTAButton type="button" variant="secondary" size="sm" onclick={onAddSlot}>Ajouter</CTAButton>
 		</div>
 	</div>
 
-	<div class="mt-6 overflow-hidden rounded-2xl border border-light-blue/10">
+	<div class="border-light-blue/10 mt-6 overflow-hidden rounded-2xl border">
 		<div class="hidden md:block">
 			<Table
 				headers={['Début', 'Formation', 'Formateur·ice', 'Statut', 'Actions']}
@@ -52,26 +52,28 @@
 		</div>
 		<div class="md:hidden">
 			{#if slots.length === 0}
-				<p class="px-4 py-6 text-center text-sm text-light-blue/70">Aucune session</p>
+				<p class="text-light-blue/70 px-4 py-6 text-center text-sm">Aucune session</p>
 			{:else}
 				<div class="grid gap-3 p-4">
 					{#each slots as slot (slot.slot_id)}
-						<article class="rounded-2xl border border-light-blue/10 bg-dark-blue/90 p-4">
+						<article class="border-light-blue/10 bg-dark-blue/90 rounded-2xl border p-4">
 							<div class="flex items-start justify-between gap-4">
 								<div>
 									<p class="text-base font-semibold text-white">{formatSlotDate(slot.start)}</p>
-									<p class="mt-1 text-sm text-light-blue/70">
+									<p class="text-light-blue/70 mt-1 text-sm">
 										{findTrainingName(slot.training_id, trainings)}
 									</p>
 								</div>
 								<button
-									class="text-xs tracking-[0.2em] text-light-blue/70 uppercase hover:text-white"
-									onclick={() => { onEditSlot(slot); }}
+									class="text-light-blue/70 text-xs tracking-[0.2em] uppercase hover:text-white"
+									onclick={() => {
+										onEditSlot(slot);
+									}}
 								>
 									Editer
 								</button>
 							</div>
-							<div class="mt-3 flex flex-wrap items-center gap-3 text-sm text-light-blue/70">
+							<div class="text-light-blue/70 mt-3 flex flex-wrap items-center gap-3 text-sm">
 								<div class="flex items-center gap-2">
 									{#if slot.trainer_avatar_url}
 										<img
@@ -82,7 +84,7 @@
 									{/if}
 									<span>{slot.trainer_username ?? 'A definir'}</span>
 								</div>
-								<span class="rounded-full border border-light-blue/20 px-3 py-1 text-xs uppercase">
+								<span class="border-light-blue/20 rounded-full border px-3 py-1 text-xs uppercase">
 									{statusOptions.find((opt) => opt.value === slot.status)?.text ?? slot.status}
 								</span>
 							</div>
