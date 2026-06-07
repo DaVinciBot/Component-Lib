@@ -1,7 +1,7 @@
 <script lang="ts">
-	import SponsorsCarousel from '../others/SponsorsCarousel.svelte';
-	import FooterEl from './FooterEl.svelte';
-	import DVBLogo from './Logo/DVBLogo.svelte';
+	import SponsorsCarousel from '$lib/components/others/SponsorsCarousel.svelte';
+	import FooterEl from '$lib/components/share/FooterEl.svelte';
+	import DVBLogo from '$lib/components/share/Logo/DVBLogo.svelte';
 
 	const items = [
 		[

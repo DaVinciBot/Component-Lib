@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Heading from './Heading.svelte';
-	import Image from './Image.svelte';
-	import Link from './Link.svelte';
-	import List from './List.svelte';
-	import NodeComponent from './Node.svelte';
-	import Paragraph from './Paragraph.svelte';
-	import Table from './Table.svelte';
-	import TableCell from './TableCell.svelte';
+	import Heading from '$lib/components/markdown/Heading.svelte';
+	import Image from '$lib/components/markdown/Image.svelte';
+	import Link from '$lib/components/markdown/Link.svelte';
+	import List from '$lib/components/markdown/List.svelte';
+	import NodeComponent from '$lib/components/markdown/Node.svelte';
+	import Paragraph from '$lib/components/markdown/Paragraph.svelte';
+	import Table from '$lib/components/markdown/Table.svelte';
+	import TableCell from '$lib/components/markdown/TableCell.svelte';
 
 	interface MarkdownNode {
 		type: string;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Carousel from '$lib/components/others/Carousel.svelte';
 	import AislerLogo from '$lib/components/share/Logo/Aisler.svelte';
 	import AlstomLogo from '$lib/components/share/Logo/Alstom.svelte';
 	import FaulhaberLogo from '$lib/components/share/Logo/Faulhaber.svelte';
@@ -7,11 +8,9 @@
 	import IFTLogo from '$lib/components/share/Logo/IFT.svelte';
 	import IgusLogo from '$lib/components/share/Logo/Igus.svelte';
 	import KJLogo from '$lib/components/share/Logo/KJ.svelte';
+	import Kurokesu from '$lib/components/share/Logo/Kurokesu.svelte';
 	import MouserLogo from '$lib/components/share/Logo/Mouser.svelte';
 	import RSLogo from '$lib/components/share/Logo/RS.svelte';
-
-	import Kurokesu from '../share/Logo/Kurokesu.svelte';
-	import Carousel from './Carousel.svelte';
 
 	interface SponsorsCarouselProps {
 		time?: number;

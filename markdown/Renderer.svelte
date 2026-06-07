@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Node from './Node.svelte';
+	import Node from '$lib/components/markdown/Node.svelte';
 	interface MarkdownNode {
 		id?: string | number;
 		type: string;

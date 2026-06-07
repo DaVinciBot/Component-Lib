@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '../share/Icon.svelte';
+	import Icon from '$lib/components/share/Icon.svelte';
 
 	interface Step {
 		done?: boolean;

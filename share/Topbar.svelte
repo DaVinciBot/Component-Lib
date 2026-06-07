@@ -6,8 +6,8 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import SideBar from '$lib/components/admin/SideBar.svelte';
-	import CTAButton from '../utils/CTAButton.svelte';
-	import DvbLogo from './Logo/DVBLogo.svelte';
+	import DvbLogo from '$lib/components/share/Logo/DVBLogo.svelte';
+	import CTAButton from '$lib/components/utils/CTAButton.svelte';
 
 	interface TopbarProps {
 		loginRedirect?: string;

@@ -4,7 +4,7 @@
 
 	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 
-	import Stepper from '../admin/Stepper.svelte';
+	import Stepper from '$lib/components/admin/Stepper.svelte';
 
 	interface ReadHeader {
 		title: string;

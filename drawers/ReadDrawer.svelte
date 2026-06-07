@@ -3,9 +3,9 @@
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { onDestroy, onMount } from 'svelte';
 	import type { Database } from '../../../database.types';
-	import Stepper from '../admin/Stepper.svelte';
 
-	import Icon from '../share/Icon.svelte';
+	import Stepper from '$lib/components/admin/Stepper.svelte';
+	import Icon from '$lib/components/share/Icon.svelte';
 
 	interface DocumentPreview {
 		id?: string | number;

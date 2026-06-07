@@ -4,7 +4,7 @@
 	import { mountClosable } from '$lib/utils';
 	import { onMount } from 'svelte';
 
-	import SucessModal from '../modals/InfoModal.svelte';
+	import SucessModal from '$lib/components/modals/InfoModal.svelte';
 
 	/** Session-storage key used to pin the PKCE state value for CSRF protection. */
 	const PKCE_STATE_KEY = 'pkce_state';
