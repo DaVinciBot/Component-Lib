@@ -67,19 +67,23 @@
 		value: string;
 	}
 
-	let { fields = $bindable<CrudField[]>([]), ...props }: CrudFormProps = $props() as CrudFormProps;
-	props = { ...props };
+	const noop = () => undefined;
 
-	const type = props.type ?? 'Utilisateur';
-	const type_accord = props.type_accord ?? 'un';
-	const action = props.action ?? 'Ajouter';
-	const id = props.id ?? 'CrudModal';
-	const title = props.title ?? `${action} ${type_accord} ${type}`;
-	const submitLabel = props.submitLabel ?? title;
-	const submitLoadingLabel = props.submitLoadingLabel ?? 'Chargement...';
-	const submitting = props.submitting ?? false;
-	const onSubmit = props.onSubmit ?? (() => undefined);
-	const onClose = props.onClose ?? (() => undefined);
+	/* eslint-disable prefer-const */
+	let {
+		type = 'Utilisateur',
+		type_accord = 'un',
+		action = 'Ajouter',
+		fields = $bindable([]),
+		id = 'CrudModal',
+		title = `${action} ${type_accord} ${type}`,
+		submitLabel = title,
+		submitLoadingLabel = 'Chargement...',
+		submitting = false,
+		onSubmit = noop,
+		onClose = noop
+	}: CrudFormProps = $props() as CrudFormProps;
+	/* eslint-enable prefer-const */
 
 	let autocompleteValues: Record<string, string> = $state({});
 	let autocompleteCompletions: Record<string, AutocompleteCompletion[]> = $state({});

@@ -64,15 +64,14 @@
 		return authTypeByKey[value.toLowerCase()] ?? AuthType.login;
 	}
 
+	/* eslint-disable prefer-const */
 	let {
-		redirect_uri = $bindable<string>('/'),
-		auth_type = $bindable<string>(AuthType.login),
-		...props
+		redirect_uri = $bindable('/'),
+		auth_type = $bindable(AuthType.login),
+		access_token = '',
+		refresh_token = ''
 	}: AuthFormProps = $props() as AuthFormProps;
-	props = { ...props };
-
-	const access_token = props.access_token ?? '';
-	const refresh_token = props.refresh_token ?? '';
+	/* eslint-enable prefer-const */
 
 	auth_type = normalizeAuthType(auth_type);
 

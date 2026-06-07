@@ -7,10 +7,9 @@
 		className?: string;
 	};
 
-	let { checked = $bindable(false), ...props }: CheckboxProps = $props() as CheckboxProps;
-	props = { ...props };
-	const typedProps = props as unknown as Omit<CheckboxProps, 'checked'>;
-	const {
+	/* eslint-disable prefer-const */
+	let {
+		checked = $bindable(false),
 		disabled = false,
 		name,
 		value,
@@ -18,7 +17,8 @@
 		required = false,
 		className = '',
 		...rest
-	} = typedProps;
+	}: CheckboxProps = $props() as CheckboxProps;
+	/* eslint-enable prefer-const */
 </script>
 
 <input

@@ -103,23 +103,26 @@
 		emptyMessage?: string;
 	}
 
-	let { filters = $bindable<Filter[]>([]), ...props }: TableProps = $props() as TableProps;
-
-	const actions = $derived(props.actions ?? []);
-	const headers = $derived(props.headers ?? ['Nom', 'Email', 'Rôle', 'Actions']);
-	const dbInfo = $derived(props.dbInfo);
-	const searchable = $derived(props.searchable ?? 'username');
-	const type = $derived(props.type ?? 'élément');
-	const type_accord = $derived(props.type_accord ?? 'un');
-	const parseItems = $derived(props.parseItems ?? null);
-	const size = $derived(props.size ?? 15);
-	const can_load = $derived(props.can_load ?? true);
-	const clickable = $derived(props.clickable ?? false);
-	const addNew = $derived(props.addNew ?? null);
-	const refreshTopic = $derived(props.refreshTopic);
-	const showToolbar = $derived(props.showToolbar ?? true);
-	const showPagination = $derived(props.showPagination ?? true);
-	const emptyMessage = $derived(props.emptyMessage ?? 'Aucun résultat');
+	/* eslint-disable prefer-const */
+	let {
+		actions = [],
+		headers = ['Nom', 'Email', 'Rôle', 'Actions'],
+		filters = $bindable<Filter[]>([]),
+		dbInfo,
+		searchable = 'username',
+		type = 'élément',
+		type_accord = 'un',
+		parseItems = null,
+		size = 15,
+		can_load = true,
+		clickable = false,
+		addNew = null,
+		refreshTopic,
+		showToolbar = true,
+		showPagination = true,
+		emptyMessage = 'Aucun résultat'
+	}: TableProps = $props() as TableProps;
+	/* eslint-enable prefer-const */
 
 	// State
 	let search = $state('');

@@ -17,22 +17,23 @@
 		action?: InfoAction[];
 	}
 
-	const {
-		action = $bindable<InfoAction[]>([
+	const noopOnClose = () => {
+		window.location.reload();
+	};
+
+	/* eslint-disable prefer-const */
+	let {
+		message = 'La commande a été passée avec succès.',
+		type = 'success',
+		onClose = noopOnClose,
+		action = $bindable([
 			{
 				text: 'Suivant',
 				is_main: true
 			}
-		]),
-		...props
+		])
 	}: InfoModalProps = $props() as InfoModalProps;
-	const message = props.message ?? 'La commande a été passée avec succès.';
-	const type = props.type ?? 'success';
-	const onClose =
-		props.onClose ??
-		(() => {
-			window.location.reload();
-		});
+	/* eslint-enable prefer-const */
 
 	const popupSuffix = Math.random().toString(36).substring(7);
 	const id = $derived(`${type}Popup-${popupSuffix}`);

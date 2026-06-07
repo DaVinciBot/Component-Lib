@@ -18,11 +18,13 @@
 		small?: boolean;
 	}
 
-	let { small = $bindable(false), ...props }: SponsorsCarouselProps =
-		$props() as SponsorsCarouselProps;
-	props = { ...props };
-	const time = props.time ?? 60;
-	const pauseOnHover = props.pauseOnHover ?? true;
+	/* eslint-disable prefer-const */
+	let {
+		time = 60,
+		pauseOnHover = true,
+		small = $bindable(false)
+	}: SponsorsCarouselProps = $props() as SponsorsCarouselProps;
+	/* eslint-enable prefer-const */
 
 	let isMobile = $state(false);
 	let add_padding = $state(false);

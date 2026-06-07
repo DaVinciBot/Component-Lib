@@ -191,19 +191,22 @@
 		onClose?: (event: Event) => void | Promise<void>;
 	}
 
-	let { fields = $bindable<EditableField[]>([]), ...props }: ReadDrawerProps =
-		$props() as ReadDrawerProps;
-	props = { ...props };
+	const noop = () => undefined;
 
-	const values = props.values ?? {
-		header: { title: 'Pas de détails', sub: '-', stepper: [] },
-		body: []
-	};
-	const files = props.files ?? [];
-	const actions = props.actions ?? [];
-	const id = props.id ?? 'readDrawer';
-	const onSubmit = props.onSubmit ?? (() => undefined);
-	const onClose = props.onClose ?? (() => undefined);
+	/* eslint-disable prefer-const */
+	let {
+		values = {
+			header: { title: 'Pas de détails', sub: '-', stepper: [] },
+			body: []
+		},
+		files = [],
+		actions = [],
+		fields = $bindable([]),
+		id = 'readDrawer',
+		onSubmit = noop,
+		onClose = noop
+	}: ReadDrawerProps = $props() as ReadDrawerProps;
+	/* eslint-enable prefer-const */
 
 	let isEditing = $state(false);
 	function handleSave(e: SubmitEvent) {

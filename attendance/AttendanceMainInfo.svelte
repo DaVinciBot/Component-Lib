@@ -19,7 +19,7 @@
 				<div>
 					<p class="text-dark-light-blue m-0 text-[0.6rem] tracking-[0.32em] uppercase">Date</p>
 					<p class="text-light-blue m-0 text-sm font-semibold">
-						{formatDate(selectedSlot.start)}
+						{formatDate(String(selectedSlot.start))}
 					</p>
 				</div>
 			</div>
@@ -34,7 +34,7 @@
 				<div>
 					<p class="text-dark-light-blue m-0 text-[0.6rem] tracking-[0.32em] uppercase">Horaire</p>
 					<p class="text-light-blue m-0 text-sm font-semibold">
-						{formatTimeRange(selectedSlot.start, selectedSlot.duration_hours)}
+						{formatTimeRange(String(selectedSlot.start), Number(selectedSlot.duration_hours))}
 					</p>
 				</div>
 			</div>

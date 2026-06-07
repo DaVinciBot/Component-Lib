@@ -25,10 +25,9 @@
 		avatar: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png'
 	};
 
-	let { user = $bindable<UserBadgeUser | null>(fallbackUser), ...props }: UserBadgeProps =
-		$props() as UserBadgeProps;
-	props = { ...props };
-	const fixed = props.fixed ?? true;
+	/* eslint-disable prefer-const */
+	let { user = $bindable(fallbackUser), fixed = true }: UserBadgeProps = $props() as UserBadgeProps;
+	/* eslint-enable prefer-const */
 
 	let skip = false;
 	let resizeHandler: (() => void) | null = null;
