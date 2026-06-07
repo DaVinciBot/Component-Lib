@@ -7,7 +7,7 @@
 		children?: Snippet;
 	}
 
-	const { href = '', title, children }: LinkProps = $props() as LinkProps;
+	const { href = '', title, children }: LinkProps = $props();
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

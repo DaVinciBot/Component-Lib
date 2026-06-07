@@ -3,7 +3,7 @@
 		size?: string;
 	}
 
-	const { size = 'h-20 md:h-28' }: LogoProps = $props() as LogoProps;
+	const { size = 'h-20 md:h-28' }: LogoProps = $props();
 </script>
 
 <svg

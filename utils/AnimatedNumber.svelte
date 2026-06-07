@@ -19,7 +19,7 @@
 		locale = 'fr-FR',
 		decimals = 0,
 		once = true
-	}: AnimatedNumberProps = $props() as AnimatedNumberProps;
+	}: AnimatedNumberProps = $props();
 
 	let display = $state('');
 	let raf: number | null = null;

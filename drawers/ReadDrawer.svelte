@@ -205,7 +205,7 @@
 		id = 'readDrawer',
 		onSubmit = noop,
 		onClose = noop
-	}: ReadDrawerProps = $props() as ReadDrawerProps;
+	}: ReadDrawerProps = $props();
 	/* eslint-enable prefer-const */
 
 	let isEditing = $state(false);

@@ -3,8 +3,7 @@
 		small?: boolean;
 	}
 
-	const { small = false }: LogoProps = $props() as LogoProps;
-	void small;
+	const { small: _small = false }: LogoProps = $props();
 </script>
 
 <a

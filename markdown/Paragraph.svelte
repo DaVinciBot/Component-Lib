@@ -6,7 +6,7 @@
 		children?: Snippet;
 	}
 
-	const { pre = false, children }: ParagraphProps = $props() as ParagraphProps;
+	const { pre = false, children }: ParagraphProps = $props();
 </script>
 
 {#if pre}

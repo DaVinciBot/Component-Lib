@@ -32,7 +32,7 @@
 				is_main: true
 			}
 		])
-	}: InfoModalProps = $props() as InfoModalProps;
+	}: InfoModalProps = $props();
 	/* eslint-enable prefer-const */
 
 	const popupSuffix = Math.random().toString(36).substring(7);

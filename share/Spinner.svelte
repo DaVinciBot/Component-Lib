@@ -6,7 +6,7 @@
 		children?: Snippet;
 	}
 
-	const { divClass = '', children }: SpinnerProps = $props() as SpinnerProps;
+	const { divClass = '', children }: SpinnerProps = $props();
 </script>
 
 <div class="flex flex-col items-center justify-center gap-3 {divClass}">

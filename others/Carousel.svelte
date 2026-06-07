@@ -14,7 +14,7 @@
 		pauseOnHover = true,
 		small = false,
 		children
-	}: CarouselProps = $props() as CarouselProps;
+	}: CarouselProps = $props();
 </script>
 
 <div class="h-full w-full">

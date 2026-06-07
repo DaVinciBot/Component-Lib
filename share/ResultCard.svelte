@@ -17,7 +17,7 @@
 		logo,
 		marginLeft = '',
 		marginBottom = ''
-	}: ResultCardProps = $props() as ResultCardProps;
+	}: ResultCardProps = $props();
 
 	const SvelteComponent = $derived(logo);
 	const transformStyle = $derived(

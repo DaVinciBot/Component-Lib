@@ -1,12 +1,4 @@
-<script lang="ts">
-	import Checkbox from '$lib/components/share/Checkbox.svelte';
-	import { tableRefresh } from '$lib/store';
-	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
-	import { hashCode, hideOnClickOutside, loadSettings, saveSettings } from '$lib/utils';
-	import { onDestroy, onMount } from 'svelte';
-	import { writable } from 'svelte/store';
-	// Optional topic name; when an app-wide event with this topic fires, the table reloads
-
+<script lang="ts" module>
 	import type { Component } from 'svelte';
 
 	export interface FilterOption {
@@ -45,6 +37,15 @@
 
 	export type TableRow = TableCell[];
 	export type ParseItems = (data: unknown[]) => TableRow[] | Promise<TableRow[]>;
+</script>
+
+<script lang="ts">
+	import Checkbox from '$lib/components/share/Checkbox.svelte';
+	import { tableRefresh } from '$lib/store';
+	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
+	import { hashCode, hideOnClickOutside, loadSettings, saveSettings } from '$lib/utils';
+	import { onDestroy, onMount } from 'svelte';
+	import { writable } from 'svelte/store';
 
 	interface SupabaseFilterQuery {
 		filter: (column: string, operator: string, value: string) => SupabaseFilterQuery;
@@ -121,7 +122,7 @@
 		showToolbar = true,
 		showPagination = true,
 		emptyMessage = 'Aucun résultat'
-	}: TableProps = $props() as TableProps;
+	}: TableProps = $props();
 	/* eslint-enable prefer-const */
 
 	// State

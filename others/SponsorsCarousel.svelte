@@ -23,7 +23,7 @@
 		time = 60,
 		pauseOnHover = true,
 		small = $bindable(false)
-	}: SponsorsCarouselProps = $props() as SponsorsCarouselProps;
+	}: SponsorsCarouselProps = $props();
 	/* eslint-enable prefer-const */
 
 	let isMobile = $state(false);

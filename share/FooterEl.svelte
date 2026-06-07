@@ -9,7 +9,7 @@
 		title?: string;
 	}
 
-	const { items = [{ text: '', href: '' }], title = '' }: FooterElProps = $props() as FooterElProps;
+	const { items = [{ text: '', href: '' }], title = '' }: FooterElProps = $props();
 </script>
 
 <div

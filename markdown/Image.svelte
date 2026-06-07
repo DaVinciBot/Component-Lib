@@ -5,7 +5,7 @@
 		text?: string;
 	}
 
-	const { href = '', title = '', text = '' }: ImageProps = $props() as ImageProps;
+	const { href = '', title = '', text = '' }: ImageProps = $props();
 </script>
 
 <div class="flex w-full flex-col justify-center py-4">

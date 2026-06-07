@@ -2,8 +2,7 @@
 	import { formatParisTimeRange } from '$lib/helpers/parisTime';
 	import type { TrainingSlotListItem } from '$lib/services/training';
 	import { Clock, MapPin, UserRound } from '@lucide/svelte';
-
-	export type TrainingCardStatus = 'complete' | 'free' | 'hidden' | 'registered' | 'waiting' | 'my';
+	import type { TrainingCardStatus } from '../../../database.types';
 
 	type TrainingSlotView = Omit<TrainingSlotListItem, 'start'> & {
 		start: Date | string;
@@ -21,7 +20,7 @@
 		status,
 		className = '',
 		variant = 'default'
-	}: TrainingCardProps = $props() as TrainingCardProps;
+	}: TrainingCardProps = $props();
 
 	function formatTimeRange(startValue: Date | string, durationHours: number) {
 		return formatParisTimeRange(startValue, durationHours);

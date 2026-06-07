@@ -23,7 +23,7 @@
 		confirmDisabled = false,
 		onConfirm = noopConfirm,
 		onCancel = noop
-	}: TrainingRegistrationPopupProps = $props() as TrainingRegistrationPopupProps;
+	}: TrainingRegistrationPopupProps = $props();
 
 	let toExcuse = $state(false);
 

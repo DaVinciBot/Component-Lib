@@ -60,15 +60,17 @@
 		currentUserId?: string | null;
 	}
 
+	const noop = () => undefined;
+
 	const {
 		slot = null,
 		open = false,
-		onClose,
+		onClose = noop,
 		onRegistrationChange,
 		canManageTraining = false,
 		currentUserId = null
-	}: TrainingSlotModalProps = $props() as TrainingSlotModalProps;
-	const closeModal = onClose ?? (() => undefined);
+	}: TrainingSlotModalProps = $props();
+
 	let registration = $state<RegistrationSummary | null>(null);
 	let registrationRequestId = 0;
 	let participants = $state<RegistrationListItem[]>([]);
@@ -266,7 +268,7 @@
 		<button
 			type="button"
 			class="absolute inset-0 bg-[rgba(4,8,32,0.65)] backdrop-blur-md"
-			onclick={closeModal}
+			onclick={onClose}
 			aria-label="Fermer"
 		></button>
 		<section
@@ -299,7 +301,7 @@
 					<button
 						type="button"
 						class="border-light-blue/30 text-light-blue hover:border-light-blue/60 flex size-9 cursor-pointer items-center justify-center rounded-full border transition"
-						onclick={closeModal}
+						onclick={onClose}
 						aria-label="Fermer"
 					>
 						<X class="size-5.5" />

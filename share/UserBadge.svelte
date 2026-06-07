@@ -26,7 +26,7 @@
 	};
 
 	/* eslint-disable prefer-const */
-	let { user = $bindable(fallbackUser), fixed = true }: UserBadgeProps = $props() as UserBadgeProps;
+	let { user = $bindable(fallbackUser), fixed = true }: UserBadgeProps = $props();
 	/* eslint-enable prefer-const */
 
 	let skip = false;

@@ -1,3 +1,13 @@
+<script lang="ts" module>
+	import type { TrainingSlotListItem } from '$lib/services/training';
+	import type { TrainingCardStatus } from '../../../database.types';
+
+	export type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
+		start: Date | string;
+		cardStatus?: TrainingCardStatus;
+	};
+</script>
+
 <script lang="ts">
 	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import Spinner from '$lib/components/share/Spinner.svelte';
@@ -11,20 +21,12 @@
 		weekdays
 	} from '$lib/components/training/helpers/calendar';
 	import { calendarFilters } from '$lib/components/training/stores/trainingCalendarFilters';
-	import TrainingCard, {
-		type TrainingCardStatus
-	} from '$lib/components/training/TrainingCard.svelte';
+	import TrainingCard from '$lib/components/training/TrainingCard.svelte';
 	import TrainingSlotModal from '$lib/components/training/TrainingSlotModal.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import { formatParisDayShort, getParisDateUtc } from '$lib/helpers/parisTime';
-	import type { TrainingSlotListItem } from '$lib/services/training';
 	import { CalendarSync } from '@lucide/svelte';
 	import { onMount, tick } from 'svelte';
-
-	export type CalendarSlot = Omit<TrainingSlotListItem, 'start'> & {
-		start: Date | string;
-		cardStatus?: TrainingCardStatus;
-	};
 
 	interface CalendarProps {
 		slots?: CalendarSlot[];
@@ -52,7 +54,7 @@
 		isLoading = false,
 		errorMessage = null,
 		onRetry
-	}: CalendarProps = $props() as CalendarProps;
+	}: CalendarProps = $props();
 
 	let isInPerson = $state(false);
 	let isOnline = $state(false);

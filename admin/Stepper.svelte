@@ -25,7 +25,7 @@
 				icon: 'done'
 			}
 		]
-	}: StepperProps = $props() as StepperProps;
+	}: StepperProps = $props();
 </script>
 
 <ol class="flex w-full justify-center">

@@ -1,8 +1,13 @@
 {
 	"extends": "../../../tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true
+	},
 	"include": [
 		"../../../.svelte-kit/**/*.d.ts",
 		"../../../src/**/*.d.ts",
+		"eslint.config.js",
 		"**/*.js",
 		"**/*.ts",
 		"**/*.svelte"

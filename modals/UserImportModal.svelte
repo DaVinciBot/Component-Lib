@@ -46,7 +46,7 @@
 		initialProject = '',
 		onSubmit = () => Promise.resolve(),
 		onClose = null
-	}: UserImportModalProps = $props() as UserImportModalProps;
+	}: UserImportModalProps = $props();
 
 	const tabs = [
 		{ id: 'simple', label: 'Simple' },
@@ -55,10 +55,10 @@
 	] as const;
 
 	let activeTab = $state<(typeof tabs)[number]['id']>('simple');
-	let selectedPermissions = $state([...initialPermissions]);
-	let selectedProject = $state(initialProject);
-	const simpleUser = $state<ImportUser>({ name: '', email: '', project: initialProject });
-	let bulkUsers = $state<ImportUser[]>([{ name: '', email: '', project: initialProject }]);
+	let selectedPermissions = $derived([...initialPermissions]);
+	let selectedProject = $derived(initialProject);
+	const simpleUser = $derived<ImportUser>({ name: '', email: '', project: initialProject });
+	let bulkUsers = $derived<ImportUser[]>([{ name: '', email: '', project: initialProject }]);
 	let csvUsers = $state<ImportUser[]>([]);
 	let csvInput = $state<HTMLInputElement | null>(null);
 	let errorMessage = $state('');

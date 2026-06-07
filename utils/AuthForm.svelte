@@ -70,7 +70,7 @@
 		auth_type = $bindable(AuthType.login),
 		access_token = '',
 		refresh_token = ''
-	}: AuthFormProps = $props() as AuthFormProps;
+	}: AuthFormProps = $props();
 	/* eslint-enable prefer-const */
 
 	auth_type = normalizeAuthType(auth_type);

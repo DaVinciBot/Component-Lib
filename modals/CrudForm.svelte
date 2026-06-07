@@ -82,7 +82,7 @@
 		submitting = false,
 		onSubmit = noop,
 		onClose = noop
-	}: CrudFormProps = $props() as CrudFormProps;
+	}: CrudFormProps = $props();
 	/* eslint-enable prefer-const */
 
 	let autocompleteValues: Record<string, string> = $state({});

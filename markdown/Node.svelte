@@ -25,7 +25,7 @@
 		child?: MarkdownNode | null;
 	}
 
-	const { child = null }: NodeProps = $props() as NodeProps;
+	const { child = null }: NodeProps = $props();
 
 	function nodeText(node: MarkdownNode): string {
 		if (typeof node.value === 'string') {

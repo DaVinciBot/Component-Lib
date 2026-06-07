@@ -17,7 +17,7 @@
 		required = false,
 		className = '',
 		...rest
-	}: CheckboxProps = $props() as CheckboxProps;
+	}: CheckboxProps = $props();
 	/* eslint-enable prefer-const */
 </script>
 

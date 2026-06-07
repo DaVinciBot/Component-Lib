@@ -3,7 +3,7 @@
 		small?: boolean;
 	}
 
-	const { small = false }: LogoProps = $props() as LogoProps;
+	const { small = false }: LogoProps = $props();
 </script>
 
 <a href="https://mouser.fr/" target="_blank" rel="noopener noreferrer" aria-label="Mouser">

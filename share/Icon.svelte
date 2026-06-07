@@ -5,7 +5,7 @@
 		size?: string;
 	}
 
-	const { name: iconName = '', fill = '', size = '' }: IconProps = $props() as IconProps;
+	const { name: iconName = '', fill = '', size = '' }: IconProps = $props();
 </script>
 
 <i class="w-{size} aspect-square fill-{fill} text-{fill}">

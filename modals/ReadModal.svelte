@@ -66,6 +66,8 @@
 		name: string;
 	}
 
+	const noop = () => undefined;
+
 	const {
 		values = {
 			header: {
@@ -106,9 +108,8 @@
 		files = [],
 		actions = [],
 		id = 'readModal',
-		onClose
-	}: ReadModalProps = $props() as ReadModalProps;
-	const closeModal = onClose ?? (() => undefined);
+		onClose = noop
+	}: ReadModalProps = $props();
 
 	let current_file = $state('');
 	let current_file_index = $state(0);
@@ -118,7 +119,7 @@
 	const files_array = $state<ReadFile[]>([]);
 
 	const __onClose = (e: Event | Element | null) => {
-		closeModal(e);
+		onClose(e);
 	};
 
 	function attachmentPaths() {

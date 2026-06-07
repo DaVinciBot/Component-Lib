@@ -8,7 +8,7 @@
 		children?: Snippet;
 	}
 
-	const { ordered = false, start = 1, loose = false, children }: ListProps = $props() as ListProps;
+	const { ordered = false, start = 1, loose = false, children }: ListProps = $props();
 </script>
 
 <div class="py-2 pl-4">

@@ -13,7 +13,7 @@
 		loginRedirect?: string;
 	}
 
-	const { loginRedirect = '/admin' }: TopbarProps = $props() as TopbarProps;
+	const { loginRedirect = '/admin' }: TopbarProps = $props();
 
 	let user = $state<Record<string, unknown> | null>(null);
 	let sidebarOpen = $state(false);

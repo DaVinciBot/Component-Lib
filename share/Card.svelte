@@ -6,7 +6,7 @@
 		link?: string;
 	}
 
-	const { title = '', description = '', image = '', link = '' }: CardProps = $props() as CardProps;
+	const { title = '', description = '', image = '', link = '' }: CardProps = $props();
 </script>
 
 <div
