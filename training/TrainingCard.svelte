@@ -15,12 +15,7 @@
 		variant?: 'default' | 'compact';
 	}
 
-	const {
-		slot,
-		status,
-		className = '',
-		variant = 'default'
-	}: TrainingCardProps = $props();
+	const { slot, status, className = '', variant = 'default' }: TrainingCardProps = $props();
 
 	function formatTimeRange(startValue: Date | string, durationHours: number) {
 		return formatParisTimeRange(startValue, durationHours);
