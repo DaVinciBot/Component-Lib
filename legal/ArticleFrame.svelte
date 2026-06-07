@@ -66,7 +66,7 @@
 		<div class="px-6 md:px-96">
 			<div class="max-w-3xl space-y-5">
 				<a
-					href={resolve('/legal')}
+					href={resolve('/legal' as '/')}
 					class="text-dark-light-blue/80 flex items-center gap-3 text-xs font-semibold tracking-[0.35em] uppercase"
 				>
 					{#if redirectToLegalHome}

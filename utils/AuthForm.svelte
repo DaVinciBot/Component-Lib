@@ -470,7 +470,7 @@
 				<div
 					class="border-dark-blue-gray flex items-center justify-center rounded-b-lg border-t px-4 py-2 text-sm text-gray-400"
 				>
-					<a href={resolve('/auth/reset')} class="hover:underline">Mot de passe oublié ?</a>
+					<a href={resolve('/auth/reset' as '/')} class="hover:underline">Mot de passe oublié ?</a>
 				</div>
 			{/if}
 		</div>

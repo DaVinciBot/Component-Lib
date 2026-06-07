@@ -170,7 +170,7 @@
 			<div class="hidden items-center md:flex">
 				<ul class="flex gap-10">
 					<li>
-						<a href={resolve('/blog')} class="text-gray-400 hover:text-white">Actus</a>
+						<a href={resolve('/blog' as '/')} class="text-gray-400 hover:text-white">Actus</a>
 					</li>
 					<li>
 						<button
@@ -207,19 +207,19 @@
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
 									<a
-										href={resolve('/project/coupe-de-robotique')}
+										href={resolve('/project/coupe-de-robotique' as '/')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">La CDR</a
 									>
 								</li>
 								<li>
 									<a
-										href={resolve('/project/exodus')}
+										href={resolve('/project/exodus' as '/')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Exodus</a
 									>
 								</li>
 								<li>
 									<a
-										href={resolve('/project/cohoma')}
+										href={resolve('/project/cohoma' as '/')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">CoHoMa</a
 									>
 								</li>
@@ -271,13 +271,13 @@
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
 									<a
-										href={resolve('/a-propos')}
+										href={resolve('/a-propos' as '/')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">L'association</a
 									>
 								</li>
 								<li>
 									<a
-										href={resolve('/nos-ecoles')}
+										href={resolve('/nos-ecoles' as '/')}
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Nos écoles</a
 									>
 								</li>
@@ -295,7 +295,9 @@
 						</div>
 					</li>
 					<li>
-						<a href={resolve('/sponsors')} class="text-gray-400 hover:text-white">Partenaires</a>
+						<a href={resolve('/sponsors' as '/')} class="text-gray-400 hover:text-white"
+							>Partenaires</a
+						>
 					</li>
 
 					<li>
@@ -305,16 +307,20 @@
 					</li>
 
 					<li>
-						<a href={resolve('/contact')} class="text-gray-400 hover:text-white">Contact</a>
+						<a href={resolve('/contact' as '/')} class="text-gray-400 hover:text-white">Contact</a>
 					</li>
 				</ul>
 			</div>
 			<div class="gap-5">
 				{#if user}
-					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
+					<CTAButton href={resolve('/admin' as '/')} variant="secondary" size="sm"
+						>Espace membre</CTAButton
+					>
 				{:else}
-					<CTAButton href={`/auth/login?redirect=${loginRedirect}`} variant="secondary" size="sm"
-						>Se connecter</CTAButton
+					<CTAButton
+						href={resolve(`/auth/login?redirect=${loginRedirect}` as '/')}
+						variant="secondary"
+						size="sm">Se connecter</CTAButton
 					>
 				{/if}
 			</div>

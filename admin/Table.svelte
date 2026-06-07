@@ -31,8 +31,9 @@
 		data?: string | number | null;
 		warn?: boolean;
 		avatar?: string | null;
-		component?: Component<Record<string, unknown>>;
-		props?: Record<string, unknown>;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		component?: Component<any, Record<string, unknown>> | null;
+		props?: Record<string, unknown> | null;
 	}
 
 	export type TableRow = TableCell[];
