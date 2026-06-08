@@ -385,8 +385,14 @@
 		});
 	}
 
+	let cachedSupabase: SupabaseClient<Database> | null = null;
+
 	function getSupabase(): SupabaseClient<Database> {
-		return getSupabaseBrowserClient();
+		if (!cachedSupabase) {
+			const client: unknown = getSupabaseBrowserClient();
+			cachedSupabase = client as SupabaseClient<Database>;
+		}
+		return cachedSupabase;
 	}
 
 	function stringValue(value: FieldValue | BodyValue): string {
