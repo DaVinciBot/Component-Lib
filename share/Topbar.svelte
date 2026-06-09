@@ -68,13 +68,13 @@
 	}
 
 	onMount(() => {
-		onMobile = window.innerWidth < 768;
+		onMobile = window.innerWidth < 858;
 
 		initDropdown(projectsDropdownEl, 'ProjectsButton');
 		initDropdown(infosDropdownEl, 'AssosButton');
 
 		resizeHandler = () => {
-			onMobile = window.innerWidth < 768;
+			onMobile = window.innerWidth < 858;
 			// reposition dropdowns
 			const projectsButton = document.getElementById('ProjectsButton');
 			const assosButton = document.getElementById('AssosButton');
@@ -125,12 +125,12 @@
 
 <section>
 	<nav
-		class="fixed top-0 right-0 left-0 z-20 w-screen border-b border-gray-700 px-2 py-2.5 backdrop-blur-lg md:px-6"
+		class="fixed top-0 right-0 left-0 z-20 w-screen border-b border-gray-700 px-2 py-2.5 backdrop-blur-lg min-[858px]:px-6"
 	>
 		<div class="flex flex-wrap items-center justify-between">
 			<div class="flex items-center justify-start">
 				<button
-					class="mr-2 cursor-pointer rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:ring-2 focus:ring-gray-700 md:hidden"
+					class="mr-2 cursor-pointer rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:ring-2 focus:ring-gray-700 min-[858px]:hidden"
 					onclick={() => (sidebarOpen = !sidebarOpen)}
 					aria-controls="drawer-navigation"
 					aria-expanded={sidebarOpen}
@@ -167,8 +167,8 @@
 					<DvbLogo size="h-12" />
 				</a>
 			</div>
-			<div class="hidden items-center md:flex">
-				<ul class="flex gap-10">
+			<div class="hidden items-center min-[858px]:flex">
+				<ul class="flex gap-6 lg:gap-10">
 					<li>
 						<a href={resolve('/blog' as '/')} class="text-gray-400 hover:text-white">Actus</a>
 					</li>
@@ -180,7 +180,7 @@
 								dropdown.projects = !dropdown.projects;
 								dropdown.infos = false;
 							}}
-							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white md:w-auto md:border-0 md:p-0"
+							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white min-[858px]:w-auto min-[858px]:border-0 min-[858px]:p-0"
 							>Nos Projets <svg
 								class="ms-2.5 h-2.5 w-2.5"
 								aria-hidden="true"
@@ -244,7 +244,7 @@
 								dropdown.infos = !dropdown.infos;
 								dropdown.projects = false;
 							}}
-							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white md:w-auto md:border-0 md:p-0"
+							class="flex w-full items-center justify-between rounded-sm px-3 py-2 text-gray-400 hover:text-white min-[858px]:w-auto min-[858px]:border-0 min-[858px]:p-0"
 							>À Propos<svg
 								class="ms-2.5 h-2.5 w-2.5"
 								aria-hidden="true"
@@ -329,7 +329,7 @@
 	{#if onMobile}
 		<button
 			type="button"
-			class="bg-opacity-40 fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black"
+			class="fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black/40 backdrop-blur-md"
 			class:hidden={!sidebarOpen}
 			aria-label="Close sidebar"
 			onclick={closeSidebar}
@@ -343,6 +343,7 @@
 		<SideBar
 			open={sidebarOpen}
 			noicon={true}
+			desktopClass="min-[858px]:translate-x-0"
 			bgClass="backdrop-blur-lg bg-opacity-0"
 			activeClass="hover:backdrop-blur-lg hover:bg-opacity-20 hover:bg-gray-400"
 			menu={[

@@ -16,6 +16,8 @@
 		noicon?: boolean;
 		bgClass?: string;
 		activeClass?: string;
+		/** Tailwind variant that keeps the sidebar permanently open on desktop. */
+		desktopClass?: string;
 	}
 
 	const {
@@ -24,7 +26,8 @@
 		close = () => undefined,
 		noicon = false,
 		bgClass = 'bg-gray-800',
-		activeClass = 'hover:bg-gray-700'
+		activeClass = 'hover:bg-gray-700',
+		desktopClass = 'md:translate-x-0'
 	}: SideBarProps = $props();
 
 	const buttons_state = $state<Record<string, boolean>>({});
@@ -43,7 +46,7 @@
 
 <section>
 	<aside
-		class="fixed top-0 left-0 z-10 h-screen w-64 border-r border-gray-700 pt-14 transition-transform md:translate-x-0
+		class="fixed top-0 left-0 z-10 h-screen w-64 border-r border-gray-700 pt-14 transition-transform {desktopClass}
 			{!open ? '-translate-x-full' : 'translate-x-0'}"
 		aria-label="Sidenav"
 		id="drawer-navigation"
