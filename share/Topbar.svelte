@@ -329,7 +329,7 @@
 	{#if onMobile}
 		<button
 			type="button"
-			class="bg-opacity-40 fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black"
+			class="fixed inset-0 z-10 h-full w-full cursor-default border-0 bg-black/40 backdrop-blur-md"
 			class:hidden={!sidebarOpen}
 			aria-label="Close sidebar"
 			onclick={closeSidebar}
