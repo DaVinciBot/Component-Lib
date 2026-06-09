@@ -4,7 +4,7 @@
 	export interface FilterOption {
 		name: string;
 		value: string;
-		active: boolean;
+		active?: boolean;
 	}
 
 	export interface Filter {

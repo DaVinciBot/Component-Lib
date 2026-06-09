@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { CloseHandler } from '$lib/utils';
+
 	interface Permission {
 		value: string;
 		label: string;
@@ -34,7 +36,7 @@
 		initialPermissions?: string[];
 		initialProject?: string;
 		onSubmit?: (payload: SubmitPayload) => Promise<void> | void;
-		onClose?: (() => void) | null;
+		onClose?: CloseHandler | null;
 	}
 
 	const {
@@ -67,7 +69,7 @@
 
 	function close() {
 		if (typeof onClose === 'function') {
-			onClose();
+			onClose(null);
 		}
 	}
 

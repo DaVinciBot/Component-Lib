@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Permission } from '$lib/permissions';
-	import { PERMISSIONS } from '$lib/permissions';
-	import { hasAnyPermission } from '$lib/permissions';
-	import { userdata } from '$lib/store';
+	import { hasAnyPermission, PERMISSIONS } from '$lib/permissions';
+	import { userdata, type UserData } from '$lib/store';
 	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
@@ -35,28 +34,20 @@
 	let resizeHandler: (() => void) | null = null;
 	const displayUser = $derived(user ?? fallbackUser);
 
-	function readString(value: Record<string, unknown>, key: string, fallback: string) {
-		return typeof value[key] === 'string' ? value[key] : fallback;
-	}
-
-	function readPermissions(value: Record<string, unknown>) {
-		const permissions = value.permissions;
-		return Array.isArray(permissions)
-			? permissions.filter(
-					(permission): permission is Permission =>
-						typeof permission === 'string' && PERMISSIONS.includes(permission as Permission)
-				)
-			: undefined;
-	}
-
-	function toUserBadgeUser(value: Record<string, unknown>): UserBadgeUser {
-		const email = readString(value, 'email', fallbackUser.email);
+	function toUserBadgeUser(value: UserData): UserBadgeUser {
+		if (!value) {
+			return fallbackUser;
+		}
+		const email = value.email;
+		const permissions = value.permissions.filter((permission): permission is Permission =>
+			PERMISSIONS.includes(permission)
+		);
 		return {
 			...value,
-			name: readString(value, 'name', email.split('@')[0] ?? fallbackUser.name),
+			name: value.name,
 			email,
-			avatar: readString(value, 'avatar', fallbackUser.avatar),
-			permissions: readPermissions(value)
+			avatar: value.avatar,
+			permissions
 		};
 	}
 
@@ -154,7 +145,7 @@
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
 			<a
-				href={resolve('/admin/profile' as '/')}
+				href={resolve('/profile' as '/')}
 				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Profil</a
 			>
 		</li>
@@ -164,7 +155,7 @@
 		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 			<li>
 				<a
-					href={resolve('/admin/' as '/')}
+					href={resolve('/')}
 					class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
 					>Pannel Admin</a
 				>

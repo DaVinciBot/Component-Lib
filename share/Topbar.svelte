@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { userdata } from '$lib/store';
+	import { userdata, type UserData } from '$lib/store';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
@@ -15,7 +15,7 @@
 
 	const { loginRedirect = '/admin' }: TopbarProps = $props();
 
-	let user = $state<Record<string, unknown> | null>(null);
+	let user = $state<UserData>(null);
 	let sidebarOpen = $state(false);
 	let onMobile = $state(false);
 	let resizeHandler: (() => void) | null = null;
