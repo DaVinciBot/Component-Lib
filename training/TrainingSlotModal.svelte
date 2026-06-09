@@ -433,7 +433,7 @@
 									variant="secondary"
 									onclick={() => {
 										if (slot) {
-											void goto(resolve(`/formation/presence?slot=${String(slot.slot_id)}` as '/'));
+											void goto(resolve(`/presence?slot=${String(slot.slot_id)}` as '/'));
 										}
 									}}
 									class="manage_button hidden items-center gap-2 whitespace-nowrap min-[430px]:inline-flex"
@@ -493,7 +493,7 @@
 									variant="secondary"
 									onclick={() => {
 										if (slot) {
-											void goto(resolve(`/formation/presence?slot=${String(slot.slot_id)}` as '/'));
+											void goto(resolve(`/presence?slot=${String(slot.slot_id)}` as '/'));
 										}
 									}}
 									class="manage_button inline-flex items-center gap-2 whitespace-nowrap"

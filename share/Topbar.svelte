@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { userdata, type UserData } from '$lib/store';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
@@ -123,6 +122,8 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+
 <section>
 	<nav
 		class="fixed top-0 right-0 left-0 z-20 w-screen border-b border-gray-700 px-2 py-2.5 backdrop-blur-lg min-[858px]:px-6"
@@ -163,14 +164,14 @@
 					</svg>
 					<span class="sr-only">Toggle sidebar</span>
 				</button>
-				<a href={resolve('/')} class="mr-4 flex items-center justify-between">
+				<a href="/" class="mr-4 flex items-center justify-between">
 					<DvbLogo size="h-12" />
 				</a>
 			</div>
 			<div class="hidden items-center min-[858px]:flex">
 				<ul class="flex gap-6 lg:gap-10">
 					<li>
-						<a href={resolve('/blog' as '/')} class="text-gray-400 hover:text-white">Actus</a>
+						<a href="/blog" class="text-gray-400 hover:text-white">Actus</a>
 					</li>
 					<li>
 						<button
@@ -207,19 +208,19 @@
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
 									<a
-										href={resolve('/project/coupe-de-robotique' as '/')}
+										href="/project/coupe-de-robotique"
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">La CDR</a
 									>
 								</li>
 								<li>
 									<a
-										href={resolve('/project/exodus' as '/')}
+										href="/project/exodus"
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Exodus</a
 									>
 								</li>
 								<li>
 									<a
-										href={resolve('/project/cohoma' as '/')}
+										href="/project/cohoma"
 										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">CoHoMa</a
 									>
 								</li>
@@ -270,15 +271,13 @@
 						>
 							<ul class="py-2 text-sm text-gray-400" aria-labelledby="dropdownLargeButton">
 								<li>
-									<a
-										href={resolve('/a-propos' as '/')}
-										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">L'association</a
+									<a href="/a-propos" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
+										>L'association</a
 									>
 								</li>
 								<li>
-									<a
-										href={resolve('/nos-ecoles' as '/')}
-										class="block px-4 py-2 hover:bg-gray-600 hover:text-white">Nos écoles</a
+									<a href="/nos-ecoles" class="block px-4 py-2 hover:bg-gray-600 hover:text-white"
+										>Nos écoles</a
 									>
 								</li>
 								<li>
@@ -295,32 +294,24 @@
 						</div>
 					</li>
 					<li>
-						<a href={resolve('/sponsors' as '/')} class="text-gray-400 hover:text-white"
-							>Partenaires</a
-						>
+						<a href="/sponsors" class="text-gray-400 hover:text-white">Partenaires</a>
 					</li>
 
 					<li>
-						<a href={resolve('/formation' as '/')} class="text-gray-400 hover:text-white"
-							>Formation</a
-						>
+						<a href="/formation" class="text-gray-400 hover:text-white">Formation</a>
 					</li>
 
 					<li>
-						<a href={resolve('/contact' as '/')} class="text-gray-400 hover:text-white">Contact</a>
+						<a href="/contact" class="text-gray-400 hover:text-white">Contact</a>
 					</li>
 				</ul>
 			</div>
 			<div class="gap-5">
 				{#if user}
-					<CTAButton href={resolve('/admin' as '/')} variant="secondary" size="sm"
-						>Espace membre</CTAButton
-					>
+					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
-					<CTAButton
-						href={resolve(`/auth/login?redirect=${loginRedirect}` as '/')}
-						variant="secondary"
-						size="sm">Se connecter</CTAButton
+					<CTAButton href={`/auth/login?redirect=${loginRedirect}`} variant="secondary" size="sm"
+						>Se connecter</CTAButton
 					>
 				{/if}
 			</div>
