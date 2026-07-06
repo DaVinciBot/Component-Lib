@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Permission } from '$lib/permissions';
-	import { hasAnyPermission, PERMISSIONS } from '$lib/permissions';
+	import type { EffectivePermission, GlobalPermission } from '$lib/permissions';
+	import { GLOBAL_PERMISSIONS, hasAnyPermission } from '$lib/permissions';
 	import { userdata, type UserData } from '$lib/store';
 	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 	import { hideOnClickOutside } from '$lib/utils';
@@ -11,7 +11,7 @@
 		name: string;
 		email: string;
 		avatar: string;
-		permissions?: Permission[];
+		permissions?: EffectivePermission[];
 		[key: string]: unknown;
 	}
 
@@ -39,8 +39,9 @@
 			return fallbackUser;
 		}
 		const email = value.email;
-		const permissions = value.permissions.filter((permission): permission is Permission =>
-			PERMISSIONS.includes(permission)
+		const globalPermissionSet: ReadonlySet<string> = new Set(GLOBAL_PERMISSIONS);
+		const permissions = value.permissions.filter((permission): permission is GlobalPermission =>
+			globalPermissionSet.has(permission)
 		);
 		return {
 			...value,
@@ -150,7 +151,7 @@
 			>
 		</li>
 	</ul>
-	{#if hasAnyPermission( user?.permissions, ['orders.cru.self', 'orders.read.all', 'training.slot.read', 'members.profile.read.all', 'finance.read', 'blog.draft.write'] )}
+	{#if hasAnyPermission( user?.permissions, ['orders.manage.self', 'orders.read.all', 'training.slot.read', 'members.profile.read.all', 'finance.read', 'blog.draft.write'] )}
 		<!-- TODO: review -->
 		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 			<li>
