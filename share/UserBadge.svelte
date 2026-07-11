@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { buildLogoutUrl } from '$lib/config/auth';
 	import type { EffectivePermission, GlobalPermission } from '$lib/permissions';
 	import { GLOBAL_PERMISSIONS, hasAnyPermission } from '$lib/permissions';
 	import { userdata, type UserData } from '$lib/store';
@@ -101,9 +102,8 @@
 		} catch {
 			// ignore
 		}
-		await fetch('/auth/logout', { method: 'POST' });
 		userdata.set(null);
-		window.location.href = `/`;
+		window.location.href = buildLogoutUrl(window.location.origin);
 	};
 
 	onDestroy(() => {

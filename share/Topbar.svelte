@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
+	import { buildLoginUrl } from '$lib/config/auth';
 	import { userdata, type UserData } from '$lib/store';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
@@ -310,7 +311,7 @@
 				{#if user}
 					<CTAButton href="/admin" variant="secondary" size="sm">Espace membre</CTAButton>
 				{:else}
-					<CTAButton href={`/auth/login?redirect=${loginRedirect}`} variant="secondary" size="sm"
+					<CTAButton href={buildLoginUrl(loginRedirect)} variant="secondary" size="sm"
 						>Se connecter</CTAButton
 					>
 				{/if}
