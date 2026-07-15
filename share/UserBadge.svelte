@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import { buildLogoutUrl } from '$lib/config/auth';
 	import type { EffectivePermission, GlobalPermission } from '$lib/permissions';
 	import { GLOBAL_PERMISSIONS } from '$lib/permissions';
-	import { userdata, type UserData } from '$lib/store';
-	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
+	import { openSettings, userdata, type UserData } from '$lib/store';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
@@ -96,16 +93,6 @@
 		}
 	});
 
-	const LogOut = async () => {
-		try {
-			await getSupabaseBrowserClient().auth.signOut();
-		} catch {
-			// ignore
-		}
-		userdata.set(null);
-		window.location.href = buildLogoutUrl(window.location.origin);
-	};
-
 	onDestroy(() => {
 		unsubscribe();
 		if (resizeHandler) {
@@ -145,21 +132,15 @@
 	</div>
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
-			<a
-				href={resolve('/profile' as '/')}
-				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
-				>Paramètres</a
-			>
-		</li>
-	</ul>
-	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
-		<li>
 			<button
 				type="button"
-				class="bg-opacity-80 hover:bg-opacity-50 block w-full px-4 py-2 text-left text-sm hover:cursor-pointer hover:bg-red-700 hover:text-white"
+				class="bg-opacity-80 block w-full px-4 py-2 text-left text-sm hover:cursor-pointer hover:bg-gray-700 hover:text-white"
 				onclick={() => {
-					void LogOut();
-				}}>Déconnexion</button
+					// fermer le dropdown avant d'ouvrir le modal : il vit en fin de body
+					// et passerait au-dessus à z-index égal
+					getDropdown()?.classList.add('hidden');
+					openSettings();
+				}}>Paramètres</button
 			>
 		</li>
 	</ul>
