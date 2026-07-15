@@ -147,27 +147,15 @@
 		<li>
 			<a
 				href={resolve('/profile' as '/')}
-				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Profil</a
+				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Paramètres</a
 			>
 		</li>
 	</ul>
-	{#if hasAnyPermission( user?.permissions, ['orders.manage.self', 'orders.read.all', 'training.slot.read', 'members.profile.read.all', 'finance.read', 'blog.draft.write'] )}
-		<!-- TODO: review -->
-		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
-			<li>
-				<a
-					href={resolve('/')}
-					class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
-					>Pannel Admin</a
-				>
-			</li>
-		</ul>
-	{/if}
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
 			<button
 				type="button"
-				class="bg-opacity-80 hover:bg-opacity-50 block w-full px-4 py-2 text-left text-sm hover:bg-red-700 hover:text-white"
+				class="bg-opacity-80 hover:cursor-pointer hover:bg-opacity-50 block w-full px-4 py-2 text-left text-sm hover:bg-red-700 hover:text-white"
 				onclick={() => {
 					void LogOut();
 				}}>Déconnexion</button
