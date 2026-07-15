@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { buildLogoutUrl } from '$lib/config/auth';
 	import type { EffectivePermission, GlobalPermission } from '$lib/permissions';
-	import { GLOBAL_PERMISSIONS, hasAnyPermission } from '$lib/permissions';
+	import { GLOBAL_PERMISSIONS } from '$lib/permissions';
 	import { userdata, type UserData } from '$lib/store';
 	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
 	import { hideOnClickOutside } from '$lib/utils';
