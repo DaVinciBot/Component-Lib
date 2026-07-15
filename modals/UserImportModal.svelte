@@ -1,16 +1,6 @@
 <script lang="ts">
 	import type { CloseHandler } from '$lib/utils';
 
-	interface Permission {
-		value: string;
-		label: string;
-	}
-
-	interface PermissionPackage {
-		label: string;
-		perms: string[];
-	}
-
 	interface ProjectOption {
 		name: string;
 		value: string;
@@ -30,8 +20,6 @@
 
 	interface UserImportModalProps {
 		title?: string;
-		permissionCategories?: Record<string, Permission[]>;
-		permissionPackages?: PermissionPackage[];
 		projectOptions?: ProjectOption[];
 		initialPermissions?: string[];
 		initialProject?: string;
@@ -41,8 +29,6 @@
 
 	const {
 		title = 'Ajouter des utilisateurs',
-		permissionCategories = {},
-		permissionPackages = [],
 		projectOptions = [],
 		initialPermissions = [],
 		initialProject = '',
@@ -373,71 +359,6 @@
 										Tout décocher
 									</button>
 								</div>
-								{#if permissionPackages.length > 0}
-									<div
-										class="mx-2.5 mb-4 flex flex-wrap gap-2 rounded-lg border border-gray-600 bg-gray-800 p-3"
-									>
-										<p class="mb-1 w-full text-xs font-semibold text-gray-400">
-											Packs prédéfinis :
-										</p>
-										{#each permissionPackages as pack (pack.label)}
-											<button
-												type="button"
-												class="hover:bg-primary-600 rounded-md border border-gray-500 bg-gray-700 px-2 py-1 text-xs text-white transition-colors hover:text-white"
-												onclick={() => (selectedPermissions = [...pack.perms])}
-											>
-												{pack.label}
-											</button>
-										{/each}
-									</div>
-								{/if}
-
-								{#if Object.keys(permissionCategories).length > 0}
-									<div class="mb-2.5 grid grid-cols-1 gap-4">
-										{#each Object.entries(permissionCategories) as [catName, perms] (catName)}
-											<div class="mx-2.5 rounded-lg border border-gray-700 bg-gray-800 p-3">
-												<h4
-													class="mb-3 border-b border-gray-700 pb-1 text-sm font-semibold text-white"
-												>
-													{catName}
-												</h4>
-												<div class="flex flex-col gap-2">
-													{#each perms as perm (perm.value)}
-														<label class="group inline-flex cursor-pointer items-center">
-															<input
-																type="checkbox"
-																value={perm.value}
-																checked={selectedPermissions.includes(perm.value)}
-																onchange={(e: Event) => {
-																	const input = e.currentTarget;
-																	if (!(input instanceof HTMLInputElement)) {
-																		return;
-																	}
-																	if (input.checked) {
-																		if (!selectedPermissions.includes(perm.value)) {
-																			selectedPermissions = [...selectedPermissions, perm.value];
-																		}
-																	} else {
-																		selectedPermissions = selectedPermissions.filter(
-																			(v) => v !== perm.value
-																		);
-																	}
-																}}
-																class="form-checkbox text-primary-600 focus:ring-primary-600 h-4 w-4 cursor-pointer rounded border-gray-500 bg-gray-900 transition duration-200 focus:ring-2"
-															/>
-															<span
-																class="ml-2 text-sm text-gray-300 transition-colors group-hover:text-white"
-																>{perm.label}</span
-															>
-														</label>
-													{/each}
-												</div>
-											</div>
-										{/each}
-									</div>
-								{:else}
-									<p class="text-sm text-gray-400">Aucune permission disponible.</p>
-								{/if}
 							</div>
 						</details>
 					</div>

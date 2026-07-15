@@ -57,6 +57,15 @@
 		) => Promise<{ data: unknown[] | null; error: unknown; count: number | null }>;
 	}
 
+	interface DynamicSupabaseClient {
+		from: (table: string) => {
+			select: (
+				columns: string,
+				options: { count: 'exact'; head: false }
+			) => SupabaseFilterQuery;
+		};
+	}
+
 	interface TableRefreshPayload {
 		resetPage?: boolean;
 	}
@@ -242,9 +251,9 @@
 		if (!can_load || !dbInfo) {
 			return [];
 		}
-		let query = getSupabaseBrowserClient()
+		let query = (getSupabaseBrowserClient() as unknown as DynamicSupabaseClient)
 			.from(dbInfo.table)
-			.select(dbInfo.key, { count: 'exact', head: false }) as unknown as SupabaseFilterQuery;
+			.select(dbInfo.key, { count: 'exact', head: false });
 		query = applyFilters(query, filter);
 		if (dbInfo.ordering) {
 			const [col, dir] = dbInfo.ordering.split(':');
