@@ -18,7 +18,9 @@
 		loading = true;
 		loadError = null;
 		try {
-			sessions = await fetchSessions();
+			const list = await fetchSessions();
+			// session courante toujours en tête, le reste garde le tri par activité
+			sessions = [...list.filter((s) => s.is_current), ...list.filter((s) => !s.is_current)];
 		} catch (error) {
 			loadError = error instanceof Error ? error.message : 'Une erreur est survenue';
 		}
