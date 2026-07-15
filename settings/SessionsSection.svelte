@@ -4,7 +4,7 @@
 	import { isMobileUserAgent, parseDeviceLabel } from '$lib/settings/deviceLabel';
 	import { fetchSessions, revokeAllSessions, revokeSession } from '$lib/settings/sessions';
 	import type { SessionInfo } from '$lib/settings/sessions';
-	import { Monitor, ShieldCheck, Smartphone } from '@lucide/svelte';
+	import { LogOut, Monitor, ShieldCheck, Smartphone } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
 	let sessions = $state<SessionInfo[]>([]);
@@ -85,24 +85,24 @@
 					<DeviceIcon class="text-dark-light-blue size-5 shrink-0" />
 					<div class="min-w-0 flex-1">
 						<p class="text-light-blue m-0 flex flex-wrap items-center gap-2 text-sm font-medium">
-							{parseDeviceLabel(session.device_label)}
+							<span class="truncate">{parseDeviceLabel(session.device_label)}</span>
 							{#if session.is_current}
 								<span
-									class="border-light-blue/30 text-dark-light-blue rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
+									class="border-light-blue/30 text-dark-light-blue shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
 								>
 									Cet appareil
 								</span>
 							{/if}
 							{#if session.trusted_device}
 								<span
-									class="border-light-blue/30 text-dark-light-blue inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
+									class="border-light-blue/30 text-dark-light-blue inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
 								>
 									<ShieldCheck class="size-3" />
 									Confiance
 								</span>
 							{/if}
 						</p>
-						<p class="text-dark-light-blue/80 m-0 text-xs">
+						<p class="text-dark-light-blue/80 m-0 truncate text-xs">
 							Dernière activité : {formatParisDateTimeShort(
 								session.last_seen_at ?? session.created_at
 							)}
@@ -112,32 +112,32 @@
 						<button
 							id={`session-revoke-${session.id}`}
 							type="button"
-							class="shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+							aria-label="Déconnecter cet appareil"
+							title="Déconnecter cet appareil"
+							class="shrink-0 cursor-pointer rounded-lg border-0 bg-transparent p-2 text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
 							disabled={busy}
 							onclick={() => void handleRevoke(session)}
 						>
-							Déconnecter
+							<LogOut class="size-4" />
 						</button>
 					{/if}
 				</li>
 			{/each}
 		</ul>
 		{#if otherSessions.length > 0}
-			<button
-				id="sessions-revoke-all"
-				type="button"
-				class="mt-3 cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-				disabled={busy}
-				onclick={() => void handleRevokeAll()}
-			>
-				Déconnecter tous les autres appareils
-			</button>
+			<div class="mt-3 flex justify-end">
+				<button
+					id="sessions-revoke-all"
+					type="button"
+					class="cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+					disabled={busy}
+					onclick={() => void handleRevokeAll()}
+				>
+					Déconnecter tous les autres appareils
+				</button>
+			</div>
 		{:else}
 			<p class="text-dark-light-blue/70 m-0 mt-3 text-xs">Aucun autre appareil connecté.</p>
 		{/if}
-		<p class="text-dark-light-blue/70 m-0 mt-2 text-xs">
-			La déconnexion est immédiate ici et effective sous quelques minutes sur les autres
-			applications DaVinciBot.
-		</p>
 	{/if}
 </section>
