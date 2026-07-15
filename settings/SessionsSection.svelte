@@ -85,27 +85,22 @@
 					<DeviceIcon class="text-dark-light-blue size-5 shrink-0" />
 					<div class="min-w-0 flex-1">
 						<p class="text-light-blue m-0 flex flex-wrap items-center gap-2 text-sm font-medium">
-							<span class="truncate">{parseDeviceLabel(session.device_label)}</span>
-							{#if session.is_current}
-								<span
-									class="border-light-blue/30 text-dark-light-blue shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
-								>
-									Cet appareil
-								</span>
-							{/if}
+							<span class="truncate">
+								{session.is_current ? 'Cet appareil' : parseDeviceLabel(session.device_label)}
+							</span>
 							{#if session.trusted_device}
 								<span
-									class="border-light-blue/30 text-dark-light-blue inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
+									role="img"
+									aria-label="Appareil de confiance"
+									title="Appareil de confiance"
+									class="border-light-blue/30 text-dark-light-blue inline-flex size-5 shrink-0 items-center justify-center rounded-full border"
 								>
 									<ShieldCheck class="size-3" />
-									Confiance
 								</span>
 							{/if}
 						</p>
 						<p class="text-dark-light-blue/80 m-0 truncate text-xs">
-							Dernière activité : {formatParisDateTimeShort(
-								session.last_seen_at ?? session.created_at
-							)}
+							{formatParisDateTimeShort(session.last_seen_at ?? session.created_at)}
 						</p>
 					</div>
 					{#if !session.is_current}
