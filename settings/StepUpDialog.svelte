@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CodeInput from '$lib/components/utils/CodeInput.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import { stepUpChallenge, stepUpVerify, type StepUpMethod } from '$lib/settings/mfa';
 	import { stepUpRequest, type StepUpRequest } from '$lib/settings/stepUp';
@@ -6,11 +7,13 @@
 
 	let request = $state<StepUpRequest | null>(null);
 	let method = $state<StepUpMethod | null>(null);
+	let email = $state<string | null>(null);
 	let code = $state('');
 	let recoveryCode = $state('');
 	let password = $state('');
 	let useRecovery = $state<boolean>(false);
 	let busy = $state<boolean>(false);
+	let resending = $state<boolean>(false);
 	let errorMessage = $state<string | null>(null);
 	let resendCooldown = $state(0);
 
@@ -46,6 +49,7 @@
 
 	async function open() {
 		method = null;
+		email = null;
 		code = '';
 		recoveryCode = '';
 		password = '';
@@ -53,8 +57,10 @@
 		errorMessage = null;
 		busy = true;
 		try {
-			method = await stepUpChallenge();
-			if (method === 'email') {
+			const challenge = await stepUpChallenge();
+			method = challenge.method;
+			email = challenge.email;
+			if (challenge.method === 'email') {
 				startCooldown(60);
 			}
 		} catch (error) {
@@ -65,14 +71,15 @@
 
 	async function handleResend() {
 		errorMessage = null;
-		busy = true;
+		resending = true;
 		try {
-			await stepUpChallenge();
+			const challenge = await stepUpChallenge();
+			email = challenge.email;
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
 		}
 		startCooldown(60);
-		busy = false;
+		resending = false;
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -116,7 +123,7 @@
 
 			{#if method === null}
 				<p class="text-dark-light-blue m-0 text-sm">
-					{errorMessage ?? 'Chargement…'}
+					{errorMessage ?? 'Envoi du code…'}
 				</p>
 				<div class="mt-4 flex justify-end gap-2">
 					{#if errorMessage}
@@ -138,7 +145,9 @@
 						? 'Confirme ton mot de passe pour continuer.'
 						: useRecovery
 							? 'Saisis un de tes codes de récupération à usage unique.'
-							: 'Saisis le code reçu par e-mail.'}
+							: email
+								? `Saisis le code envoyé à ${email}.`
+								: 'Saisis le code reçu par e-mail.'}
 				</p>
 				<form class="grid gap-4" onsubmit={handleSubmit}>
 					{#if method === 'password'}
@@ -165,19 +174,21 @@
 							bind:value={recoveryCode}
 						/>
 					{:else}
-						<input
-							type="text"
-							id="step-up-code"
-							aria-label="Code de vérification"
-							inputmode="numeric"
-							pattern="[0-9]*"
-							maxlength="6"
-							autocomplete="one-time-code"
-							placeholder="123456"
-							class="border-light-blue/30 bg-dark-blue/60 text-light-blue placeholder:text-dark-light-blue/50 focus:border-light-blue/70 block w-full rounded-xl border p-2.5 text-center font-mono text-base tracking-[0.5em] focus:outline-none disabled:opacity-50"
-							disabled={busy}
-							bind:value={code}
-						/>
+						<div class="grid gap-2">
+							<CodeInput id="step-up-code" bind:value={code} disabled={busy} />
+							<button
+								type="button"
+								class="text-dark-light-blue cursor-pointer rounded-lg border-0 bg-transparent p-0 text-left text-xs hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50"
+								disabled={busy || resending || resendCooldown > 0}
+								onclick={() => void handleResend()}
+							>
+								{resending
+									? 'Envoi…'
+									: resendCooldown > 0
+										? `Renvoyer le code (${String(resendCooldown)}s)`
+										: 'Renvoyer le code'}
+							</button>
+						</div>
 					{/if}
 
 					{#if errorMessage}
@@ -199,25 +210,13 @@
 							fullWidth={false}
 							disabled={busy}
 						>
-							{busy ? 'Chargement…' : 'Confirmer'}
+							{busy ? 'Vérification…' : 'Confirmer'}
 						</CtaButton>
 					</div>
 				</form>
 
 				{#if method === 'email'}
-					<div class="text-dark-light-blue mt-3 flex flex-col gap-1 text-xs">
-						{#if !useRecovery}
-							<button
-								type="button"
-								class="cursor-pointer rounded-lg border-0 bg-transparent p-0 text-left hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50"
-								disabled={busy || resendCooldown > 0}
-								onclick={() => void handleResend()}
-							>
-								{resendCooldown > 0
-									? `Renvoyer le code (${String(resendCooldown)}s)`
-									: 'Renvoyer le code'}
-							</button>
-						{/if}
+					<div class="text-dark-light-blue mt-3 text-xs">
 						<button
 							type="button"
 							class="cursor-pointer rounded-lg border-0 bg-transparent p-0 text-left hover:underline"
