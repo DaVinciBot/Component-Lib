@@ -39,7 +39,7 @@
 	onMount(() => {
 		email = initialEmail;
 		// Un code vient d'être envoyé à l'ouverture : cooldown avant renvoi.
-		startCooldown(60);
+		startCooldown(30);
 		return () => {
 			if (cooldownTimer) {
 				clearInterval(cooldownTimer);
@@ -78,7 +78,7 @@
 				errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
 			}
 		}
-		startCooldown(60);
+		startCooldown(30);
 		resending = false;
 	}
 </script>

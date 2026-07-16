@@ -61,7 +61,7 @@
 			method = challenge.method;
 			email = challenge.email;
 			if (challenge.method === 'email') {
-				startCooldown(60);
+				startCooldown(30);
 			}
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
@@ -78,7 +78,7 @@
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
 		}
-		startCooldown(60);
+		startCooldown(30);
 		resending = false;
 	}
 
