@@ -4,10 +4,18 @@
 		length?: number;
 		value?: string;
 		disabled?: boolean;
+		/** Classes d'une case ; à surcharger quand l'hôte n'a pas le thème par défaut. */
+		cellClass?: string;
 	}
 
 	// eslint-disable-next-line prefer-const -- value est $bindable, la déstructuration doit rester let
-	let { id, length = 6, value = $bindable(''), disabled = false }: Props = $props();
+	let {
+		id,
+		length = 6,
+		value = $bindable(''),
+		disabled = false,
+		cellClass = 'border-light-blue/30 bg-dark-blue/60 text-light-blue focus:border-light-blue/70 h-12 w-10 rounded-xl border text-center font-mono text-lg focus:outline-none disabled:opacity-50'
+	}: Props = $props();
 
 	const cells: (HTMLInputElement | null)[] = [];
 
@@ -60,7 +68,7 @@
 			inputmode="numeric"
 			autocomplete={i === 0 ? 'one-time-code' : 'off'}
 			aria-label={`Chiffre ${String(i + 1)} du code`}
-			class="border-light-blue/30 bg-dark-blue/60 text-light-blue focus:border-light-blue/70 h-12 w-10 rounded-xl border text-center font-mono text-lg focus:outline-none disabled:opacity-50"
+			class={cellClass}
 			{disabled}
 			value={value.charAt(i)}
 			oninput={(event) => {
