@@ -59,10 +59,7 @@
 
 	interface DynamicSupabaseClient {
 		from: (table: string) => {
-			select: (
-				columns: string,
-				options: { count: 'exact'; head: false }
-			) => SupabaseFilterQuery;
+			select: (columns: string, options: { count: 'exact'; head: false }) => SupabaseFilterQuery;
 		};
 	}
 
