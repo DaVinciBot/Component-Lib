@@ -1,29 +1,37 @@
 <script lang="ts">
 	import MfaEnrollModal from '$lib/components/modals/MfaEnrollModal.svelte';
 	import RecoveryCodesModal from '$lib/components/modals/RecoveryCodesModal.svelte';
+	import TotpEnrollModal from '$lib/components/modals/TotpEnrollModal.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import {
 		disableMfaMethod,
 		fetchMfaState,
 		regenerateRecoveryCodes,
 		startEmailEnrollment,
-		type MfaState
+		startTotpEnrollment,
+		type MfaState,
+		type TotpEnrollmentInfo
 	} from '$lib/settings/mfa';
 	import { alertUnlessCancelled, withStepUp } from '$lib/settings/stepUp';
-	import { KeyRound, Mail } from '@lucide/svelte';
+	import { KeyRound, Mail, Smartphone } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
 	let mfaState = $state<MfaState | null>(null);
 	let loading = $state<boolean>(true);
 	let loadError = $state<string | null>(null);
-	let busy = $state<boolean>(false);
-	let enrolling = $state<boolean>(false);
+	let busyAction = $state<string | null>(null);
+	let enrollingEmail = $state<boolean>(false);
 	let enrollEmail = $state<string | null>(null);
+	let totpEnrollment = $state<TotpEnrollmentInfo | null>(null);
 	let recoveryCodes = $state<string[] | null>(null);
 
 	const emailMethod = $derived(
 		mfaState?.methods.find((method) => method.method_type === 'email') ?? null
 	);
+	const totpMethod = $derived(
+		mfaState?.methods.find((method) => method.method_type === 'totp') ?? null
+	);
+	const busy = $derived(busyAction !== null);
 
 	async function load() {
 		loading = true;
@@ -40,43 +48,50 @@
 		void load();
 	});
 
-	async function handleEnable() {
-		busy = true;
+	async function handleEnableEmail() {
+		busyAction = 'enable-email';
 		try {
 			enrollEmail = await withStepUp(() => startEmailEnrollment());
-			enrolling = true;
+			enrollingEmail = true;
 		} catch (error) {
 			alertUnlessCancelled(error);
 		}
-		busy = false;
+		busyAction = null;
+	}
+
+	async function handleEnableTotp() {
+		busyAction = 'enable-totp';
+		try {
+			totpEnrollment = await withStepUp(() => startTotpEnrollment());
+		} catch (error) {
+			alertUnlessCancelled(error);
+		}
+		busyAction = null;
 	}
 
 	function handleVerified(codes: string[] | null) {
-		enrolling = false;
+		enrollingEmail = false;
+		totpEnrollment = null;
 		recoveryCodes = codes;
 		void load();
 	}
 
-	async function handleDisable() {
-		const method = emailMethod;
-		if (!method) {
-			return;
-		}
+	async function handleDisable(methodId: string, label: string, action: string) {
 		if (
 			!window.confirm(
-				'Désactiver la vérification par e-mail ? Tes codes de récupération et appareils de confiance seront supprimés.'
+				`Désactiver « ${label} » ? Si c'est ta dernière méthode, tes codes de récupération et appareils de confiance seront supprimés.`
 			)
 		) {
 			return;
 		}
-		busy = true;
+		busyAction = action;
 		try {
-			await withStepUp(() => disableMfaMethod(method.id));
+			await withStepUp(() => disableMfaMethod(methodId));
 			await load();
 		} catch (error) {
 			alertUnlessCancelled(error);
 		}
-		busy = false;
+		busyAction = null;
 	}
 
 	async function handleRegenerate() {
@@ -85,14 +100,14 @@
 		) {
 			return;
 		}
-		busy = true;
+		busyAction = 'regenerate';
 		try {
 			recoveryCodes = await withStepUp(() => regenerateRecoveryCodes());
 			await load();
 		} catch (error) {
 			alertUnlessCancelled(error);
 		}
-		busy = false;
+		busyAction = null;
 	}
 </script>
 
@@ -111,47 +126,86 @@
 			Réessayer
 		</CtaButton>
 	{:else}
-		<div
-			class="border-light-blue/10 bg-dark-blue/40 flex flex-wrap items-center gap-3 rounded-xl border p-3"
-		>
-			<Mail class="text-dark-light-blue size-5 shrink-0" />
-			<div class="min-w-0 flex-1 basis-48">
-				<p class="text-light-blue m-0 text-sm font-medium">Code par e-mail</p>
-				<p class="text-dark-light-blue/80 m-0 text-xs">
-					Un code à 6 chiffres te sera demandé à la connexion.
-				</p>
-			</div>
-			{#if emailMethod}
-				<button
-					id="mfa-disable-email"
-					type="button"
-					class="ml-auto shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-					disabled={busy}
-					onclick={() => void handleDisable()}
-				>
-					{busy ? 'Chargement…' : 'Désactiver'}
-				</button>
-			{:else}
-				<div class="ml-auto shrink-0">
-					<CtaButton
-						id="mfa-enable-email"
-						variant="secondary"
-						size="sm"
-						fullWidth={false}
-						disabled={busy || enrolling}
-						onclick={() => void handleEnable()}
-					>
-						{busy ? 'Envoi…' : 'Activer'}
-					</CtaButton>
+		<div class="grid gap-3">
+			<div
+				class="border-light-blue/10 bg-dark-blue/40 flex flex-wrap items-center gap-3 rounded-xl border p-3"
+			>
+				<Mail class="text-dark-light-blue size-5 shrink-0" />
+				<div class="min-w-0 flex-1 basis-48">
+					<p class="text-light-blue m-0 text-sm font-medium">Code par e-mail</p>
+					<p class="text-dark-light-blue/80 m-0 text-xs">
+						Un code à 6 chiffres envoyé par e-mail à la connexion.
+					</p>
 				</div>
-			{/if}
+				{#if emailMethod}
+					<button
+						id="mfa-disable-email"
+						type="button"
+						class="ml-auto shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+						disabled={busy}
+						onclick={() => void handleDisable(emailMethod.id, 'Code par e-mail', 'disable-email')}
+					>
+						{busyAction === 'disable-email' ? 'Chargement…' : 'Désactiver'}
+					</button>
+				{:else}
+					<div class="ml-auto shrink-0">
+						<CtaButton
+							id="mfa-enable-email"
+							variant="secondary"
+							size="sm"
+							fullWidth={false}
+							disabled={busy || enrollingEmail}
+							onclick={() => void handleEnableEmail()}
+						>
+							{busyAction === 'enable-email' ? 'Envoi…' : 'Activer'}
+						</CtaButton>
+					</div>
+				{/if}
+			</div>
+
+			<div
+				class="border-light-blue/10 bg-dark-blue/40 flex flex-wrap items-center gap-3 rounded-xl border p-3"
+			>
+				<Smartphone class="text-dark-light-blue size-5 shrink-0" />
+				<div class="min-w-0 flex-1 basis-48">
+					<p class="text-light-blue m-0 text-sm font-medium">Application d'authentification</p>
+					<p class="text-dark-light-blue/80 m-0 text-xs">
+						Un code généré par 1Password, Google Authenticator, etc.
+					</p>
+				</div>
+				{#if totpMethod}
+					<button
+						id="mfa-disable-totp"
+						type="button"
+						class="ml-auto shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+						disabled={busy}
+						onclick={() =>
+							void handleDisable(totpMethod.id, "Application d'authentification", 'disable-totp')}
+					>
+						{busyAction === 'disable-totp' ? 'Chargement…' : 'Désactiver'}
+					</button>
+				{:else}
+					<div class="ml-auto shrink-0">
+						<CtaButton
+							id="mfa-enable-totp"
+							variant="secondary"
+							size="sm"
+							fullWidth={false}
+							disabled={busy || totpEnrollment !== null}
+							onclick={() => void handleEnableTotp()}
+						>
+							{busyAction === 'enable-totp' ? 'Chargement…' : 'Activer'}
+						</CtaButton>
+					</div>
+				{/if}
+			</div>
 		</div>
 
-		{#if emailMethod}
+		{#if mfaState && mfaState.methods.length > 0}
 			<div class="mt-3 flex flex-wrap items-center justify-between gap-2">
 				<p class="text-dark-light-blue m-0 flex items-center gap-1.5 text-xs">
 					<KeyRound class="size-4 shrink-0" />
-					{mfaState?.recovery_codes_remaining ?? 0} codes de récupération restants
+					{mfaState.recovery_codes_remaining} codes de récupération restants
 				</p>
 				<CtaButton
 					variant="secondary"
@@ -160,16 +214,24 @@
 					disabled={busy}
 					onclick={() => void handleRegenerate()}
 				>
-					{busy ? 'Génération…' : 'Régénérer les codes'}
+					{busyAction === 'regenerate' ? 'Génération…' : 'Régénérer les codes'}
 				</CtaButton>
 			</div>
 		{/if}
 	{/if}
 
-	{#if enrolling}
+	{#if enrollingEmail}
 		<MfaEnrollModal
 			email={enrollEmail}
-			onClose={() => (enrolling = false)}
+			onClose={() => (enrollingEmail = false)}
+			onVerified={handleVerified}
+		/>
+	{/if}
+
+	{#if totpEnrollment}
+		<TotpEnrollModal
+			enrollment={totpEnrollment}
+			onClose={() => (totpEnrollment = null)}
 			onVerified={handleVerified}
 		/>
 	{/if}
