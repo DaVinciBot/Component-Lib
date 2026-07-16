@@ -138,7 +138,7 @@
 						? 'Confirme ton mot de passe pour continuer.'
 						: useRecovery
 							? 'Saisis un de tes codes de récupération à usage unique.'
-							: 'Saisis le code reçu par e-mail (le dernier code reçu reste valable).'}
+							: 'Saisis le code reçu par e-mail.'}
 				</p>
 				<form class="grid gap-4" onsubmit={handleSubmit}>
 					{#if method === 'password'}

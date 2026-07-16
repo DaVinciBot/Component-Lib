@@ -163,9 +163,7 @@
 			</CtaButton>
 		</div>
 	{:else if enrolling}
-		<p class="text-light-blue m-0 mb-3 text-sm">
-			Saisis le code à 6 chiffres reçu par e-mail (le dernier code reçu reste valable).
-		</p>
+		<p class="text-light-blue m-0 mb-3 text-sm">Saisis le code à 6 chiffres reçu par e-mail.</p>
 		<form class="flex flex-wrap items-center gap-2" onsubmit={handleVerifyEnrollment}>
 			<input
 				type="text"
