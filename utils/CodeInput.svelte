@@ -14,7 +14,7 @@
 		length = 6,
 		value = $bindable(''),
 		disabled = false,
-		cellClass = 'border-light-blue/30 bg-dark-blue/60 text-light-blue focus:border-light-blue/70 h-12 w-10 rounded-xl border text-center font-mono text-lg focus:outline-none disabled:opacity-50'
+		cellClass = 'border-light-blue/30 bg-dark-blue/60 text-light-blue focus:border-light-blue/70 h-10 w-8 rounded-lg border text-center font-mono text-base focus:outline-none disabled:opacity-50 min-[450px]:h-12 min-[450px]:w-10 min-[450px]:rounded-xl min-[450px]:text-lg'
 	}: Props = $props();
 
 	const cells: (HTMLInputElement | null)[] = [];
@@ -59,7 +59,7 @@
 	}
 </script>
 
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 min-[450px]:gap-2">
 	{#each Array.from({ length }) as _unused, i (i)}
 		<input
 			bind:this={cells[i]}

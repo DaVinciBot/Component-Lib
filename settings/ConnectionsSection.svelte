@@ -72,27 +72,12 @@
 				>
 					<AppWindow class="text-dark-light-blue size-5 shrink-0" />
 					<div class="min-w-0 flex-1">
-						<p class="text-light-blue m-0 flex flex-wrap items-center gap-2 text-sm font-medium">
-							<span class="truncate">{connection.name}</span>
-							<span
-								class="shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase {connection.active
-									? 'border-light-blue/30 text-dark-light-blue'
-									: 'border-red-400/40 text-red-400'}"
-							>
-								{connection.active ? 'Active' : 'Expirée'}
-							</span>
-						</p>
-						<p class="text-dark-light-blue/80 m-0 truncate text-xs">
-							{#if connection.scopes}
-								{connection.scopes}
-								{#if connection.latest_expires_at}
-									·
-								{/if}
-							{/if}
-							{#if connection.latest_expires_at}
+						<p class="text-light-blue m-0 truncate text-sm font-medium">{connection.name}</p>
+						{#if connection.latest_expires_at}
+							<p class="text-dark-light-blue/80 m-0 truncate text-xs">
 								{formatParisDateTimeShort(connection.latest_expires_at)}
-							{/if}
-						</p>
+							</p>
+						{/if}
 					</div>
 					<button
 						id={`connection-revoke-${connection.client_id}`}
