@@ -4,6 +4,7 @@
 	import { isMobileUserAgent, parseDeviceLabel } from '$lib/settings/deviceLabel';
 	import { fetchSessions, revokeAllSessions, revokeSession } from '$lib/settings/sessions';
 	import type { SessionInfo } from '$lib/settings/sessions';
+	import { withStepUp } from '$lib/settings/stepUp';
 	import { LogOut, Monitor, ShieldCheck, Smartphone } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
@@ -38,7 +39,7 @@
 		}
 		busy = true;
 		try {
-			await revokeSession(session.id);
+			await withStepUp(() => revokeSession(session.id));
 		} catch (error) {
 			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
 		}
@@ -53,7 +54,7 @@
 		}
 		busy = true;
 		try {
-			await revokeAllSessions();
+			await withStepUp(() => revokeAllSessions());
 		} catch (error) {
 			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
 		}

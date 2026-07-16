@@ -3,6 +3,7 @@
 	import { formatParisDateTimeShort } from '$lib/helpers/parisTime';
 	import { fetchConnections, revokeConnection } from '$lib/settings/sessions';
 	import type { ConnectionInfo } from '$lib/settings/sessions';
+	import { withStepUp } from '$lib/settings/stepUp';
 	import { AppWindow, Unlink } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
@@ -35,7 +36,7 @@
 		}
 		busy = true;
 		try {
-			await revokeConnection(connection.client_id);
+			await withStepUp(() => revokeConnection(connection.client_id));
 		} catch (error) {
 			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
 		}
