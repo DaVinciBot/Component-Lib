@@ -5,7 +5,7 @@
 	import StepUpDialog from '$lib/components/settings/StepUpDialog.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import { changePassword } from '$lib/settings/account';
-	import { withStepUp } from '$lib/settings/stepUp';
+	import { StepUpCancelledError, withStepUp } from '$lib/settings/stepUp';
 
 	let password = $state('');
 	let confirmation = $state('');
@@ -28,7 +28,9 @@
 			password = '';
 			confirmation = '';
 		} catch (error) {
-			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+			if (!(error instanceof StepUpCancelledError)) {
+				alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+			}
 		}
 		saving = false;
 	}

@@ -6,6 +6,7 @@
 		disabled?: boolean;
 	}
 
+	// eslint-disable-next-line prefer-const -- value est $bindable, la déstructuration doit rester let
 	let { id, length = 6, value = $bindable(''), disabled = false }: Props = $props();
 
 	const cells: (HTMLInputElement | null)[] = [];

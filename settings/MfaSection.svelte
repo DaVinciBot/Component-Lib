@@ -1,17 +1,15 @@
 <script lang="ts">
+	import MfaEnrollModal from '$lib/components/modals/MfaEnrollModal.svelte';
 	import RecoveryCodesModal from '$lib/components/modals/RecoveryCodesModal.svelte';
-	import CodeInput from '$lib/components/utils/CodeInput.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
-	import { formatParisDateTimeShort } from '$lib/helpers/parisTime';
 	import {
 		disableMfaMethod,
 		fetchMfaState,
 		regenerateRecoveryCodes,
 		startEmailEnrollment,
-		verifyEmailEnrollment,
 		type MfaState
 	} from '$lib/settings/mfa';
-	import { withStepUp } from '$lib/settings/stepUp';
+	import { alertUnlessCancelled, withStepUp } from '$lib/settings/stepUp';
 	import { KeyRound, Mail } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
@@ -20,7 +18,6 @@
 	let loadError = $state<string | null>(null);
 	let busy = $state<boolean>(false);
 	let enrolling = $state<boolean>(false);
-	let enrollCode = $state('');
 	let enrollEmail = $state<string | null>(null);
 	let recoveryCodes = $state<string[] | null>(null);
 
@@ -47,29 +44,17 @@
 		busy = true;
 		try {
 			enrollEmail = await withStepUp(() => startEmailEnrollment());
-			enrollCode = '';
 			enrolling = true;
 		} catch (error) {
-			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+			alertUnlessCancelled(error);
 		}
 		busy = false;
 	}
 
-	async function handleVerifyEnrollment(e: SubmitEvent) {
-		e.preventDefault();
-		if (!enrollCode) {
-			return;
-		}
-		busy = true;
-		try {
-			const codes = await withStepUp(() => verifyEmailEnrollment(enrollCode));
-			enrolling = false;
-			recoveryCodes = codes;
-			await load();
-		} catch (error) {
-			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
-		}
-		busy = false;
+	function handleVerified(codes: string[] | null) {
+		enrolling = false;
+		recoveryCodes = codes;
+		void load();
 	}
 
 	async function handleDisable() {
@@ -89,7 +74,7 @@
 			await withStepUp(() => disableMfaMethod(method.id));
 			await load();
 		} catch (error) {
-			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+			alertUnlessCancelled(error);
 		}
 		busy = false;
 	}
@@ -105,7 +90,7 @@
 			recoveryCodes = await withStepUp(() => regenerateRecoveryCodes());
 			await load();
 		} catch (error) {
-			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+			alertUnlessCancelled(error);
 		}
 		busy = false;
 	}
@@ -126,76 +111,41 @@
 			Réessayer
 		</CtaButton>
 	{:else}
-		<div class="border-light-blue/10 bg-dark-blue/40 flex items-center gap-3 rounded-xl border p-3">
+		<div
+			class="border-light-blue/10 bg-dark-blue/40 flex flex-wrap items-center gap-3 rounded-xl border p-3"
+		>
 			<Mail class="text-dark-light-blue size-5 shrink-0" />
-			<div class="min-w-0 flex-1">
+			<div class="min-w-0 flex-1 basis-48">
 				<p class="text-light-blue m-0 text-sm font-medium">Code par e-mail</p>
-				<p class="text-dark-light-blue/80 m-0 truncate text-xs">
-					{#if emailMethod}
-						Activée le {formatParisDateTimeShort(emailMethod.created_at)}
-						{#if emailMethod.last_used_at}
-							· Dernière utilisation {formatParisDateTimeShort(emailMethod.last_used_at)}
-						{/if}
-					{:else}
-						Un code à 6 chiffres te sera demandé à la connexion.
-					{/if}
+				<p class="text-dark-light-blue/80 m-0 text-xs">
+					Un code à 6 chiffres te sera demandé à la connexion.
 				</p>
 			</div>
 			{#if emailMethod}
 				<button
 					id="mfa-disable-email"
 					type="button"
-					class="shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+					class="ml-auto shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm text-red-400 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={busy}
 					onclick={() => void handleDisable()}
 				>
 					{busy ? 'Chargement…' : 'Désactiver'}
 				</button>
 			{:else}
-				<CtaButton
-					id="mfa-enable-email"
-					variant="secondary"
-					size="sm"
-					fullWidth={false}
-					disabled={busy || enrolling}
-					onclick={() => void handleEnable()}
-				>
-					{busy ? 'Envoi…' : 'Activer'}
-				</CtaButton>
+				<div class="ml-auto shrink-0">
+					<CtaButton
+						id="mfa-enable-email"
+						variant="secondary"
+						size="sm"
+						fullWidth={false}
+						disabled={busy || enrolling}
+						onclick={() => void handleEnable()}
+					>
+						{busy ? 'Envoi…' : 'Activer'}
+					</CtaButton>
+				</div>
 			{/if}
 		</div>
-
-		{#if !emailMethod && enrolling}
-			<div class="border-light-blue/10 bg-dark-blue/40 mt-3 rounded-xl border p-3">
-				<p class="text-light-blue m-0 mb-3 text-sm">
-					{enrollEmail
-						? `Saisis le code à 6 chiffres envoyé à ${enrollEmail}.`
-						: 'Saisis le code à 6 chiffres reçu par e-mail.'}
-				</p>
-				<form class="grid gap-3" onsubmit={handleVerifyEnrollment}>
-					<CodeInput id="mfa-enroll-code" bind:value={enrollCode} disabled={busy} />
-					<div class="flex items-center gap-2">
-						<CtaButton
-							type="submit"
-							variant="secondary"
-							size="sm"
-							fullWidth={false}
-							disabled={busy}
-						>
-							{busy ? 'Vérification…' : 'Valider'}
-						</CtaButton>
-						<button
-							type="button"
-							class="text-dark-light-blue cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm hover:underline"
-							disabled={busy}
-							onclick={() => (enrolling = false)}
-						>
-							Annuler
-						</button>
-					</div>
-				</form>
-			</div>
-		{/if}
 
 		{#if emailMethod}
 			<div class="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -214,6 +164,14 @@
 				</CtaButton>
 			</div>
 		{/if}
+	{/if}
+
+	{#if enrolling}
+		<MfaEnrollModal
+			email={enrollEmail}
+			onClose={() => (enrolling = false)}
+			onVerified={handleVerified}
+		/>
 	{/if}
 
 	{#if recoveryCodes}

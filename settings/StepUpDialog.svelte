@@ -195,42 +195,41 @@
 						<p class="m-0 text-sm text-red-400">{errorMessage}</p>
 					{/if}
 
-					<div class="flex items-center justify-end gap-2">
-						<button
-							type="button"
-							class="text-dark-light-blue cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm hover:underline"
-							onclick={cancel}
-						>
-							Annuler
-						</button>
-						<CtaButton
-							type="submit"
-							variant="secondary"
-							size="sm"
-							fullWidth={false}
-							disabled={busy}
-						>
-							{busy ? 'Vérification…' : 'Confirmer'}
-						</CtaButton>
+					<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+						{#if method === 'email'}
+							<button
+								type="button"
+								class="text-dark-light-blue cursor-pointer rounded-lg border-0 bg-transparent p-0 text-left text-sm hover:underline"
+								onclick={() => {
+									useRecovery = !useRecovery;
+									errorMessage = null;
+								}}
+							>
+								{useRecovery
+									? 'Utiliser le code reçu par e-mail'
+									: 'Utiliser un code de récupération'}
+							</button>
+						{/if}
+						<div class="flex items-center justify-end gap-2 sm:ml-auto">
+							<button
+								type="button"
+								class="text-dark-light-blue cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm hover:underline"
+								onclick={cancel}
+							>
+								Annuler
+							</button>
+							<CtaButton
+								type="submit"
+								variant="secondary"
+								size="sm"
+								fullWidth={false}
+								disabled={busy}
+							>
+								{busy ? 'Vérification…' : 'Confirmer'}
+							</CtaButton>
+						</div>
 					</div>
 				</form>
-
-				{#if method === 'email'}
-					<div class="text-dark-light-blue mt-3 text-xs">
-						<button
-							type="button"
-							class="cursor-pointer rounded-lg border-0 bg-transparent p-0 text-left hover:underline"
-							onclick={() => {
-								useRecovery = !useRecovery;
-								errorMessage = null;
-							}}
-						>
-							{useRecovery
-								? 'Utiliser le code reçu par e-mail'
-								: 'Utiliser un code de récupération'}
-						</button>
-					</div>
-				{/if}
 			{/if}
 		</div>
 	</div>

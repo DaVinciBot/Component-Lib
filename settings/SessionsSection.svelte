@@ -4,7 +4,7 @@
 	import { isMobileUserAgent, parseDeviceLabel } from '$lib/settings/deviceLabel';
 	import { fetchSessions, revokeAllSessions, revokeSession } from '$lib/settings/sessions';
 	import type { SessionInfo } from '$lib/settings/sessions';
-	import { withStepUp } from '$lib/settings/stepUp';
+	import { alertUnlessCancelled, withStepUp } from '$lib/settings/stepUp';
 	import { LogOut, Monitor, ShieldCheck, Smartphone } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
@@ -41,7 +41,7 @@
 		try {
 			await withStepUp(() => revokeSession(session.id));
 		} catch (error) {
-			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+			alertUnlessCancelled(error);
 		}
 		// recharge dans tous les cas : un 404 signifie une liste périmée
 		await load();
@@ -56,7 +56,7 @@
 		try {
 			await withStepUp(() => revokeAllSessions());
 		} catch (error) {
-			alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+			alertUnlessCancelled(error);
 		}
 		await load();
 		busy = false;
