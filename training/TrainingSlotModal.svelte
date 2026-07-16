@@ -85,7 +85,7 @@
 	let supabaseClient: TrainingSupabaseClient | null = null;
 
 	function getClient() {
-		supabaseClient ??= getSupabaseBrowserClient() as unknown as TrainingSupabaseClient;
+		supabaseClient ??= getSupabaseBrowserClient();
 		return supabaseClient;
 	}
 

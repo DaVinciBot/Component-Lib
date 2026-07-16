@@ -121,7 +121,7 @@
 					type="button"
 					class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-left text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
 					onclick={() => {
-						logOut();
+						void logOut();
 					}}
 				>
 					<LogOut class="size-4 shrink-0" />
