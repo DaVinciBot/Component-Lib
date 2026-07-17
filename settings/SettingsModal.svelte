@@ -6,6 +6,7 @@
 		type SettingsCategory
 	} from '$lib/settings/categories';
 	import { ChevronLeft, ChevronRight, Flag, Lock, LogOut, UserRound, X } from '@lucide/svelte';
+	import OverlayBackdrop from '../overlay/OverlayBackdrop.svelte';
 	import ProfilePanel from './ProfilePanel.svelte';
 	import ReportPanel from './ReportPanel.svelte';
 	import SecurityPanel from './SecurityPanel.svelte';
@@ -66,12 +67,7 @@
 	aria-modal="true"
 	aria-labelledby="settings-modal-title"
 >
-	<button
-		type="button"
-		class="absolute inset-0 bg-[rgba(4,8,32,0.65)] backdrop-blur-md"
-		onclick={onClose}
-		aria-label="Fermer"
-	></button>
+	<OverlayBackdrop {onClose} />
 	<section
 		bind:this={card}
 		tabindex="-1"

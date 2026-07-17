@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OverlayBackdrop from '../overlay/OverlayBackdrop.svelte';
 	import type { CloseHandler } from '$lib/utils';
 
 	interface ProjectOption {
@@ -306,9 +307,8 @@
 	}
 </script>
 
-<div
-	class="fixed inset-0 z-50 flex h-full w-full items-center justify-center overflow-y-auto bg-black/40 backdrop-blur-sm"
->
+<div class="fixed inset-0 z-50 flex h-full w-full items-center justify-center overflow-y-auto">
+	<OverlayBackdrop />
 	<div class="relative w-full max-w-3xl p-4">
 		<div class="relative rounded-lg bg-gray-800 p-6 shadow-xl">
 			<div class="mb-6 flex items-center justify-between">

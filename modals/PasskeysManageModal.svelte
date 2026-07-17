@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OverlayBackdrop from '../overlay/OverlayBackdrop.svelte';
 	import PasskeyNameModal from '$lib/components/modals/PasskeyNameModal.svelte';
 	import RecoveryCodesModal from '$lib/components/modals/RecoveryCodesModal.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
@@ -103,9 +104,12 @@
 	role="dialog"
 	aria-modal="true"
 	aria-label="Gérer les passkeys"
-	class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+	class="fixed inset-0 z-50 flex items-center justify-center p-4"
 >
-	<div class="border-light-blue/20 w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6">
+	<OverlayBackdrop />
+	<div
+		class="border-light-blue/20 relative w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6"
+	>
 		<p class="text-dark-light-blue m-0 mb-3 text-[0.65rem] tracking-[0.32em] uppercase">Passkeys</p>
 
 		{#if loading}
@@ -202,7 +206,6 @@
 			: 'Donne-lui un nom pour la retrouver, puis suis les instructions de ton navigateur.'}
 		initialName={renameTarget?.friendly_name ?? ''}
 		confirmLabel={renameTarget ? 'Renommer' : 'Continuer'}
-		dimmed={false}
 		onSubmit={(name) => {
 			void handleNameSubmit(name);
 		}}
@@ -214,5 +217,5 @@
 {/if}
 
 {#if recoveryCodes}
-	<RecoveryCodesModal codes={recoveryCodes} dimmed={false} onClose={() => (recoveryCodes = null)} />
+	<RecoveryCodesModal codes={recoveryCodes} onClose={() => (recoveryCodes = null)} />
 {/if}

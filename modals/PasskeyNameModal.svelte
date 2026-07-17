@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OverlayBackdrop from '../overlay/OverlayBackdrop.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 
 	interface Props {
@@ -6,9 +7,6 @@
 		description?: string | null;
 		initialName?: string;
 		confirmLabel?: string;
-		// false quand la modale s'ouvre par-dessus une autre : le fond reste
-		// flouté mais ne s'assombrit pas davantage à chaque niveau.
-		dimmed?: boolean;
 		onSubmit: (name: string) => void;
 		onCancel: () => void;
 	}
@@ -18,7 +16,6 @@
 		description = null,
 		initialName = '',
 		confirmLabel = 'Continuer',
-		dimmed = true,
 		onSubmit,
 		onCancel
 	}: Props = $props();
@@ -42,11 +39,12 @@
 	role="dialog"
 	aria-modal="true"
 	aria-label={title}
-	class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm {dimmed
-		? 'bg-black/60'
-		: ''}"
+	class="fixed inset-0 z-50 flex items-center justify-center p-4"
 >
-	<div class="border-light-blue/20 w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6">
+	<OverlayBackdrop />
+	<div
+		class="border-light-blue/20 relative w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6"
+	>
 		<p class="text-dark-light-blue m-0 mb-3 text-[0.65rem] tracking-[0.32em] uppercase">
 			{title}
 		</p>
