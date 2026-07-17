@@ -8,7 +8,7 @@
 		cellClass?: string;
 	}
 
-	// eslint-disable-next-line prefer-const -- value est $bindable, la déstructuration doit rester let
+	/* eslint-disable prefer-const -- value est $bindable, la déstructuration doit rester let */
 	let {
 		id,
 		length = 6,
@@ -16,6 +16,7 @@
 		disabled = false,
 		cellClass = 'border-light-blue/30 bg-dark-blue/60 text-light-blue focus:border-light-blue/70 h-10 w-8 rounded-lg border text-center font-mono text-base focus:outline-none disabled:opacity-50 min-[450px]:h-12 min-[450px]:w-10 min-[450px]:rounded-xl min-[450px]:text-lg'
 	}: Props = $props();
+	/* eslint-enable prefer-const */
 
 	const cells: (HTMLInputElement | null)[] = [];
 

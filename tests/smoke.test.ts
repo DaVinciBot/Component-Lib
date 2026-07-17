@@ -11,7 +11,7 @@ describe('smoke', () => {
 		expect(screen.getByText('Titre de test')).toBeTruthy();
 	});
 
-	it('renders Checkbox and reflects checked state', async () => {
+	it('renders Checkbox and reflects checked state', () => {
 		render(Checkbox, { props: { checked: true } });
 		const input = screen.getByRole('checkbox');
 		expect((input as HTMLInputElement).checked).toBe(true);
