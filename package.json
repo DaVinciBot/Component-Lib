@@ -1,0 +1,81 @@
+{
+	"name": "@davincibot/components",
+	"version": "1.0.0",
+	"description": "Svelte component library for the DaVinciBot websites",
+	"type": "module",
+	"svelte": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"svelte": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./theme.css": "./dist/theme.css"
+	},
+	"files": ["dist"],
+	"sideEffects": ["**/*.css"],
+	"scripts": {
+		"dev": "vite dev",
+		"build": "svelte-kit sync && svelte-package && publint",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"lint": "prettier --check . && eslint . --max-warnings=0",
+		"format": "prettier --write .",
+		"test:unit": "vitest run --coverage",
+		"changeset": "changeset"
+	},
+	"dependencies": {
+		"qrcode": "^1.5.4"
+	},
+	"peerDependencies": {
+		"@davincibot/database-types": "^1.0.0",
+		"@davincibot/lib": "^1.0.0",
+		"@lucide/svelte": "^1.17.0",
+		"@supabase/supabase-js": "^2.0.0",
+		"@sveltejs/kit": "^2.0.0",
+		"svelte": "^5.0.0"
+	},
+	"devDependencies": {
+		"@changesets/changelog-github": "^0.5.1",
+		"@changesets/cli": "^2.29.0",
+		"@davincibot/config": "^2.0.0",
+		"@davincibot/database-types": "^1.0.0",
+		"@davincibot/lib": "^1.0.0",
+		"@eslint/js": "^10.0.1",
+		"@lucide/svelte": "^1.17.0",
+		"@supabase/supabase-js": "^2.108.2",
+		"@sveltejs/adapter-auto": "^7.0.1",
+		"@sveltejs/kit": "^2.65.0",
+		"@sveltejs/package": "^2.5.4",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@tailwindcss/vite": "^4.3.1",
+		"@testing-library/svelte": "^5.2.8",
+		"@types/qrcode": "^1.5.6",
+		"@vitest/coverage-v8": "^4.1.9",
+		"eslint": "^10.5.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.19.0",
+		"globals": "^17.6.0",
+		"jsdom": "^29.1.1",
+		"prettier": "^3.8.4",
+		"prettier-plugin-svelte": "3.5.2",
+		"prettier-plugin-tailwindcss": "^0.8.0",
+		"publint": "^0.3.14",
+		"svelte": "^5.56.3",
+		"svelte-check": "^4.6.0",
+		"tailwindcss": "^4.3.1",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.61.1",
+		"vite": "^8.0.16",
+		"vitest": "^4.1.9"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/davincibot/component-lib"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"license": "UNLICENSED",
+	"packageManager": "pnpm@11.5.2"
+}
