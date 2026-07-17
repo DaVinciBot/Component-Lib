@@ -1,8 +1,4 @@
-import {
-	getParisDateKey,
-	getParisDateParts,
-	getParisMidnightUtcFromParts
-} from '@davincibot/lib';
+import { getParisDateKey, getParisDateParts, getParisMidnightUtcFromParts } from '@davincibot/lib';
 
 export const weekdays: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 

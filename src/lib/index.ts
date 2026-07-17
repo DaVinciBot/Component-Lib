@@ -18,7 +18,7 @@ export { default as Node } from './markdown/Node.svelte';
 export { default as Paragraph } from './markdown/Paragraph.svelte';
 export { default as Renderer } from './markdown/Renderer.svelte';
 export { default as MarkdownTable } from './markdown/Table.svelte';
-export { default as TableCell } from './markdown/TableCell.svelte';
+export { default as MarkdownTableCell } from './markdown/TableCell.svelte';
 export { default as CrudForm } from './modals/CrudForm.svelte';
 export { default as InfoModal } from './modals/InfoModal.svelte';
 export { default as MfaEnrollModal } from './modals/MfaEnrollModal.svelte';
@@ -84,5 +84,13 @@ export * from './training/helpers/calendar';
 export * from './training/helpers/slotModal';
 export * from './training/stores/trainingCalendarFilters';
 
-export type { Action, DBInfo, Filter, FilterOption, ParseItems, TableCell, TableRow } from './admin/Table.svelte';
+export type {
+	Action,
+	DBInfo,
+	Filter,
+	FilterOption,
+	ParseItems,
+	TableCell,
+	TableRow
+} from './admin/Table.svelte';
 export type { CalendarSlot } from './training/Calendar.svelte';

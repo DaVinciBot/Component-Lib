@@ -13,8 +13,12 @@
 		},
 		"./theme.css": "./dist/theme.css"
 	},
-	"files": ["dist"],
-	"sideEffects": ["**/*.css"],
+	"files": [
+		"dist"
+	],
+	"sideEffects": [
+		"**/*.css"
+	],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "svelte-kit sync && svelte-package && publint",
