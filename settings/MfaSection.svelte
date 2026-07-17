@@ -232,7 +232,7 @@
 				<div class="min-w-0 flex-1 basis-48">
 					<p class="text-light-blue m-0 text-sm font-medium">Passkey</p>
 					<p class="text-dark-light-blue/80 m-0 text-xs">
-						Empreinte, visage ou code de l'appareil — sert aussi à se connecter sans mot de passe.
+						Empreinte, visage ou code de l'appareil.
 					</p>
 				</div>
 				<div class="ml-auto shrink-0">

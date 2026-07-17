@@ -126,21 +126,11 @@
 					>
 						<FingerprintPattern class="text-dark-light-blue size-5 shrink-0" />
 						<div class="min-w-0 flex-1">
-							<p class="text-light-blue m-0 flex flex-wrap items-center gap-2 text-sm font-medium">
-								<span class="truncate">{passkey.friendly_name}</span>
-								{#if passkey.backed_up}
-									<span
-										title="Synchronisée entre tes appareils (iCloud, Google…)"
-										class="border-light-blue/30 text-dark-light-blue shrink-0 rounded-full border px-2 py-0.5 text-[0.65rem]"
-									>
-										Synchronisée
-									</span>
-								{/if}
+							<p class="text-light-blue m-0 truncate text-sm font-medium">
+								{passkey.friendly_name}
 							</p>
 							<p class="text-dark-light-blue/80 m-0 truncate text-xs">
-								{passkey.last_used_at
-									? `Utilisée le ${formatParisDateTimeShort(passkey.last_used_at)}`
-									: `Ajoutée le ${formatParisDateTimeShort(passkey.created_at)}`}
+								{formatParisDateTimeShort(passkey.created_at)}
 							</p>
 						</div>
 						<button
@@ -212,6 +202,7 @@
 			: 'Donne-lui un nom pour la retrouver, puis suis les instructions de ton navigateur.'}
 		initialName={renameTarget?.friendly_name ?? ''}
 		confirmLabel={renameTarget ? 'Renommer' : 'Continuer'}
+		dimmed={false}
 		onSubmit={(name) => {
 			void handleNameSubmit(name);
 		}}
@@ -223,5 +214,5 @@
 {/if}
 
 {#if recoveryCodes}
-	<RecoveryCodesModal codes={recoveryCodes} onClose={() => (recoveryCodes = null)} />
+	<RecoveryCodesModal codes={recoveryCodes} dimmed={false} onClose={() => (recoveryCodes = null)} />
 {/if}

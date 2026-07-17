@@ -4,10 +4,13 @@
 
 	interface Props {
 		codes: string[];
+		// false quand la modale s'ouvre par-dessus une autre : le fond reste
+		// flouté mais ne s'assombrit pas davantage à chaque niveau.
+		dimmed?: boolean;
 		onClose: () => void;
 	}
 
-	const { codes, onClose }: Props = $props();
+	const { codes, dimmed = true, onClose }: Props = $props();
 
 	let copied = $state<boolean>(false);
 
@@ -38,7 +41,9 @@
 	role="dialog"
 	aria-modal="true"
 	aria-label="Codes de récupération"
-	class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+	class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm {dimmed
+		? 'bg-black/60'
+		: ''}"
 >
 	<div class="border-light-blue/20 w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6">
 		<p class="text-dark-light-blue m-0 mb-3 text-[0.65rem] tracking-[0.32em] uppercase">
