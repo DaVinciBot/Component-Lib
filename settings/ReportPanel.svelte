@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Checkbox from '$lib/components/share/Checkbox.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
 	import {
 		MAX_REPORT_IMAGES,
@@ -18,6 +19,7 @@
 	let title = $state('');
 	let description = $state('');
 	let images = $state<{ file: File; preview: string }[]>([]);
+	let anonymous = $state<boolean>(false);
 	let submitting = $state<boolean>(false);
 	let errorMessage = $state('');
 	let successMessage = $state('');
@@ -83,7 +85,8 @@
 				type,
 				title: trimmedTitle,
 				description: trimmedDescription,
-				images: images.map((image) => image.file)
+				images: images.map((image) => image.file),
+				anonymous
 			});
 			for (const image of images) {
 				URL.revokeObjectURL(image.preview);
@@ -92,6 +95,7 @@
 			type = 'bug';
 			title = '';
 			description = '';
+			anonymous = false;
 			successMessage = 'Signalement envoyé, merci !';
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
@@ -205,6 +209,16 @@
 				{/if}
 			</div>
 		</div>
+
+		<label class="text-light-blue flex w-fit cursor-pointer items-center gap-2 text-sm">
+			<Checkbox
+				id="report-anonymous"
+				bind:checked={anonymous}
+				className="size-4"
+				disabled={submitting}
+			/>
+			<span>Envoyer ce signalement anonymement</span>
+		</label>
 
 		{#if errorMessage}
 			<p class="m-0 text-sm text-red-400">{errorMessage}</p>
