@@ -14,6 +14,12 @@
 	import { FingerprintPattern, Pencil, Trash2 } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
+	interface Props {
+		onClose: () => void;
+	}
+
+	const { onClose }: Props = $props();
+
 	let passkeys = $state<PasskeyInfo[]>([]);
 	let loading = $state<boolean>(true);
 	let loadError = $state<string | null>(null);
@@ -74,7 +80,11 @@
 	}
 
 	async function handleDelete(passkey: PasskeyInfo) {
-		if (!window.confirm(`Supprimer la passkey « ${passkey.friendly_name} » ?`)) {
+		if (
+			!window.confirm(
+				`Supprimer la passkey « ${passkey.friendly_name} » ? Si c'est ta dernière méthode, tes codes de récupération et appareils de confiance seront supprimés.`
+			)
+		) {
 			return;
 		}
 		busy = true;
@@ -88,24 +98,24 @@
 	}
 </script>
 
-<section
-	id="passkeys-section"
-	class="border-light-blue/20 bg-blue-gray/15 rounded-2xl border p-4 sm:p-5"
+<div
+	id="passkeys-manage-modal"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Gérer les passkeys"
+	class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
 >
-	<p class="text-dark-light-blue m-0 mb-3 text-[0.65rem] tracking-[0.32em] uppercase">Passkeys</p>
-	<p class="text-dark-light-blue m-0 mb-3 text-sm">
-		Connecte-toi sans mot de passe et confirme les actions sensibles avec ton empreinte, ton visage
-		ou le code de ton appareil.
-	</p>
-	{#if loading}
-		<p class="text-dark-light-blue m-0 text-sm">Chargement…</p>
-	{:else if loadError}
-		<p class="m-0 mb-3 text-sm text-red-400">{loadError}</p>
-		<CtaButton variant="secondary" size="sm" fullWidth={false} onclick={() => void load()}>
-			Réessayer
-		</CtaButton>
-	{:else}
-		{#if passkeys.length === 0}
+	<div class="border-light-blue/20 w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6">
+		<p class="text-dark-light-blue m-0 mb-3 text-[0.65rem] tracking-[0.32em] uppercase">Passkeys</p>
+
+		{#if loading}
+			<p class="text-dark-light-blue m-0 text-sm">Chargement…</p>
+		{:else if loadError}
+			<p class="m-0 mb-3 text-sm text-red-400">{loadError}</p>
+			<CtaButton variant="secondary" size="sm" fullWidth={false} onclick={() => void load()}>
+				Réessayer
+			</CtaButton>
+		{:else if passkeys.length === 0}
 			<p class="text-dark-light-blue m-0 mb-3 text-sm">Aucune passkey enregistrée.</p>
 		{:else}
 			<ul class="m-0 mb-3 grid list-none gap-2 p-0">
@@ -161,24 +171,38 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if supported}
-			<CtaButton
-				id="passkey-add"
-				variant="secondary"
-				size="sm"
-				fullWidth={false}
-				disabled={busy}
-				onclick={openAdd}
-			>
-				Ajouter une passkey
-			</CtaButton>
-		{:else}
-			<p class="text-dark-light-blue m-0 text-xs">
+
+		{#if !loading && !loadError && !supported}
+			<p class="text-dark-light-blue m-0 mb-3 text-xs">
 				Ce navigateur ne prend pas en charge les passkeys.
 			</p>
 		{/if}
-	{/if}
-</section>
+
+		<div class="mt-2 flex items-center justify-between gap-2">
+			{#if supported}
+				<CtaButton
+					id="passkey-add"
+					variant="secondary"
+					size="sm"
+					fullWidth={false}
+					disabled={busy || loading}
+					onclick={openAdd}
+				>
+					Ajouter une passkey
+				</CtaButton>
+			{:else}
+				<span></span>
+			{/if}
+			<button
+				type="button"
+				class="text-dark-light-blue cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm hover:underline"
+				onclick={onClose}
+			>
+				Fermer
+			</button>
+		</div>
+	</div>
+</div>
 
 {#if nameModalOpen}
 	<PasskeyNameModal

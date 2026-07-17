@@ -1,7 +1,6 @@
 <script lang="ts">
 	import ConnectionsSection from '$lib/components/settings/ConnectionsSection.svelte';
 	import MfaSection from '$lib/components/settings/MfaSection.svelte';
-	import PasskeysSection from '$lib/components/settings/PasskeysSection.svelte';
 	import SessionsSection from '$lib/components/settings/SessionsSection.svelte';
 	import StepUpDialog from '$lib/components/settings/StepUpDialog.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
@@ -79,7 +78,6 @@
 		</form>
 	</section>
 	<MfaSection />
-	<PasskeysSection />
 	<SessionsSection />
 	<ConnectionsSection />
 </div>

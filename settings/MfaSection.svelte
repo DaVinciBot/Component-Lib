@@ -1,5 +1,7 @@
 <script lang="ts">
 	import MfaEnrollModal from '$lib/components/modals/MfaEnrollModal.svelte';
+	import PasskeyNameModal from '$lib/components/modals/PasskeyNameModal.svelte';
+	import PasskeysManageModal from '$lib/components/modals/PasskeysManageModal.svelte';
 	import RecoveryCodesModal from '$lib/components/modals/RecoveryCodesModal.svelte';
 	import TotpEnrollModal from '$lib/components/modals/TotpEnrollModal.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
@@ -12,8 +14,9 @@
 		type MfaState,
 		type TotpEnrollmentInfo
 	} from '$lib/settings/mfa';
+	import { registerPasskey } from '$lib/settings/passkeys';
 	import { alertUnlessCancelled, withStepUp } from '$lib/settings/stepUp';
-	import { KeyRound, Mail, Smartphone } from '@lucide/svelte';
+	import { FingerprintPattern, KeyRound, Mail, Smartphone } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
 	let mfaState = $state<MfaState | null>(null);
@@ -23,6 +26,9 @@
 	let enrollingEmail = $state<boolean>(false);
 	let enrollEmail = $state<string | null>(null);
 	let totpEnrollment = $state<TotpEnrollmentInfo | null>(null);
+	let enrollingPasskey = $state<boolean>(false);
+	let managingPasskeys = $state<boolean>(false);
+	let passkeySupported = $state<boolean>(false);
 	let recoveryCodes = $state<string[] | null>(null);
 
 	const emailMethod = $derived(
@@ -30,6 +36,9 @@
 	);
 	const totpMethod = $derived(
 		mfaState?.methods.find((method) => method.method_type === 'totp') ?? null
+	);
+	const webauthnMethod = $derived(
+		mfaState?.methods.find((method) => method.method_type === 'webauthn') ?? null
 	);
 	const busy = $derived(busyAction !== null);
 
@@ -45,6 +54,7 @@
 	}
 
 	onMount(() => {
+		passkeySupported = typeof window.PublicKeyCredential !== 'undefined';
 		void load();
 	});
 
@@ -74,6 +84,21 @@
 		totpEnrollment = null;
 		recoveryCodes = codes;
 		void load();
+	}
+
+	async function handleEnablePasskey(name: string) {
+		enrollingPasskey = false;
+		busyAction = 'enable-passkey';
+		try {
+			const result = await withStepUp(() => registerPasskey(name));
+			handleVerified(result.recovery_codes);
+		} catch (error) {
+			// Prompt WebAuthn refusé/fermé par l'utilisateur : abandon silencieux.
+			if (!(error instanceof Error && error.name === 'NotAllowedError')) {
+				alertUnlessCancelled(error);
+			}
+		}
+		busyAction = null;
 	}
 
 	async function handleDisable(methodId: string, label: string, action: string) {
@@ -199,6 +224,46 @@
 					</div>
 				{/if}
 			</div>
+
+			<div
+				class="border-light-blue/10 bg-dark-blue/40 flex flex-wrap items-center gap-3 rounded-xl border p-3"
+			>
+				<FingerprintPattern class="text-dark-light-blue size-5 shrink-0" />
+				<div class="min-w-0 flex-1 basis-48">
+					<p class="text-light-blue m-0 text-sm font-medium">Passkey</p>
+					<p class="text-dark-light-blue/80 m-0 text-xs">
+						Empreinte, visage ou code de l'appareil — sert aussi à se connecter sans mot de passe.
+					</p>
+				</div>
+				<div class="ml-auto shrink-0">
+					{#if webauthnMethod}
+						<CtaButton
+							id="mfa-manage-passkeys"
+							variant="secondary"
+							size="sm"
+							fullWidth={false}
+							disabled={busy}
+							onclick={() => (managingPasskeys = true)}
+						>
+							Gérer
+						</CtaButton>
+					{:else}
+						<CtaButton
+							id="mfa-enable-passkey"
+							variant="secondary"
+							size="sm"
+							fullWidth={false}
+							disabled={busy || enrollingPasskey || !passkeySupported}
+							title={passkeySupported
+								? undefined
+								: 'Ce navigateur ne prend pas en charge les passkeys.'}
+							onclick={() => (enrollingPasskey = true)}
+						>
+							{busyAction === 'enable-passkey' ? 'Chargement…' : 'Activer'}
+						</CtaButton>
+					{/if}
+				</div>
+			</div>
 		</div>
 
 		{#if mfaState && mfaState.methods.length > 0}
@@ -233,6 +298,27 @@
 			enrollment={totpEnrollment}
 			onClose={() => (totpEnrollment = null)}
 			onVerified={handleVerified}
+		/>
+	{/if}
+
+	{#if enrollingPasskey}
+		<PasskeyNameModal
+			title="Ajouter une passkey"
+			description="Donne-lui un nom pour la retrouver, puis suis les instructions de ton navigateur."
+			confirmLabel="Continuer"
+			onSubmit={(name) => {
+				void handleEnablePasskey(name);
+			}}
+			onCancel={() => (enrollingPasskey = false)}
+		/>
+	{/if}
+
+	{#if managingPasskeys}
+		<PasskeysManageModal
+			onClose={() => {
+				managingPasskeys = false;
+				void load();
+			}}
 		/>
 	{/if}
 
