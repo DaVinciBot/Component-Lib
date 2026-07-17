@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OverlayBackdrop from '$lib/overlay/OverlayBackdrop.svelte';
 	import Checkbox from '$lib/share/Checkbox.svelte';
 	import CtaButton from '$lib/utils/CTAButton.svelte';
 
@@ -44,12 +45,7 @@
 		role="dialog"
 		aria-modal="true"
 	>
-		<button
-			type="button"
-			class="absolute inset-0 bg-[rgba(4,7,32,0.7)] backdrop-blur-md"
-			onclick={onCancel}
-			aria-label="Fermer"
-		></button>
+		<OverlayBackdrop onClose={onCancel} />
 		<section
 			class="border-light-blue/30 text-light-blue relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-160 overflow-y-auto rounded-[10px] border bg-linear-to-b from-[rgba(20,22,52,0.98)] to-[rgba(16,18,44,0.96)] px-5 py-5 shadow-[0_26px_60px_rgba(3,5,20,0.55)]"
 		>

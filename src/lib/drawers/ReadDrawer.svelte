@@ -5,6 +5,7 @@
 	import type { Database } from '@davincibot/database-types';
 
 	import Stepper from '$lib/admin/Stepper.svelte';
+	import OverlayBackdrop from '$lib/overlay/OverlayBackdrop.svelte';
 	import Icon from '$lib/share/Icon.svelte';
 
 	interface DocumentPreview {
@@ -508,20 +509,7 @@
 </script>
 
 <!-- Backdrop -->
-<div
-	class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-	role="button"
-	tabindex="0"
-	onclick={__onClose}
-	onkeydown={(e: KeyboardEvent) => {
-		if (e.key === 'Enter' || e.key === ' ') {
-			__onClose(e);
-		}
-		if (e.key === 'Escape') {
-			__onClose(e);
-		}
-	}}
-></div>
+<OverlayBackdrop className="z-40" onClose={__onClose} />
 
 <!-- Drawer -->
 <div

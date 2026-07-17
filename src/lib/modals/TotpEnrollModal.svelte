@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OverlayBackdrop from '$lib/overlay/OverlayBackdrop.svelte';
 	import CodeInput from '$lib/utils/CodeInput.svelte';
 	import CtaButton from '$lib/utils/CTAButton.svelte';
 	import { verifyTotpEnrollment, type TotpEnrollmentInfo } from '@davincibot/lib/settings';
@@ -63,9 +64,12 @@
 	role="dialog"
 	aria-modal="true"
 	aria-label="Activer une application d'authentification"
-	class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+	class="fixed inset-0 z-50 flex items-center justify-center p-4"
 >
-	<div class="border-light-blue/20 w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6">
+	<OverlayBackdrop />
+	<div
+		class="border-light-blue/20 relative w-full max-w-md rounded-2xl border bg-[#060a2c] p-5 sm:p-6"
+	>
 		<p class="text-dark-light-blue m-0 mb-3 text-[0.65rem] tracking-[0.32em] uppercase">
 			Application d'authentification
 		</p>

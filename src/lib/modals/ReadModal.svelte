@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OverlayBackdrop from '$lib/overlay/OverlayBackdrop.svelte';
 	import { hideOnClickOutside } from '@davincibot/lib';
 	import { onMount } from 'svelte';
 
@@ -240,9 +241,10 @@
 	{id}
 	tabindex="-1"
 	aria-hidden="true"
-	class="fixed top-0 right-0 left-0 z-50 h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto backdrop-blur-sm md:inset-0"
+	class="fixed top-0 right-0 left-0 z-50 h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto md:inset-0"
 	data-toggle="true"
 >
+	<OverlayBackdrop />
 	<div class="relative m-auto flex h-full w-full p-4">
 		<!-- Modal content -->
 		<div

@@ -11,6 +11,7 @@
 		type ActionButton,
 		type AvailabilityMode
 	} from '$lib/training/helpers/slotModal';
+	import OverlayBackdrop from '$lib/overlay/OverlayBackdrop.svelte';
 	import TrainingRegistrationPopup from '$lib/training/TrainingRegistrationPopup.svelte';
 	import Badge from '$lib/utils/Badge.svelte';
 	import CtaButton from '$lib/utils/CTAButton.svelte';
@@ -265,12 +266,7 @@
 		role="dialog"
 		aria-modal="true"
 	>
-		<button
-			type="button"
-			class="absolute inset-0 bg-[rgba(4,8,32,0.65)] backdrop-blur-md"
-			onclick={onClose}
-			aria-label="Fermer"
-		></button>
+		<OverlayBackdrop {onClose} />
 		<section
 			class="border-light-blue/30 text-light-blue relative max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-140 overflow-hidden rounded-[22px] border bg-linear-to-b from-[rgba(6,10,44,0.98)] to-[rgba(4,6,26,0.96)] shadow-[0_26px_70px_rgba(2,6,30,0.6)]"
 		>

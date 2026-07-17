@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { logOut } from '@davincibot/lib/settings';
-	import { SETTINGS_CATEGORIES, type SettingsCategory } from '@davincibot/lib/settings';
-	import { ChevronLeft, ChevronRight, Lock, LogOut, UserRound, X } from '@lucide/svelte';
+	import {
+		REPORT_CATEGORY,
+		SETTINGS_CATEGORIES,
+		type SettingsCategory
+	} from '@davincibot/lib/settings';
+	import { ChevronLeft, ChevronRight, Flag, Lock, LogOut, UserRound, X } from '@lucide/svelte';
+	import OverlayBackdrop from '$lib/overlay/OverlayBackdrop.svelte';
 	import ProfilePanel from './ProfilePanel.svelte';
+	import ReportPanel from './ReportPanel.svelte';
 	import SecurityPanel from './SecurityPanel.svelte';
 
 	interface SettingsModalProps {
@@ -22,11 +28,12 @@
 
 	const CATEGORY_ICONS: Record<SettingsCategory, typeof UserRound> = {
 		profil: UserRound,
-		securite: Lock
+		securite: Lock,
+		signalement: Flag
 	};
 
 	const activeEntry = $derived(
-		SETTINGS_CATEGORIES.find((category) => category.id === activeCategory)
+		[...SETTINGS_CATEGORIES, REPORT_CATEGORY].find((category) => category.id === activeCategory)
 	);
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -60,12 +67,7 @@
 	aria-modal="true"
 	aria-labelledby="settings-modal-title"
 >
-	<button
-		type="button"
-		class="absolute inset-0 bg-[rgba(4,8,32,0.65)] backdrop-blur-md"
-		onclick={onClose}
-		aria-label="Fermer"
-	></button>
+	<OverlayBackdrop {onClose} />
 	<section
 		bind:this={card}
 		tabindex="-1"
@@ -117,6 +119,24 @@
 				{/each}
 
 				<div class="border-light-blue/20 my-1 border-t" role="separator"></div>
+
+				<button
+					type="button"
+					class="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition {activeCategory ===
+					REPORT_CATEGORY.id
+						? 'border-light-blue/30 bg-blue-gray/25 text-light-blue'
+						: 'text-dark-light-blue hover:bg-blue-gray/15 hover:text-light-blue border-transparent'}"
+					aria-current={activeCategory === REPORT_CATEGORY.id ? 'true' : undefined}
+					onclick={() => {
+						selectCategory(REPORT_CATEGORY.id);
+					}}
+				>
+					<span class="flex min-w-0 items-center gap-2.5">
+						<Flag class="size-4 shrink-0" />
+						<span class="truncate text-sm font-semibold">{REPORT_CATEGORY.label}</span>
+					</span>
+					<ChevronRight class="size-4 shrink-0 md:hidden" />
+				</button>
 				<button
 					type="button"
 					class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-left text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
@@ -151,6 +171,8 @@
 						<ProfilePanel />
 					{:else if activeCategory === 'securite'}
 						<SecurityPanel />
+					{:else if activeCategory === 'signalement'}
+						<ReportPanel />
 					{/if}
 				</div>
 			</div>
