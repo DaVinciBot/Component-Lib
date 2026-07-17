@@ -2,3 +2,4 @@ minimumReleaseAgeExclude:
   - '@davincibot/config@2.0.0'
   - '@davincibot/database-types@1.0.0'
   - '@davincibot/lib@1.1.0'
+  - '@davincibot/lib@1.2.0'
