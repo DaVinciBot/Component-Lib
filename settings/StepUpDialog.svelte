@@ -1,11 +1,11 @@
 <script lang="ts">
 	import CodeInput from '$lib/components/utils/CodeInput.svelte';
 	import CtaButton from '$lib/components/utils/CTAButton.svelte';
-	import { stepUpChallenge, stepUpVerify } from '$lib/settings/mfa';
+	import { stepUpChallenge, stepUpVerify, stepUpVerifyWebauthn } from '$lib/settings/mfa';
 	import { stepUpRequest, type StepUpRequest } from '$lib/settings/stepUp';
 	import { onDestroy } from 'svelte';
 
-	type DialogMode = 'password' | 'email' | 'totp' | 'recovery';
+	type DialogMode = 'password' | 'email' | 'totp' | 'recovery' | 'webauthn';
 
 	let request = $state<StepUpRequest | null>(null);
 	let mode = $state<DialogMode | null>(null);
@@ -26,6 +26,7 @@
 	const otherModes = $derived(
 		(
 			[
+				{ id: 'webauthn', label: 'Passkey' },
 				{ id: 'email', label: 'Code reçu par e-mail' },
 				{ id: 'totp', label: "Application d'authentification" },
 				{ id: 'recovery', label: 'Code de récupération' }
@@ -87,6 +88,28 @@
 			errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
 		}
 		busy = false;
+		// Tentative immédiate quand la passkey est la méthode servie ; le bouton
+		// reste affiché si le navigateur exige un geste utilisateur (Safari).
+		if (mode === 'webauthn' && errorMessage === null) {
+			await handleWebauthn();
+		}
+	}
+
+	async function handleWebauthn() {
+		busy = true;
+		errorMessage = null;
+		try {
+			await stepUpVerifyWebauthn();
+			busy = false;
+			request?.resolve(true);
+			return;
+		} catch (error) {
+			// Prompt refusé/fermé par l'utilisateur : on reste sur le dialogue sans erreur.
+			if (!(error instanceof Error && error.name === 'NotAllowedError')) {
+				errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
+			}
+		}
+		busy = false;
 	}
 
 	// Déclenche (ou renvoie) le code email — utilisé au premier passage sur la
@@ -113,10 +136,17 @@
 		if (next === 'email' && !emailChallengeDone) {
 			void requestEmailChallenge();
 		}
+		if (next === 'webauthn') {
+			void handleWebauthn();
+		}
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
+		if (mode === 'webauthn') {
+			await handleWebauthn();
+			return;
+		}
 		busy = true;
 		errorMessage = null;
 		try {
@@ -205,15 +235,17 @@
 				</div>
 			{:else}
 				<p class="text-light-blue m-0 mb-4 text-sm">
-					{mode === 'password'
-						? 'Confirme ton mot de passe pour continuer.'
-						: mode === 'recovery'
-							? 'Saisis un de tes codes de récupération à usage unique.'
-							: mode === 'totp'
-								? "Saisis le code de ton application d'authentification."
-								: email
-									? `Saisis le code envoyé à ${email}.`
-									: 'Saisis le code reçu par e-mail.'}
+					{mode === 'webauthn'
+						? "Confirme avec ta passkey : empreinte, visage ou code de l'appareil."
+						: mode === 'password'
+							? 'Confirme ton mot de passe pour continuer.'
+							: mode === 'recovery'
+								? 'Saisis un de tes codes de récupération à usage unique.'
+								: mode === 'totp'
+									? "Saisis le code de ton application d'authentification."
+									: email
+										? `Saisis le code envoyé à ${email}.`
+										: 'Saisis le code reçu par e-mail.'}
 				</p>
 				<form class="grid gap-4" onsubmit={handleSubmit}>
 					{#if mode === 'password'}
@@ -227,6 +259,8 @@
 							disabled={busy}
 							bind:value={password}
 						/>
+					{:else if mode === 'webauthn'}
+						<!-- Pas de saisie : la cérémonie se joue dans le prompt du navigateur. -->
 					{:else if mode === 'recovery'}
 						<input
 							type="text"
@@ -286,12 +320,17 @@
 							</button>
 							<CtaButton
 								type="submit"
+								id={mode === 'webauthn' ? 'step-up-passkey' : 'step-up-confirm'}
 								variant="secondary"
 								size="sm"
 								fullWidth={false}
 								disabled={busy}
 							>
-								{busy ? 'Vérification…' : 'Confirmer'}
+								{busy
+									? 'Vérification…'
+									: mode === 'webauthn'
+										? 'Confirmer avec ma passkey'
+										: 'Confirmer'}
 							</CtaButton>
 						</div>
 					</div>
