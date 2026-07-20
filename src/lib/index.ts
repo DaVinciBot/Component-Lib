@@ -32,6 +32,7 @@ export { default as Carousel } from './others/Carousel.svelte';
 export { default as SponsorsCarousel } from './others/SponsorsCarousel.svelte';
 export { default as OverlayBackdrop } from './overlay/OverlayBackdrop.svelte';
 export { default as ConnectionsSection } from './settings/ConnectionsSection.svelte';
+export { default as MfaChallenge } from './settings/MfaChallenge.svelte';
 export { default as MfaSection } from './settings/MfaSection.svelte';
 export { default as ProfilePanel } from './settings/ProfilePanel.svelte';
 export { default as ReportPanel } from './settings/ReportPanel.svelte';

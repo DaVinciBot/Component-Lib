@@ -29,11 +29,12 @@
 		"changeset": "changeset"
 	},
 	"dependencies": {
+		"@simplewebauthn/browser": "^13.3.0",
 		"qrcode": "^1.5.4"
 	},
 	"peerDependencies": {
-		"@davincibot/database-types": "^1.0.0",
-		"@davincibot/lib": "^1.2.0",
+		"@davincibot/database-types": "^2.0.0",
+		"@davincibot/lib": "^1.3.0",
 		"@lucide/svelte": "^1.17.0",
 		"@supabase/supabase-js": "^2.0.0",
 		"@sveltejs/kit": "^2.0.0",
@@ -43,8 +44,8 @@
 		"@changesets/changelog-github": "^0.5.1",
 		"@changesets/cli": "^2.29.0",
 		"@davincibot/config": "^2.0.0",
-		"@davincibot/database-types": "^1.0.0",
-		"@davincibot/lib": "^1.2.0",
+		"@davincibot/database-types": "^2.0.0",
+		"@davincibot/lib": "^1.3.0",
 		"@eslint/js": "^10.0.1",
 		"@lucide/svelte": "^1.17.0",
 		"@supabase/supabase-js": "^2.108.2",
