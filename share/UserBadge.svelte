@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import type { Permission } from '$lib/permissions';
-	import { hasAnyPermission, PERMISSIONS } from '$lib/permissions';
-	import { userdata, type UserData } from '$lib/store';
-	import { getSupabaseBrowserClient } from '$lib/supabaseClient';
+	import type { EffectivePermission, GlobalPermission } from '$lib/permissions';
+	import { GLOBAL_PERMISSIONS } from '$lib/permissions';
+	import { openSettings, userdata, type UserData } from '$lib/store';
 	import { hideOnClickOutside } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 
@@ -11,7 +9,7 @@
 		name: string;
 		email: string;
 		avatar: string;
-		permissions?: Permission[];
+		permissions?: EffectivePermission[];
 		[key: string]: unknown;
 	}
 
@@ -39,8 +37,9 @@
 			return fallbackUser;
 		}
 		const email = value.email;
-		const permissions = value.permissions.filter((permission): permission is Permission =>
-			PERMISSIONS.includes(permission)
+		const globalPermissionSet: ReadonlySet<string> = new Set(GLOBAL_PERMISSIONS);
+		const permissions = value.permissions.filter((permission): permission is GlobalPermission =>
+			globalPermissionSet.has(permission)
 		);
 		return {
 			...value,
@@ -94,17 +93,6 @@
 		}
 	});
 
-	const LogOut = async () => {
-		try {
-			await getSupabaseBrowserClient().auth.signOut();
-		} catch {
-			// ignore
-		}
-		await fetch('/auth/logout', { method: 'POST' });
-		userdata.set(null);
-		window.location.href = `/`;
-	};
-
 	onDestroy(() => {
 		unsubscribe();
 		if (resizeHandler) {
@@ -144,32 +132,15 @@
 	</div>
 	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
 		<li>
-			<a
-				href={resolve('/profile' as '/')}
-				class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white">Profil</a
-			>
-		</li>
-	</ul>
-	{#if hasAnyPermission( user?.permissions, ['orders.cru.self', 'orders.read.all', 'training.slot.read', 'members.profile.read.all', 'finance.read', 'blog.draft.write'] )}
-		<!-- TODO: review -->
-		<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
-			<li>
-				<a
-					href={resolve('/')}
-					class="bg-opacity-80 block px-4 py-2 text-sm hover:bg-gray-700 hover:text-white"
-					>Pannel Admin</a
-				>
-			</li>
-		</ul>
-	{/if}
-	<ul class="py-1 text-gray-300" aria-labelledby="dropdown">
-		<li>
 			<button
 				type="button"
-				class="bg-opacity-80 hover:bg-opacity-50 block w-full px-4 py-2 text-left text-sm hover:bg-red-700 hover:text-white"
+				class="bg-opacity-80 block w-full px-4 py-2 text-left text-sm hover:cursor-pointer hover:bg-gray-700 hover:text-white"
 				onclick={() => {
-					void LogOut();
-				}}>Déconnexion</button
+					// fermer le dropdown avant d'ouvrir le modal : il vit en fin de body
+					// et passerait au-dessus à z-index égal
+					getDropdown()?.classList.add('hidden');
+					openSettings();
+				}}>Paramètres</button
 			>
 		</li>
 	</ul>
